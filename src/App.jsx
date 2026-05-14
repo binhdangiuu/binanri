@@ -166,7 +166,13 @@ return (
         <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">
           KTMT QUIZZES
         </p>
-
+        {question.context && (
+        <div className="mb-6 bg-yellow-50 border border-yellow-300 p-5 rounded-2xl">
+          <p className="leading-7">
+            {question.context}
+          </p>
+        </div>
+      )}
         <h1 className="text-4xl font-black mb-8">
           {question.question}        </h1>
 
