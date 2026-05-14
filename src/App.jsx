@@ -143,7 +143,7 @@ return (
       {/* Quiz Info */}
       <div className="flex justify-between items-center mb-4">
         <p className="text-lg">
-          Polymorphism & Abstraction · Question {currentQuestion + 1} of {questions.length}
+          KTMT Quizzes · Question {currentQuestion + 1} of {questions.length}
         </p>
 
         <div className="bg-white px-4 py-2 rounded-full border">
