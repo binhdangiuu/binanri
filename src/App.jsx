@@ -164,7 +164,7 @@ return (
       <div className="bg-white/50 border rounded-[30px] p-8">
         
         <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">
-          Polymorphism and Abstraction
+          KTMT QUIZZES
         </p>
 
         <h1 className="text-4xl font-black mb-8">
