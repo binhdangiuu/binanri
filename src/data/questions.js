@@ -238,7 +238,7 @@ const questions = [
 {
   "id": 20,
   "chapter": "MIPS",
-  "image": mipsMemory,
+  image: mipsMemory,
   "question": "Hãy cho biết giá trị thanh ghi $t0 là bao nhiêu sau khi thực thi lệnh lh $t0, 6($s0)",
   "options": [
     "Lệnh trên bị lỗi vì $s0 + 6 không chia hết cho 4",
@@ -251,7 +251,7 @@ const questions = [
 {
   "id": 21,
   "chapter": "MIPS",
-  "image": mipsMemory,
+  image: mipsMemory,
   "question": "Hãy cho biết giá trị thanh ghi $t0 là bao nhiêu sau khi thực thi lệnh lw $t0, 6($s0)",
   "options": [
     "Lệnh trên bị lỗi vì $s0 + 6 không chia hết cho 4",
@@ -264,7 +264,7 @@ const questions = [
 {
   "id": 22,
   "chapter": "MIPS",
-  "image": mipsMemory,
+  image: mipsMemory,
   "question": "Hãy cho biết những ô nhớ nào sẽ thay đổi giá trị sau khi thực hiện lệnh sw $t1, 4($s0), nếu thanh ghi $t1 mang giá trị 0x00000000",
   "options": [
     "Lệnh trên bị lỗi",

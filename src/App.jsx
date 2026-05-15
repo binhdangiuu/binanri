@@ -173,18 +173,31 @@ return (
           </p>
         </div>
       )}
-        {question.images && (
-        <div className="space-y-4 mb-6">
-          {question.images.map((img, index) => (
-            <img
-              key={index}
-              src={img}
-              alt={`question-${index}`}
-              className="rounded-2xl border max-w-full"
-            />
-          ))}
-        </div>
+        <h1>{currentQuestion.question}</h1>
+
+      {/* 1 ảnh */}
+      {currentQuestion.image && (
+        <img
+          src={currentQuestion.image}
+          alt="question"
+          style={{ width: "100%", maxWidth: "600px" }}
+        />
       )}
+
+      {/* nhiều ảnh */}
+      {currentQuestion.images &&
+        currentQuestion.images.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt={`question-${index}`}
+            style={{
+              width: "100%",
+              maxWidth: "600px",
+              marginTop: "10px"
+            }}
+          />
+      ))}
         <h1 className="text-4xl font-black mb-8">
           {question.question}        </h1>
 
