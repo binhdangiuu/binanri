@@ -173,20 +173,19 @@ return (
           </p>
         </div>
       )}
-        <h1>{currentQuestion.question}</h1>
 
       {/* 1 ảnh */}
-      {currentQuestion.image && (
+      {question.image && (
         <img
-          src={currentQuestion.image}
+          src={question.image}
           alt="question"
           style={{ width: "100%", maxWidth: "600px" }}
         />
       )}
 
       {/* nhiều ảnh */}
-      {currentQuestion.images &&
-        currentQuestion.images.map((img, index) => (
+      {question.images &&
+        question.images.map((img, index) => (
           <img
             key={index}
             src={img}
