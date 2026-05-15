@@ -173,6 +173,18 @@ return (
           </p>
         </div>
       )}
+        {question.images && (
+        <div className="space-y-4 mb-6">
+          {question.images.map((img, index) => (
+            <img
+              key={index}
+              src={img}
+              alt={`question-${index}`}
+              className="rounded-2xl border max-w-full"
+            />
+          ))}
+        </div>
+      )}
         <h1 className="text-4xl font-black mb-8">
           {question.question}        </h1>
 

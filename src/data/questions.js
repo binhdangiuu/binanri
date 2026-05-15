@@ -1,3 +1,7 @@
+import mipsMemory from "../assets/20-22.png"
+import img5562_1 from "../assets/55-62(1).png"
+import img5562_2 from "../assets/55-62(2).png"
+import img6369 from "../assets/63-69.png"
 const questions = [
   {
     "id": 1,
@@ -234,6 +238,7 @@ const questions = [
 {
   "id": 20,
   "chapter": "MIPS",
+  "image": mipsMemory,
   "question": "Hãy cho biết giá trị thanh ghi $t0 là bao nhiêu sau khi thực thi lệnh lh $t0, 6($s0)",
   "options": [
     "Lệnh trên bị lỗi vì $s0 + 6 không chia hết cho 4",
@@ -246,6 +251,7 @@ const questions = [
 {
   "id": 21,
   "chapter": "MIPS",
+  "image": mipsMemory,
   "question": "Hãy cho biết giá trị thanh ghi $t0 là bao nhiêu sau khi thực thi lệnh lw $t0, 6($s0)",
   "options": [
     "Lệnh trên bị lỗi vì $s0 + 6 không chia hết cho 4",
@@ -258,6 +264,7 @@ const questions = [
 {
   "id": 22,
   "chapter": "MIPS",
+  "image": mipsMemory,
   "question": "Hãy cho biết những ô nhớ nào sẽ thay đổi giá trị sau khi thực hiện lệnh sw $t1, 4($s0), nếu thanh ghi $t1 mang giá trị 0x00000000",
   "options": [
     "Lệnh trên bị lỗi",
@@ -659,6 +666,7 @@ const questions = [
 {
   "id": 55,
   "chapter": "Single Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Chọn phát biểu ĐÚNG khi bộ xử lý thực thi lệnh: lw $t0, -8($s0) # giả sử thanh ghi $s0 = 100",
   "options": [
     "Cờ “Zero” = 1",
@@ -671,6 +679,7 @@ const questions = [
 {
   "id": 56,
   "chapter": "Single Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Chọn phát biểu ĐÚNG khi bộ xử lý thực thi lệnh: beq $t0, $t1, 8 # giả sử thanh ghi $t0 = $t1",
   "options": [
     "Cờ “Zero” = 1 và tín hiệu “Jump” = 1",
@@ -683,6 +692,7 @@ const questions = [
 {
   "id": 57,
   "chapter": "Single Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Thời gian thực thi lệnh: beq $t0, $t1, 8 # giả sử thanh ghi $t0 = $t1",
   "options": [
     "303ps",
@@ -695,6 +705,7 @@ const questions = [
 {
   "id": 58,
   "chapter": "Single Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Chu kỳ xung nhịp nhanh nhất của thiết kế này:",
   "options": [
     "603ps",
@@ -707,6 +718,7 @@ const questions = [
 {
   "id": 59,
   "chapter": "Single Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Giả sử bộ xử lý đơn chu kỳ này hỗ trợ thêm lệnh SWR (Store Word Register). Xác định giá trị các tín hiệu điều khiển RegDst, ALUSrc, MemtoReg, MemWrite, biết rằng lệnh SWR có cú pháp như sau: SWR Rd, Rt(Rs) # Mem[Reg[Rt]+Reg[Rs]] = Reg[Rd]",
   "options": [
     "1 – 0 – 1 – 0",
@@ -719,6 +731,7 @@ const questions = [
 {
   "id": 60,
   "chapter": "Multi Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Từ thiết kế trên, người ta sửa đổi sang dạng đa chu kỳ. Với thiết kế đa chu kỳ, mỗi chu kỳ sẽ thực thi một trong 5 công đoạn: nạp lệnh (IF), giải mã lệnh (ID), tính toán (EX), truy xuất bộ nhớ dữ liệu (MEM), ghi giá trị vào thanh ghi (WB). Chu kỳ xung nhịp ngắn nhất có thể của thiết kế đa chu kỳ:",
   "options": [
     "200ps",
@@ -731,6 +744,7 @@ const questions = [
 {
   "id": 61,
   "chapter": "Single Cycle CPU",
+  images: [img5562_1, img5562_2],
   "question": "Chọn phát biểu ĐÚNG khi bộ xử lý thực thi lệnh: j 2018 # giả sử địa chỉ lệnh Jump này là 2000",
   "options": [
     "Tín hiệu “MemWrite” = x và “MemRead” = x (x: có thể 0 hay 1)",
@@ -743,6 +757,7 @@ const questions = [
 {
   "id": 62,
   "chapter": "Pipeline CPU",
+  images: [img5562_1, img5562_2],
   "question": "Từ thiết kế trên, người ta sửa đổi sang dạng đường ống 5 công đoạn: nạp lệnh (IF), giải mã lệnh (ID), tính toán (EX), truy xuất bộ nhớ dữ liệu (MEM), ghi giá trị vào thanh ghi (WB). Khi thực thi chương trình có số lệnh lớn, tính speedup của bộ xử lý mới theo cơ chế đường ống:",
   "options": [
     "4.5",
@@ -755,6 +770,7 @@ const questions = [
 {
   "id": 63,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Có bao nhiêu data hazard ở đoạn chương trình trên?",
   "options": [
     "3",
@@ -767,6 +783,7 @@ const questions = [
 {
   "id": 64,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Chỉ dùng phương pháp chèn stall để giải quyết data hazards. Tính CPI trung bình cho đoạn chương trình trên?",
   "options": [
     "3.6",
@@ -779,6 +796,7 @@ const questions = [
 {
   "id": 65,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Dùng phương pháp chèn stall và forwarding để giải quyết data hazards. Tính số chu kỳ xung nhịp cho đoạn chương trình trên?",
   "options": [
     "10",
@@ -791,6 +809,7 @@ const questions = [
 {
   "id": 66,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Tính speedup cho trường hợp bộ xử lý là 5-stage pipeline, sử dụng stall và forwarding với trường hợp bộ xử lý là đa chu kỳ cùng thực thi đoạn chương trình trên?",
   "options": [
     "2.2",
@@ -803,6 +822,7 @@ const questions = [
 {
   "id": 67,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Dùng phương pháp chèn stall và forwarding để giải quyết data hazards. Nếu đoạn chương trình trên được sắp xếp lại, tính số chu kỳ xung nhịp nhỏ nhất có thể cho đoạn chương trình trên?",
   "options": [
     "10",
@@ -815,6 +835,7 @@ const questions = [
 {
   "id": 68,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Dùng phương pháp chèn stall và forwarding để giải quyết data hazards. Khi lệnh sw $t2, 100($t1) đang ở giai đoạn giải mã lệnh (ID), các tín hiệu điều khiển ForwardA, ForwardB có giá trị lần lượt là:",
   "options": [
     "1 - 2",
@@ -827,6 +848,7 @@ const questions = [
 {
   "id": 69,
   "chapter": "Pipeline CPU",
+  image: img6369,
   "question": "Ban đầu $t3 = 2, chỉ dùng phương pháp chèn stall để giải quyết data hazards, lệnh bne sử dụng chiến thuật đoán trước không nhảy. Tính số chu kỳ xung nhịp cho đoạn chương trình trên?",
   "options": [
     "32",
