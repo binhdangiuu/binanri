@@ -3,7 +3,7 @@ import questions from "./data/questions"
 
 export default function App() {
 
-  const [screen, setScreen] = useState("home")
+  const [screen, setScreen] = useState("subject")
 
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
@@ -94,15 +94,6 @@ export default function App() {
         </button>
 
       </div>
-
-      {/* HOME SCREEN */}
-      {screen === "home" && (
-
-        <div className="text-3xl font-bold text-gray-700">
-          Chọn một progress bar để bắt đầu
-        </div>
-
-      )}
 
       {/* SUBJECT SCREEN */}
       {screen === "subject" && (
