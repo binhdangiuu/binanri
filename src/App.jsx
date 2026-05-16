@@ -7,6 +7,7 @@ export default function App() {
   const [quizFinished, setQuizFinished] = useState(false)
   const [selectedQuiz, setSelectedQuiz] = useState(null)
   const question = questions[currentQuestion]
+  const [screen, setScreen] = useState("home")
   const handleAnswer = (index) => {
   if (selectedAnswer !== null) return
 
@@ -31,7 +32,7 @@ export default function App() {
   setScore(0)
   setQuizFinished(false)
 }
-  if (selectedQuiz === null) {
+  if (screen === "home") {
   return (
     <div className="min-h-screen bg-pink-200 p-5">
 
@@ -39,7 +40,57 @@ export default function App() {
       <div className="flex gap-4 mb-10">
 
         <button
-          onClick={() => setSelectedQuiz("KTMT")}
+          onClick={() => setScreen("subject")}
+          className="
+            bg-blue-600
+            text-white
+            px-6
+            py-3
+            rounded-full
+            font-bold
+          "
+        >
+          KTMT
+        </button>
+
+        <button
+          className="
+            bg-white
+            px-6
+            py-3
+            rounded-full
+            font-bold
+          "
+        >
+          OOP
+        </button>
+
+      </div>
+
+    </div>
+  )
+}
+if (screen === "subject") {
+  return (
+    <div className="min-h-screen bg-pink-200 p-5">
+
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+
+        <h1 className="text-4xl font-black text-yellow-500">
+          ÔN TẬP THUI
+        </h1>
+
+        <div className="text-2xl font-bold text-blue-600">
+          Mong cho mỗi ngày của Anri đều là mỗi ngày hạnh phúc
+        </div>
+
+      </div>
+
+      {/* Progress bars */}
+      <div className="flex gap-4 mb-10">
+
+        <button
           className="
             bg-blue-600
             text-white
@@ -125,6 +176,7 @@ export default function App() {
   )
 }
 
+if (selectedQuiz === "KTMT") {
 return (
     
 <div className="min-h-screen bg-pink-200 p-5">      
@@ -309,4 +361,5 @@ return (
 
     </div>
   )
+}
 }
