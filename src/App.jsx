@@ -5,7 +5,7 @@ export default function App() {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [score, setScore] = useState(0)
   const [quizFinished, setQuizFinished] = useState(false)
-
+  const [selectedQuiz, setSelectedQuiz] = useState(null)
   const question = questions[currentQuestion]
   const handleAnswer = (index) => {
   if (selectedAnswer !== null) return
@@ -30,6 +30,65 @@ export default function App() {
   setSelectedAnswer(null)
   setScore(0)
   setQuizFinished(false)
+}
+  if (selectedQuiz === null) {
+  return (
+    <div className="min-h-screen bg-pink-200 p-5">
+
+      {/* Progress bars */}
+      <div className="flex gap-4 mb-10">
+
+        <button
+          onClick={() => setSelectedQuiz("KTMT")}
+          className="
+            bg-blue-600
+            text-white
+            px-6
+            py-3
+            rounded-full
+            font-bold
+          "
+        >
+          KTMT
+        </button>
+
+        <button
+          className="
+            bg-white
+            px-6
+            py-3
+            rounded-full
+            font-bold
+          "
+        >
+          OOP
+        </button>
+
+      </div>
+
+      {/* KTMT card */}
+      <div
+        onClick={() => setSelectedQuiz("KTMT")}
+        className="
+          bg-white/50
+          border
+          rounded-[30px]
+          p-8
+          cursor-pointer
+          hover:border-blue-500
+        "
+      >
+        <h1 className="text-5xl font-black mb-4">
+          KTMT Quizzes
+        </h1>
+
+        <p className="text-2xl text-gray-600">
+          74 questions
+        </p>
+      </div>
+
+    </div>
+  )
 }
   if (quizFinished) {
   return (
