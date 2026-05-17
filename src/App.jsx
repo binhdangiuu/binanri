@@ -49,13 +49,27 @@ const subjects = [
   },
 
   {
-    id: "CTDLGT",
+    id: "DSA",
 
     quizzes: [
 
       {
-        id: "ctdlgt-main",
-        title: "CTDLGT Quizzes",
+        id: "dsa-main",
+        title: "DSA Final Review",
+        questionsCount: 40,
+        comingSoon: true
+      },
+
+      {
+        id: "dsa-harm2",
+        title: "DSA Harmony 2",
+        questionsCount: 40,
+        comingSoon: true
+      },
+
+      {
+        id: "dsa-harm3",
+        title: "DSA Harmony 3",
         questionsCount: 40,
         comingSoon: true
       }
