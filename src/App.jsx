@@ -1,6 +1,69 @@
 import { useState } from "react"
 import questions from "./data/questions"
 
+const subjects = [
+
+  {
+    id: "KTMT",
+
+    quizzes: [
+
+      {
+        id: "ktmt-main",
+        title: "KTMT Quizzes",
+        questionsCount: 74,
+        comingSoon: false,
+        questions: questions
+      },
+
+      {
+        id: "ktmt-final",
+        title: "KTMT Final Review",
+        questionsCount: 50,
+        comingSoon: true
+      },
+
+      {
+        id: "ktmt-chapter-1",
+        title: "KTMT Chapter 1",
+        questionsCount: 20,
+        comingSoon: true
+      }
+
+    ]
+  },
+
+  {
+    id: "OOP",
+
+    quizzes: [
+
+      {
+        id: "oop-main",
+        title: "OOP Quizzes",
+        questionsCount: 50,
+        comingSoon: true
+      }
+
+    ]
+  },
+
+  {
+    id: "CTDLGT",
+
+    quizzes: [
+
+      {
+        id: "ctdlgt-main",
+        title: "CTDLGT Quizzes",
+        questionsCount: 40,
+        comingSoon: true
+      }
+
+    ]
+  }
+
+]
 export default function App() {
 
   const [screen, setScreen] = useState("subject")
@@ -9,8 +72,9 @@ export default function App() {
   const [selectedAnswer, setSelectedAnswer] = useState(null)
   const [score, setScore] = useState(0)
   const [quizFinished, setQuizFinished] = useState(false)
-
-  const question = questions[currentQuestion]
+  const [activeSubject, setActiveSubject] = useState(null)
+  const [selectedQuiz, setSelectedQuiz] = useState(null)
+  const question = selectedQuiz?.questions[currentQuestion]
 
   const handleAnswer = (index) => {
 
@@ -27,7 +91,7 @@ export default function App() {
 
     setSelectedAnswer(null)
 
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < selectedQuiz.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
     } else {
       setQuizFinished(true)
@@ -63,66 +127,96 @@ export default function App() {
       </div>
 
       {/* PROGRESS BARS */}
-      <div className="flex gap-4 mb-10">
+      <div className="flex gap-4 mb-10 flex-wrap">
 
-        <button
-          onClick={() => setScreen("subject")}
-          className="
-            bg-blue-600
-            text-white
-            px-8
-            py-4
-            rounded-full
-            font-bold
-            text-xl
-          "
-        >
-          KTMT
-        </button>
+        {subjects.map((subject) => (
 
-        <button
-          className="
-            bg-white
-            px-8
-            py-4
-            rounded-full
-            font-bold
-            text-xl
-          "
-        >
-          OOP
-        </button>
+          <button
+            key={subject.id}
+            onClick={() => {
+              setScreen("subject")
+              setActiveSubject(subject.id)
+            }}
+            className={`
+              px-8
+              py-4
+              rounded-full
+              font-bold
+              text-xl
+              transition
+
+              ${
+                activeSubject === subject.id
+                  ? "bg-blue-600 text-white"
+                  : "bg-white"
+              }
+            `}
+          >
+
+            {subject.id}
+
+          </button>
+
+        ))}
 
       </div>
 
       {/* SUBJECT SCREEN */}
-      {screen === "subject" && (
+      {screen === "subject" && activeSubject && (
 
-        <div
-          onClick={() => setScreen("quiz")}
-          className="
-            bg-white/50
-            border
-            rounded-[30px]
-            p-10
-            cursor-pointer
-            hover:border-blue-500
-            transition
-          "
-        >
+        <div className="grid md:grid-cols-2 gap-6">
 
-          <h1 className="text-6xl font-black mb-5">
-            KTMT Quizzes
-          </h1>
+          {
+            subjects
+              .find(subject => subject.id === activeSubject)
+              ?.quizzes.map((quiz) => (
 
-          <p className="text-3xl text-gray-600">
-            74 questions
-          </p>
+                <div
+                  key={quiz.id}
+                  onClick={() => {
+
+                    if (!quiz.comingSoon) {
+                    setSelectedQuiz(quiz)
+                    setCurrentQuestion(0)
+                    setSelectedAnswer(null)
+                    setScore(0)
+                    setQuizFinished(false)
+                    setScreen("quiz")
+                  }
+
+                  }}
+                  className="
+                    bg-white/50
+                    border
+                    rounded-[30px]
+                    p-10
+                    transition
+                    hover:border-blue-500
+                  "
+                >
+
+                  <h1 className="text-5xl font-black mb-5">
+                    {quiz.title}
+                  </h1>
+
+                  <p className="text-2xl text-gray-600">
+
+                    {
+                      quiz.comingSoon
+                        ? "Coming Soon"
+                        : `${quiz.questionsCount} questions`
+                    }
+
+                  </p>
+
+                </div>
+
+            ))
+          }
 
         </div>
 
       )}
-
       {/* QUIZ FINISHED */}
       {screen === "result" && (
 
@@ -133,7 +227,7 @@ export default function App() {
           </h1>
 
           <p className="text-3xl mb-8">
-            Your Score: {score} / {questions.length}
+            Your Score: {score} / {selectedQuiz.questions.length}
           </p>
 
           <button
@@ -159,10 +253,23 @@ export default function App() {
       {screen === "quiz" && (
 
         <>
-
+          <button
+            onClick={() => setScreen("subject")}
+            className="
+              mb-6
+              bg-white
+              px-5
+              py-3
+              rounded-2xl
+              border
+              hover:border-blue-500
+              transition
+            "
+          >
+            ← Back
+          </button>
           {/* Tabs */}
           <div className="bg-[#efe5d4] rounded-full p-2 flex gap-3 mb-8 overflow-x-auto">
-
             {[
               "Overview",
               "Fundamentals",
@@ -193,11 +300,11 @@ export default function App() {
           <div className="flex justify-between items-center mb-4">
 
             <p className="text-lg">
-              KTMT Quizzes · Question {currentQuestion + 1} of {questions.length}
+             {selectedQuiz.title} · Question {currentQuestion + 1} of {selectedQuiz.questions.length}
             </p>
 
             <div className="bg-white px-4 py-2 rounded-full border">
-              Score: {score} / {questions.length}
+              Score: {score} / {selectedQuiz.questions.length}
             </div>
 
           </div>
@@ -207,7 +314,7 @@ export default function App() {
 
             <div
               style={{
-                width: `${((currentQuestion + 1) / questions.length) * 100}%`
+                width: `${((currentQuestion + 1) / selectedQuiz.questions.length) * 100}%`
               }}
               className="h-full bg-gradient-to-r from-blue-500 to-yellow-400"
             ></div>
@@ -218,7 +325,7 @@ export default function App() {
           <div className="bg-white/50 border rounded-[30px] p-8">
 
             <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">
-              KTMT QUIZZES
+              {selectedQuiz.title}
             </p>
 
             <h1 className="text-4xl font-black mb-8">
@@ -263,7 +370,7 @@ export default function App() {
             <button
               onClick={() => {
 
-                if (currentQuestion < questions.length - 1) {
+                if (currentQuestion < selectedQuiz.questions.length - 1) {
                   handleNextQuestion()
                 } else {
                   setScreen("result")
