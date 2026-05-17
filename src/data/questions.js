@@ -272,7 +272,7 @@ const questions = [
     "Các ô nhớ có địa chỉ 12, 13, 14, và 15",
     "Không có ô nhớ nào thay đổi giá trị"
   ],
-  "answer": 1
+  "answer": 2
 },
 {
   "id": 23,
@@ -765,7 +765,7 @@ const questions = [
     "2.74",
     "5"
   ],
-  "answer": 1
+  "answer": 2
 },
 {
   "id": 63,
@@ -778,7 +778,7 @@ const questions = [
     "5",
     "6"
   ],
-  "answer": 1
+  "answer": 2
 },
 {
   "id": 64,
@@ -791,7 +791,7 @@ const questions = [
     "3.3",
     "3.0"
   ],
-  "answer": 0
+  "answer": 3
 },
 {
   "id": 65,
@@ -856,7 +856,7 @@ const questions = [
     "36",
     "38"
   ],
-  "answer": 2
+  "answer": 3
 },
 {
   "id": 70,
