@@ -339,12 +339,51 @@ export default function App() {
           <div className="bg-white/50 border rounded-[30px] p-8">
 
             <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">
-              {selectedQuiz.title}
-            </p>
+            {selectedQuiz.title}
+          </p>
 
-            <h1 className="text-4xl font-black mb-8">
-              {question.question}
-            </h1>
+          {question.context && (
+
+            <div className="mb-6 bg-yellow-100 border border-yellow-300 p-5 rounded-2xl">
+              <p className="text-lg leading-relaxed">
+                {question.context}
+              </p>
+            </div>
+
+          )}
+
+          {question.image && (
+
+            <img
+              src={question.image}
+              alt="question"
+              className="mb-6 rounded-2xl border w-full"
+            />
+
+          )}
+
+          {question.images && (
+
+            <div className="space-y-4 mb-6">
+
+              {question.images.map((img, index) => (
+
+                <img
+                  key={index}
+                  src={img}
+                  alt={`question-${index}`}
+                  className="rounded-2xl border w-full"
+                />
+
+              ))}
+
+            </div>
+
+          )}
+
+          <h1 className="text-4xl font-black mb-8">
+            {question.question}
+          </h1>
 
             <div className="space-y-4">
 
