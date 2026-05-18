@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import questions from "./data/questions"
-
+import ktct1 from "./data/ktct1"
 const subjects = [
 
   {
@@ -41,8 +41,9 @@ const subjects = [
       {
         id: "ktct-main",
         title: "KTCT Chương 1",
-        questionsCount: 40,
-        comingSoon: true
+        questionsCount: ktct1.length,
+        comingSoon: false,
+        questions: ktct1
       }
 
     ]
@@ -235,7 +236,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 19/05/2026 • 00:55:31
+          Last Updated: 19/05/2026 • 02:01:41
         </p>
       </div>
 
