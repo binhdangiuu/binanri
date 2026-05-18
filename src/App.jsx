@@ -84,8 +84,8 @@ export default function App() {
 
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
+  const [answers, setAnswers] = useState([])
   const [score, setScore] = useState(0)
-  const [quizFinished, setQuizFinished] = useState(false)
   const [activeSubject, setActiveSubject] = useState(null)
   const [selectedQuiz, setSelectedQuiz] = useState(null)
   useEffect(() => {
@@ -99,6 +99,7 @@ export default function App() {
     setScreen(parsedData.screen || "subject")
     setCurrentQuestion(parsedData.currentQuestion || 0)
     setScore(parsedData.score || 0)
+    setAnswers(parsedData.answers || [])
     setActiveSubject(parsedData.activeSubject || null)
 
     if (parsedData.selectedQuizId) {
@@ -129,7 +130,8 @@ export default function App() {
       currentQuestion,
       score,
       activeSubject,
-      selectedQuizId: selectedQuiz?.id || null
+      selectedQuizId: selectedQuiz?.id || null,
+      answers
 
     })
 
@@ -140,40 +142,89 @@ export default function App() {
   currentQuestion,
   score,
   activeSubject,
-  selectedQuiz
+  selectedQuiz,
+  answers
 ])
 
   const question = selectedQuiz?.questions[currentQuestion]
+  useEffect(() => {
 
+  if (answers[currentQuestion] !== undefined) {
+    setSelectedAnswer(answers[currentQuestion])
+  } else {
+    setSelectedAnswer(null)
+  }
+
+}, [currentQuestion, answers])
   const handleAnswer = (index) => {
 
-    if (selectedAnswer !== null) return
+  const updatedAnswers = [...answers]
 
-    setSelectedAnswer(index)
+  updatedAnswers[currentQuestion] = index
 
-    if (index === question.answer) {
-      setScore(score + 1)
+  setAnswers(updatedAnswers)
+
+  setSelectedAnswer(index)
+
+  let newScore = 0
+
+  updatedAnswers.forEach((answer, questionIndex) => {
+
+    if (
+      selectedQuiz.questions[questionIndex] &&
+      answer === selectedQuiz.questions[questionIndex].answer
+    ) {
+      newScore++
     }
-  }
+
+  })
+
+  setScore(newScore)
+
+}
 
   const handleNextQuestion = () => {
 
-    setSelectedAnswer(null)
+  if (currentQuestion < selectedQuiz.questions.length - 1) {
 
-    if (currentQuestion < selectedQuiz.questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
-    } else {
-      setQuizFinished(true)
-    }
+    const nextQuestion = currentQuestion + 1
+
+    setCurrentQuestion(nextQuestion)
+
+    setSelectedAnswer(
+      answers[nextQuestion] ?? null
+    )
+
+  } else {
+
+    setScreen("result")
   }
+
+}
+
+  const handlePreviousQuestion = () => {
+
+  if (currentQuestion > 0) {
+
+    const previousQuestion = currentQuestion - 1
+
+    setCurrentQuestion(previousQuestion)
+
+    setSelectedAnswer(
+      answers[previousQuestion] ?? null
+    )
+
+  }
+
+}
 
   const restartQuiz = () => {
 
     setCurrentQuestion(0)
     setSelectedAnswer(null)
     setScore(0)
-    setQuizFinished(false)
     setScreen("quiz")
+    setAnswers([])
   }
 
   return (
@@ -249,7 +300,7 @@ export default function App() {
                     setCurrentQuestion(0)
                     setSelectedAnswer(null)
                     setScore(0)
-                    setQuizFinished(false)
+                    setAnswers([])
                     setScreen("quiz")
                   }
 
@@ -475,30 +526,47 @@ export default function App() {
 
             </div>
 
-            <button
-              onClick={() => {
+            <div className="flex gap-4 mt-6">
 
-                if (currentQuestion < selectedQuiz.questions.length - 1) {
-                  handleNextQuestion()
-                } else {
-                  setScreen("result")
-                }
+              <button
+                onClick={handlePreviousQuestion}
+                disabled={currentQuestion === 0}
+                className="
+                  bg-gray-300
+                  px-6
+                  py-3
+                  rounded-2xl
+                  transition
+                  disabled:opacity-50
+                "
+              >
+                Previous
+              </button>
 
-              }}
-              className="
-                mt-6
-                bg-blue-600
-                text-white
-                px-6
-                py-3
-                rounded-2xl
-                hover:bg-blue-700
-                transition
-              "
-            >
-              Next Question
-            </button>
+              <button
+                onClick={() => {
 
+                  if (currentQuestion < selectedQuiz.questions.length - 1) {
+                    handleNextQuestion()
+                  } else {
+                    setScreen("result")
+                  }
+
+                }}
+                className="
+                  bg-blue-600
+                  text-white
+                  px-6
+                  py-3
+                  rounded-2xl
+                  hover:bg-blue-700
+                  transition
+                "
+              >
+                Next Question
+              </button>
+
+            </div>
           </div>
 
         </>
