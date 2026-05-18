@@ -232,26 +232,23 @@ export default function App() {
 
     <div className="min-h-screen bg-pink-200 p-5">
 
+          {/* LAST UPDATED */}
+      <div className="text-center mb-4">
+        <p className="text-gray-700 text-lg">
+          Last Updated: 19/05/2026 • 00:55:31
+        </p>
+      </div>
+
       {/* HEADER */}
-      <div className="flex justify-between items-start mb-10">
+      <div className="flex items-center gap-10 mb-10">
 
-        {/* LEFT */}
-        <div>
+        <h1 className="text-5xl font-black text-yellow-500 leading-none">
+          ÔN TẬP
+          <br />
+          THUI
+        </h1>
 
-          <p className="text-gray-700 text-lg mb-2">
-            Last Updated: 19/05/2026 • 00:55:31
-          </p>
-
-          <h1 className="text-5xl font-black text-yellow-500 leading-none">
-            ÔN TẬP
-            <br />
-            THUI
-          </h1>
-
-        </div>
-
-        {/* RIGHT */}
-        <div className="text-3xl font-bold text-blue-600 mt-6">
+        <div className="text-3xl font-bold text-blue-600">
           Mong cho mỗi ngày của Anri đều là mỗi ngày hạnh phúc
         </div>
 
