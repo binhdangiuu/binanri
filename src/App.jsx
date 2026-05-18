@@ -34,14 +34,14 @@ const subjects = [
   },
 
   {
-    id: "OOP",
+    id: "KINH TẾ CHÍNH TRỊ",
 
     quizzes: [
 
       {
-        id: "oop-main",
-        title: "OOP Quizzes",
-        questionsCount: 50,
+        id: "ktct-main",
+        title: "KTCT Chương 1",
+        questionsCount: 40,
         comingSoon: true
       }
 
