@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import questions from "./data/questions"
 
 const subjects = [
@@ -88,6 +88,61 @@ export default function App() {
   const [quizFinished, setQuizFinished] = useState(false)
   const [activeSubject, setActiveSubject] = useState(null)
   const [selectedQuiz, setSelectedQuiz] = useState(null)
+  useEffect(() => {
+
+  const savedData = localStorage.getItem("quiz-progress")
+
+  if (savedData) {
+
+    const parsedData = JSON.parse(savedData)
+
+    setScreen(parsedData.screen || "subject")
+    setCurrentQuestion(parsedData.currentQuestion || 0)
+    setScore(parsedData.score || 0)
+    setActiveSubject(parsedData.activeSubject || null)
+
+    if (parsedData.selectedQuizId) {
+
+      const foundQuiz = subjects
+        .flatMap(subject => subject.quizzes)
+        .find(quiz => quiz.id === parsedData.selectedQuizId)
+
+      if (foundQuiz) {
+        setSelectedQuiz(foundQuiz)
+      }
+
+    }
+
+  }
+
+}, [])
+  
+  useEffect(() => {
+
+  localStorage.setItem(
+
+    "quiz-progress",
+
+    JSON.stringify({
+
+      screen,
+      currentQuestion,
+      score,
+      activeSubject,
+      selectedQuizId: selectedQuiz?.id || null
+
+    })
+
+  )
+
+}, [
+  screen,
+  currentQuestion,
+  score,
+  activeSubject,
+  selectedQuiz
+])
+
   const question = selectedQuiz?.questions[currentQuestion]
 
   const handleAnswer = (index) => {
