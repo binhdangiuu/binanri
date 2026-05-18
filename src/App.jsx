@@ -146,8 +146,9 @@ export default function App() {
   answers
 ])
 
-  const question = selectedQuiz?.questions[currentQuestion]
+  const question = selectedQuiz?.questions?.[currentQuestion]
   useEffect(() => {
+
 
   if (answers[currentQuestion] !== undefined) {
     setSelectedAnswer(answers[currentQuestion])
@@ -155,7 +156,7 @@ export default function App() {
     setSelectedAnswer(null)
   }
 
-}, [currentQuestion, answers])
+}, [currentQuestion, answers, selectedQuiz])
   const handleAnswer = (index) => {
 
   const updatedAnswers = [...answers]
@@ -296,13 +297,16 @@ export default function App() {
                   onClick={() => {
 
                     if (!quiz.comingSoon) {
-                    setSelectedQuiz(quiz)
-                    setCurrentQuestion(0)
-                    setSelectedAnswer(null)
-                    setScore(0)
-                    setAnswers([])
-                    setScreen("quiz")
-                  }
+
+                      setSelectedQuiz(quiz)
+
+                      setCurrentQuestion(0)
+                      setSelectedAnswer(null)
+                      setAnswers([])
+                      setScore(0)
+
+                      setScreen("quiz")
+                    }
 
                   }}
                   className="
@@ -338,7 +342,7 @@ export default function App() {
 
       )}
       {/* QUIZ FINISHED */}
-      {screen === "result" && (
+      {screen === "result" && selectedQuiz && (
 
         <div className="bg-white p-10 rounded-[30px] shadow-xl text-center">
 
@@ -370,11 +374,16 @@ export default function App() {
       )}
 
       {/* QUIZ SCREEN */}
-      {screen === "quiz" && (
+      {screen === "quiz" && selectedQuiz && question && (
 
         <>
           <button
-            onClick={() => setScreen("subject")}
+            onClick={() => {
+
+              setScreen("subject")
+              setSelectedQuiz(null)
+
+            }}
             className="
               mb-6
               bg-white
@@ -417,17 +426,53 @@ export default function App() {
           </div>
 
           {/* Quiz Info */}
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
 
-            <p className="text-lg">
-             {selectedQuiz.title} · Question {currentQuestion + 1} of {selectedQuiz.questions.length}
-            </p>
+        <div>
+          <p className="text-lg font-semibold">
+            {selectedQuiz.title}
+          </p>
 
-            <div className="bg-white px-4 py-2 rounded-full border">
-              Score: {score} / {selectedQuiz.questions.length}
-            </div>
+          <p className="text-gray-600">
+            Question {currentQuestion + 1} of {selectedQuiz.questions.length}
+          </p>
+        </div>
 
-          </div>
+        <div className="flex gap-3">
+
+          <button
+            onClick={handlePreviousQuestion}
+            disabled={currentQuestion === 0}
+            className="
+              bg-gray-300
+              px-5
+              py-2
+              rounded-2xl
+              transition
+              disabled:opacity-50
+            "
+          >
+            ← Previous
+          </button>
+
+          <button
+            onClick={handleNextQuestion}
+            className="
+              bg-blue-600
+              text-white
+              px-5
+              py-2
+              rounded-2xl
+              hover:bg-blue-700
+              transition
+            "
+          >
+            Next →
+          </button>
+
+        </div>
+
+      </div>
 
           {/* Progress */}
           <div className="w-full h-3 bg-gray-300 rounded-full mb-10 overflow-hidden">
@@ -526,47 +571,7 @@ export default function App() {
 
             </div>
 
-            <div className="flex gap-4 mt-6">
-
-              <button
-                onClick={handlePreviousQuestion}
-                disabled={currentQuestion === 0}
-                className="
-                  bg-gray-300
-                  px-6
-                  py-3
-                  rounded-2xl
-                  transition
-                  disabled:opacity-50
-                "
-              >
-                Previous
-              </button>
-
-              <button
-                onClick={() => {
-
-                  if (currentQuestion < selectedQuiz.questions.length - 1) {
-                    handleNextQuestion()
-                  } else {
-                    setScreen("result")
-                  }
-
-                }}
-                className="
-                  bg-blue-600
-                  text-white
-                  px-6
-                  py-3
-                  rounded-2xl
-                  hover:bg-blue-700
-                  transition
-                "
-              >
-                Next Question
-              </button>
-
-            </div>
+          
           </div>
 
         </>
