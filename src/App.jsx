@@ -245,7 +245,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 19/05/2026 • 03:47:41
+          Last Updated: 19/05/2026 • 16:42:25
         </p>
       </div>
 
