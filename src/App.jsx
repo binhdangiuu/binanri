@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import questions from "./data/questions"
 import ktct1 from "./data/ktct1"
+import ktct2 from "./data/ktct2"
 const subjects = [
 
   {
@@ -44,6 +45,14 @@ const subjects = [
         questionsCount: ktct1.length,
         comingSoon: false,
         questions: ktct1
+      },
+
+      {
+        id: "ktct-2",
+        title: "KTCT Chương 2",
+        questionsCount: ktct2.length,
+        comingSoon: false,
+        questions: ktct2
       }
 
     ]
