@@ -3,6 +3,7 @@ import questions from "./data/questions"
 import ktct1 from "./data/ktct1"
 import ktct2 from "./data/ktct2"
 import ktct3 from "./data/ktct3"
+import ktct_quizzlet from "./data/quizzlet"
 const subjects = [
 
   {
@@ -62,7 +63,15 @@ const subjects = [
         questionsCount: ktct3.length,
         comingSoon: false,
         questions: ktct3
-      }
+      },
+
+      {
+        id: "ktct-quizzlet",
+        title: "KTCT Quizizz (Chương 2-6) từ Ngân hàng đề",
+        questionsCount: ktct_quizzlet.length,
+        comingSoon: false,
+        questions: ktct_quizzlet
+      },
 
     ]
   },
@@ -254,7 +263,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 20/05/2026 • 20:05:24 (KTCT Chương 3 Added)
+          Last Updated: 22/05/2026 • 21:24:40 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
         </p>
       </div>
 
