@@ -263,7 +263,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 22/05/2026 • 21:24:40 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
+          Last Updated: 22/05/2026 • 21:35:28 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
         </p>
       </div>
 
@@ -568,9 +568,21 @@ export default function App() {
           )}
 
           <h1 className="text-4xl font-black mb-8">
-            {question.question}
+            {question.link ? (
+              <a
+                href={question.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline hover:text-blue-800"
+              >
+                {question.question}
+              </a>
+            ) : (
+              question.question
+            )}
           </h1>
 
+          {question.options && (
             <div className="space-y-4">
 
               {question.options.map((answer, index) => (
@@ -605,10 +617,10 @@ export default function App() {
               ))}
 
             </div>
-
+)}
           
           </div>
-
+          
         </>
 
       )}
