@@ -263,7 +263,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 22/05/2026 • 21:35:28 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
+          Last Updated: 23/05/2026 • 17:08:02 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
         </p>
       </div>
 
@@ -277,7 +277,7 @@ export default function App() {
         </h1>
 
         <div className="text-3xl font-bold text-blue-600">
-          Mong cho mỗi ngày của Anri đều là mỗi ngày hạnh phúc
+          Hạnh phúc rồi sẽ đến, cho cậu, cho tôi, cho chúng ta.
         </div>
 
       </div>
