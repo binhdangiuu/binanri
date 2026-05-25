@@ -4,6 +4,7 @@ import ktct1 from "./data/ktct1"
 import ktct2 from "./data/ktct2"
 import ktct3 from "./data/ktct3"
 import ktct_quizzlet from "./data/quizzlet"
+import tree from "./data/tree"  
 const subjects = [
 
   {
@@ -82,10 +83,11 @@ const subjects = [
     quizzes: [
 
       {
-        id: "dsa-main",
-        title: "DSA Final Review",
-        questionsCount: 40,
-        comingSoon: true
+        id: "dsa-tree",
+        title: "DSA Tree",
+        questionsCount: tree.length,
+        comingSoon: false,
+        questions: tree
       },
 
       {
@@ -263,7 +265,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 23/05/2026 • 10:08:02 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
+          Last Updated: 25/05/2026 • 18:58:23 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
         </p>
       </div>
 
@@ -536,6 +538,20 @@ export default function App() {
               </p>
             </div>
 
+          )}
+
+          {question.code && (
+            <pre className="
+              bg-gray-900
+              text-green-400
+              p-5
+              rounded-2xl
+              overflow-x-auto
+              mb-6
+              text-sm
+            ">
+              <code>{question.code}</code>
+            </pre>
           )}
 
           {question.image && (
