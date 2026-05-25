@@ -187,15 +187,15 @@ export default function App() {
   }
 
 }, [currentQuestion, answers, selectedQuiz])
-  const handleAnswer = (index) => {
+  const handleAnswer = (key) => {
 
   const updatedAnswers = [...answers]
 
-  updatedAnswers[currentQuestion] = index
+  updatedAnswers[currentQuestion] = key
 
   setAnswers(updatedAnswers)
 
-  setSelectedAnswer(index)
+  setSelectedAnswer(key)
 
   let newScore = 0
 
@@ -583,20 +583,134 @@ export default function App() {
 
           )}
 
-          <h1 className="text-4xl font-black mb-8">
-            {question.link ? (
-              <a
-                href={question.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline hover:text-blue-800"
-              >
-                {question.question?.main || question.question}
-              </a>
-            ) : (
-              question.question?.main || question.question
+          {/* MAIN QUESTION */}
+            {question.main && (
+              <h1 className="text-4xl font-black mb-6 leading-relaxed">
+                {question.link ? (
+                  <a
+                    href={question.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800"
+                  >
+                    {question.main}
+                  </a>
+                ) : (
+                  question.main
+                )}
+              </h1>
             )}
-          </h1>
+
+            {/* TREE */}
+            {question.tree && (
+              <div className="mb-6 bg-purple-100 border border-purple-300 p-5 rounded-2xl">
+                <p className="font-bold text-purple-700 mb-2">
+                  Tree
+                </p>
+
+                <code className="text-lg">
+                  {question.tree}
+                </code>
+              </div>
+            )}
+
+            {/* SEQUENCE */}
+            {question.sequence && (
+              <div className="mb-6 bg-blue-100 border border-blue-300 p-5 rounded-2xl">
+                <p className="font-bold text-blue-700 mb-2">
+                  Sequence
+                </p>
+
+                <p className="text-lg">
+                  {question.sequence.join(", ")}
+                </p>
+              </div>
+            )}
+
+            {/* INSERTIONS */}
+            {question.insertions && (
+              <div className="mb-6 bg-green-100 border border-green-300 p-5 rounded-2xl">
+                <p className="font-bold text-green-700 mb-2">
+                  Insertions
+                </p>
+
+                <p className="text-lg">
+                  {question.insertions.join(", ")}
+                </p>
+              </div>
+            )}
+
+            {/* DELETIONS */}
+            {question.deletions && (
+              <div className="mb-6 bg-red-100 border border-red-300 p-5 rounded-2xl">
+                <p className="font-bold text-red-700 mb-2">
+                  Deletions
+                </p>
+
+                <p className="text-lg">
+                  {question.deletions.join(", ")}
+                </p>
+              </div>
+            )}
+
+            {/* OPERATIONS */}
+            {question.operations && (
+              <div className="mb-6 bg-orange-100 border border-orange-300 p-5 rounded-2xl">
+                <p className="font-bold text-orange-700 mb-3">
+                  Operations
+                </p>
+
+                <ul className="list-disc pl-6 space-y-2">
+                  {question.operations.map((op, index) => (
+                    <li key={index} className="text-lg">
+                      {op}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* STATEMENTS */}
+            {question.statements && (
+              <div className="mb-6 bg-gray-100 border border-gray-300 p-5 rounded-2xl">
+                <p className="font-bold text-gray-700 mb-3">
+                  Statements
+                </p>
+
+                <ul className="space-y-3">
+                  {question.statements.map((statement, index) => (
+                    <li
+                      key={index}
+                      className="text-lg leading-relaxed"
+                    >
+                      {statement}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* RULE */}
+            {question.rule && (
+              <div className="mb-6 bg-pink-100 border border-pink-300 p-5 rounded-2xl">
+                <p className="font-bold text-pink-700 mb-2">
+                  Rule
+                </p>
+
+                <p className="text-lg">
+                  {question.rule}
+                </p>
+              </div>
+            )}
+
+            {/* ASK */}
+            {question.ask && (
+              <div className="mb-8">
+                <p className="text-2xl font-bold text-blue-700">
+                  {question.ask}
+                </p>
+              </div>
+            )}
 
           {question.options && (
             <div className="space-y-4">
