@@ -591,21 +591,21 @@ export default function App() {
                 rel="noopener noreferrer"
                 className="text-blue-600 underline hover:text-blue-800"
               >
-                {question.question}
+                {question.question?.main || question.question}
               </a>
             ) : (
-              question.question
+              question.question?.main || question.question
             )}
           </h1>
 
           {question.options && (
             <div className="space-y-4">
 
-              {question.options.map((answer, index) => (
+              {Object.entries(question.options).map(([key, answer]) => (
 
                 <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
+                  key={key}
+                  onClick={() => handleAnswer(key)}
                   className={`
                     w-full
                     border
@@ -616,15 +616,19 @@ export default function App() {
 
                     ${
                       selectedAnswer !== null
-                        ? index === question.answer
+                        ? key === question.answer
                           ? "bg-green-200 border-green-600"
-                          : selectedAnswer === index
+                          : selectedAnswer === key
                           ? "bg-red-200 border-red-600"
                           : "bg-white"
                         : "bg-white hover:border-blue-500 hover:bg-blue-50"
                     }
                   `}
                 >
+
+                  <span className="font-bold mr-3">
+                    {key}.
+                  </span>
 
                   {answer}
 
@@ -633,7 +637,7 @@ export default function App() {
               ))}
 
             </div>
-)}
+          )}
           
           </div>
           

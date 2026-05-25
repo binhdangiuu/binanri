@@ -475,498 +475,564 @@ const tree = [
   {
     "id": 31,
     "chapter": "Tree",
-    "question": "This data is used for questions 30 to 31. Fill in Code 2 for the sumEvenDepthNodes function:",
-    "context": "template<typename E>\nint sumEvenDepthNodes(BNode<E>* root) {\n  if (root == nullptr) return 0;\n  std::queue<std::pair<BNode<E>*, int>> q;\n  q.push({root, 0});\n  int sum = 0;\n  while (!q.empty()) {\n    auto [current, depth] = q.front();\n    q.pop();\n    if (/* Code 1 */) {\n      // TODO\n    }\n    if (current->left()) {\n      /* Code 2 */\n    }\n    if (current->right()) {\n      // TODO\n    }\n  }\n  return sum;\n}",
-    "options": [
-      "q.push({current->left(), depth + 1});",
-      "q.push({current->right(), depth - 1});",
-      "q.push(current->left(), depth + 1);",
-      "q.push(current->right(), depth - 1);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in Code2 for the sumEvenDepthNodes function."
+    },
+    "options": {
+      "A": "q.push({current->left(), depth + 1});",
+      "B": "q.push({current->right(), depth - 1});",
+      "C": "q.push(current->left(), depth + 1);",
+      "D": "q.push(current->right(), depth - 1);"
+    },
+    "answer": "A"
   },
   {
     "id": 32,
     "chapter": "Tree",
-    "question": "This data is used for questions 32 to 36. The code is currently missing CODE 1 in the complete insert routine for an AVL Tree:",
-    "context": "Node* insert(Node* root, int key) {\n  if (!root) return new Node(key);\n  if (key < root->val)\n    root->left = insert(root->left, key);\n  else if (key > root->val)\n    /* CODE 1 */\n  else\n    return root;\n\n  updateHeight(root);\n  int balance = getBalance(root);\n\n  if (balance > 1 && key < root->left->val)\n    /* CODE 2 */\n  if (balance < -1 && key > root->right->val)\n    /* CODE 3 */\n  if (balance > 1 && key > root->left->val) {\n    /* CODE 4 */\n  }\n  if (balance < -1 && key < root->right->val) {\n    /* CODE 5 */\n  }\n  return root;\n}",
-    "options": [
-      "root->right = insert(root->right, key);",
-      "root->left = insert(root->right, key);",
-      "insert(root->right, key);",
-      "root->right = rotateLeft(root->right);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "The AVL insert routine is missing CODE 1."
+    },
+    "options": {
+      "A": "root->right = insert(root->right, key);",
+      "B": "root->left = insert(root->right, key);",
+      "C": "insert(root->right, key);",
+      "D": "root->right = rotateLeft(root->right);"
+    },
+    "answer": "A"
   },
   {
     "id": 33,
     "chapter": "Tree",
-    "question": "This data is used for questions 32 to 36. The code is currently missing CODE 2 (Left-Left condition) in the AVL tree insert function:",
-    "context": "Node* insert(Node* root, int key) {\n  if (!root) return new Node(key);\n  if (key < root->val)\n    root->left = insert(root->left, key);\n  else if (key > root->val)\n    root->right = insert(root->right, key);\n  else\n    return root;\n\n  updateHeight(root);\n  int balance = getBalance(root);\n\n  if (balance > 1 && key < root->left->val)\n    /* CODE 2 */\n  if (balance < -1 && key > root->right->val)\n    /* CODE 3 */\n  if (balance > 1 && key > root->left->val) {\n    /* CODE 4 */\n  }\n  if (balance < -1 && key < root->right->val) {\n    /* CODE 5 */\n  }\n  return root;\n}",
-    "options": [
-      "return rotateLeft(root);",
-      "return rotateRight(root);",
-      "rotateLeft(root);",
-      "rotateRight(root);"
-    ],
-    "answer": 1
+    "question": {
+      "main": "The AVL insert routine is missing CODE 2 for the Left-Left case."
+    },
+    "options": {
+      "A": "return rotateLeft(root);",
+      "B": "return rotateRight(root);",
+      "C": "rotateLeft(root);",
+      "D": "rotateRight(root);"
+    },
+    "answer": "B"
   },
   {
     "id": 34,
     "chapter": "Tree",
-    "question": "This data is used for questions 32 to 36. The code is currently missing CODE 3 (Right-Right condition) in the AVL tree insert function:",
-    "context": "Node* insert(Node* root, int key) {\n  if (!root) return new Node(key);\n  if (key < root->val)\n    root->left = insert(root->left, key);\n  else if (key > root->val)\n    root->right = insert(root->right, key);\n  else\n    return root;\n\n  updateHeight(root);\n  int balance = getBalance(root);\n\n  if (balance > 1 && key < root->left->val)\n    /* CODE 2 */\n  if (balance < -1 && key > root->right->val)\n    /* CODE 3 */\n  if (balance > 1 && key > root->left->val) {\n    /* CODE 4 */\n  }\n  if (balance < -1 && key < root->right->val) {\n    /* CODE 5 */\n  }\n  return root;\n}",
-    "options": [
-      "return rotateLeft(root);",
-      "return rotateRight(root);",
-      "rotateRight(root);",
-      "rotateLeft(root);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "The AVL insert routine is missing CODE 3 for the Right-Right case."
+    },
+    "options": {
+      "A": "return rotateLeft(root);",
+      "B": "return rotateRight(root);",
+      "C": "rotateRight(root);",
+      "D": "rotateLeft(root);"
+    },
+    "answer": "A"
   },
   {
     "id": 35,
     "chapter": "Tree",
-    "question": "This data is used for questions 32 to 36. The code is currently missing CODE 4 (Left-Right condition) in the AVL tree insert function:",
-    "context": "Node* insert(Node* root, int key) {\n  if (!root) return new Node(key);\n  if (key < root->val)\n    root->left = insert(root->left, key);\n  else if (key > root->val)\n    root->right = insert(root->right, key);\n  else\n    return root;\n\n  updateHeight(root);\n  int balance = getBalance(root);\n\n  if (balance > 1 && key < root->left->val)\n    /* CODE 2 */\n  if (balance < -1 && key > root->right->val)\n    /* CODE 3 */\n  if (balance > 1 && key > root->left->val) {\n    /* CODE 4 */\n  }\n  if (balance < -1 && key < root->right->val) {\n    /* CODE 5 */\n  }\n  return root;\n}",
-    "options": [
-      "root->left = rotateLeft(root->left); return rotateRight(root);",
-      "root->left = rotateRight(root->left); return rotateRight(root);",
-      "root->left = rotateRight(root->left); return rotateLeft(root);",
-      "root->left = rotateLeft(root->left); return rotateLeft(root);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "The AVL insert routine is missing CODE 4 for the Left-Right case."
+    },
+    "options": {
+      "A": "root->left = rotateLeft(root->left); return rotateRight(root);",
+      "B": "root->left = rotateRight(root->left); return rotateRight(root);",
+      "C": "root->left = rotateRight(root->left); return rotateLeft(root);",
+      "D": "root->left = rotateLeft(root->left); return rotateLeft(root);"
+    },
+    "answer": "A"
   },
   {
     "id": 36,
     "chapter": "Tree",
-    "question": "This data is used for questions 32 to 36. The code is currently missing CODE 5 (Right-Left condition) in the AVL tree insert function:",
-    "context": "Node* insert(Node* root, int key) {\n  if (!root) return new Node(key);\n  if (key < root->val)\n    root->left = insert(root->left, key);\n  else if (key > root->val)\n    root->right = insert(root->right, key);\n  else\n    return root;\n\n  updateHeight(root);\n  int balance = getBalance(root);\n\n  if (balance > 1 && key < root->left->val)\n    /* CODE 2 */\n  if (balance < -1 && key > root->right->val)\n    /* CODE 3 */\n  if (balance > 1 && key > root->left->val) {\n    /* CODE 4 */\n  }\n  if (balance < -1 && key < root->right->val) {\n    /* CODE 5 */\n  }\n  return root;\n}",
-    "options": [
-      "root->right = rotateRight(root->right); return rotateLeft(root);",
-      "root->right = rotateLeft(root->right); return rotateLeft(root);",
-      "root->right = rotateRight(root->right); return rotateRight(root);",
-      "root->right = rotateLeft(root->right); return rotateRight(root);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "The AVL insert routine is missing CODE 5 for the Right-Left case."
+    },
+    "options": {
+      "A": "root->right = rotateRight(root->right); return rotateLeft(root);",
+      "B": "root->right = rotateLeft(root->right); return rotateLeft(root);",
+      "C": "root->right = rotateRight(root->right); return rotateRight(root);",
+      "D": "root->right = rotateLeft(root->right); return rotateRight(root);"
+    },
+    "answer": "A"
   },
   {
     "id": 37,
     "chapter": "Tree",
-    "question": "Which of the following implementations correctly defines the rotateRight(Node* y) transformation inside an AVL Tree?",
-    "options": [
-      "Node *x = y->left; Node *T2 = x->right; x->right = y; y->left = T2; updateHeight(y); updateHeight(x); return x;",
-      "Node *x = y->right; Node *T2 = x->left; x->left = y; y->right = T2; updateHeight(y); updateHeight(x); return x;",
-      "Node *x = y->left; y->left = x->left; x->right = y; return x;",
-      "swap(y, y->left); return y;"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Which implementation correctly defines rotateRight(Node* y) in an AVL Tree?"
+    },
+    "options": {
+      "A": "Node *x = y->left; Node *T2 = x->right; x->right = y; y->left = T2; updateHeight(y); updateHeight(x); return x;",
+      "B": "Node *x = y->right; Node *T2 = x->left; x->left = y; y->right = T2; updateHeight(y); updateHeight(x); return x;",
+      "C": "Node *x = y->left; y->left = x->left; x->right = y; return x;",
+      "D": "swap(y, y->left); return y;"
+    },
+    "answer": "A"
   },
   {
     "id": 38,
     "chapter": "Tree",
-    "question": "Which of the following implementations correctly defines the rotateLeft(Node* x) transformation inside an AVL Tree?",
-    "options": [
-      "Node *y = x->right; Node *T2 = y->left; y->left = x; x->right = T2; updateHeight(x); updateHeight(y); return y;",
-      "Node *y = x->left; Node *T2 = y->right; y->right = x; x->left = T2; updateHeight(x); updateHeight(y); return y;",
-      "Node *y = x->right; x->right = y->right; y->left = x; return y;",
-      "swap(x, x->right); return x;"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Which implementation correctly defines rotateLeft(Node* x) in an AVL Tree?"
+    },
+    "options": {
+      "A": "Node *y = x->right; Node *T2 = y->left; y->left = x; x->right = T2; updateHeight(x); updateHeight(y); return y;",
+      "B": "Node *y = x->left; Node *T2 = y->right; y->right = x; x->left = T2; updateHeight(x); updateHeight(y); return y;",
+      "C": "Node *y = x->right; x->right = y->right; y->left = x; return y;",
+      "D": "swap(x, x->right); return x;"
+    },
+    "answer": "A"
   },
   {
     "id": 39,
     "chapter": "Tree",
-    "question": "Given an initially empty AVL tree, insert the keys in this exact order: 10, 20, 30, 40, 50, 60, 70, 25. After all balanced insertions, what does the layout resemble?",
-    "options": [
-      "50 (20 (10, 30 (25, 40)), 60 (null, 70))",
-      "40 (20 (10, 30, 25), 60 (50, 70))",
-      "30 (20 (10, 25), 50 (40, 60, 70))",
-      "60 (40 (20 (10, 25), 50), 70)"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Insert keys 10, 20, 30, 40, 50, 60, 70, 25 into an empty AVL tree. Which structure is correct after balancing?"
+    },
+    "options": {
+      "A": "50 (20 (10, 30 (25, 40)), 60 (null, 70))",
+      "B": "40 (20 (10, 30, 25), 60 (50, 70))",
+      "C": "30 (20 (10, 25), 50 (40, 60, 70))",
+      "D": "60 (40 (20 (10, 25), 50), 70)"
+    },
+    "answer": "B"
   },
   {
     "id": 40,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Fill in the code blanks CODE 1 and CODE 2 in the left rotation function (rotateLeft) of the Rope structure below:",
-    "context": "Node *rotateLeft(Node *x) {\n  Node *y = x->right;\n  /* CODE 1 */\n  y->left = x;\n  /* CODE 2 */\n  return y;\n}",
-    "options": [
-      "CODE 1: x->right = y->left; CODE 2: updateHeight(x);",
-      "CODE 1: x->right = y; CODE 2: updateHeight(y);",
-      "CODE 1: x->left = y->right; CODE 2: updateHeight(x);",
-      "CODE 1: y->left = x->right; CODE 2: updateHeight(y);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in CODE 1 and CODE 2 in rotateLeft() for the Rope structure."
+    },
+    "options": {
+      "A": "CODE 1: x->right = y->left; CODE 2: updateHeight(x);",
+      "B": "CODE 1: x->right = y; CODE 2: updateHeight(y);",
+      "C": "CODE 1: x->left = y->right; CODE 2: updateHeight(x);",
+      "D": "CODE 1: y->left = x->right; CODE 2: updateHeight(y);"
+    },
+    "answer": "A"
   },
   {
     "id": 41,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Complete the missing sections within the charAt method for this Rope structure:",
-    "context": "char charAt(Node *node, int index) const {\n  if (node->isLeaf()) {\n    /* CODE 1 */\n  }\n  if (/* CODE 2 */)\n    // TODO\n  else\n    return charAt(node->right, /* CODE 3 */);\n}",
-    "options": [
-      "CODE 1: return node->data[index]; CODE 2: index < node->weight; CODE 3: index - node->weight;",
-      "CODE 1: return node->data[index]; CODE 2: index > node->weight; CODE 3: index + node->weight;",
-      "CODE 1: return node->data[index]; CODE 2: index <= node->weight; CODE 3: index - node->weight;",
-      "CODE 1: return node->data[index]; CODE 2: index >= node->weight; CODE 3: index + node->weight;"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Complete the missing sections within the Rope charAt() method."
+    },
+    "options": {
+      "A": "CODE 1: return node->data[index]; CODE 2: index < node->weight; CODE 3: index - node->weight;",
+      "B": "CODE 1: return node->data[index]; CODE 2: index > node->weight; CODE 3: index + node->weight;",
+      "C": "CODE 1: return node->data[index]; CODE 2: index <= node->weight; CODE 3: index - node->weight;",
+      "D": "CODE 1: return node->data[index]; CODE 2: index >= node->weight; CODE 3: index + node->weight;"
+    },
+    "answer": "A"
   },
   {
     "id": 42,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Analyze the following logic that utilizes a for loop to search for the first occurrence of a target character in the Rope structure:\nchar findFirstChar(const Rope &rope, char target) {\n  int n = rope.length();\n  for (int i = 0; i < n; ++i) {\n    if (rope.charAt(i) == target) return rope.charAt(i);\n  }\n  return '\\0';\n}\nWhat is the time complexity of the findFirstChar function?",
-    "options": [
-      "O(n)",
-      "O(n log n)",
-      "O(log n)",
-      "O(1)"
-    ],
-    "answer": 1
+    "question": {
+      "main": "What is the time complexity of findFirstChar() using Rope.charAt()?"
+    },
+    "options": {
+      "A": "O(n)",
+      "B": "O(n log n)",
+      "C": "O(log n)",
+      "D": "O(1)"
+    },
+    "answer": "B"
   },
   {
     "id": 43,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Provide the missing expression for CODE 1 within the Rope's helper substring routine:",
-    "context": "string substringHelper(Node *node, int start, int end) const {\n  if (end < leftWeight) {\n    // TODO\n  } else if (start >= leftWeight) {\n    // TODO\n  } else {\n    return /* TODO */ + /* CODE 1 */;\n  }\n}\nstring Rope::substring(int start, int len) const {\n  return substringHelper(root, start, start + len - 1);\n}",
-    "options": [
-      "substringHelper(node->right, 0, end - leftWeight);",
-      "substringHelper(node->right, 0, end - leftWeight - 1);",
-      "substringHelper(node->left, start, leftWeight - 1);",
-      "substringHelper(node->left, start, leftWeight);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Provide CODE 1 inside the Rope substringHelper() routine."
+    },
+    "options": {
+      "A": "substringHelper(node->right, 0, end - leftWeight);",
+      "B": "substringHelper(node->right, 0, end - leftWeight - 1);",
+      "C": "substringHelper(node->left, start, leftWeight - 1);",
+      "D": "substringHelper(node->left, start, leftWeight);"
+    },
+    "answer": "A"
   },
   {
     "id": 44,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Provide the missing expression for CODE 1 within the Rope split routine:",
-    "context": "void Rope::split(Node *node, int index, Node *&outLeft, Node *&outRight) {\n  if (node->isLeaf()) {\n    if (index <= 0) // TODO\n    else if (index >= (int)node->data.size()) {\n      outLeft = node->data; outRight = nullptr;\n    } else {\n      outLeft = // TODO;\n      outRight = /* CODE 1 */;\n    }\n    return;\n  }\n}",
-    "options": [
-      "node->data = node->data.substr(index); node->weight = node->data.size();",
-      "new Node(node->data.substr(0, index));",
-      "new Node(node->data);",
-      "new Node(node->data.substr(index + 1, node->data.size() - index));"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Provide CODE 1 inside the Rope split() routine."
+    },
+    "options": {
+      "A": "node->data = node->data.substr(index); node->weight = node->data.size();",
+      "B": "new Node(node->data.substr(0, index));",
+      "C": "new Node(node->data);",
+      "D": "new Node(node->data.substr(index + 1, node->data.size() - index));"
+    },
+    "answer": "A"
   },
   {
     "id": 45,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Provide the missing expression for CODE 2 within the Rope split routine:",
-    "context": "void Rope::split(Node *node, int index, Node *&outLeft, Node *&outRight) {\n  if (index > node->weight) {\n    Node *rightL = nullptr, *rightR = nullptr;\n    /* CODE 2 */\n    /* CODE 3 */\n    outRight = rightR;\n  }\n}",
-    "options": [
-      "split(node->right, index - node->weight, rightL, rightR);",
-      "split(node->right, index, rightL, rightR);",
-      "split(node->left, index, rightL, rightR);",
-      "split(node->left, index - node->weight, rightL, rightR);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Provide CODE 2 inside the Rope split() routine."
+    },
+    "options": {
+      "A": "split(node->right, index - node->weight, rightL, rightR);",
+      "B": "split(node->right, index, rightL, rightR);",
+      "C": "split(node->left, index, rightL, rightR);",
+      "D": "split(node->left, index - node->weight, rightL, rightR);"
+    },
+    "answer": "A"
   },
   {
     "id": 46,
     "chapter": "Tree",
-    "question": "This data is used for questions 40 to 46. Provide the missing expression for CODE 3 within the Rope split routine:",
-    "context": "void Rope::split(Node *node, int index, Node *&outLeft, Node *&outRight) {\n  if (index > node->weight) {\n    Node *rightL = nullptr, *rightR = nullptr;\n    /* CODE 2 */\n    /* CODE 3 */\n    outRight = rightR;\n  }\n}",
-    "options": [
-      "outLeft = concatNodes(node->left, rightL);",
-      "outLeft = concatNodes(rightL, node->left);",
-      "outLeft = concatNodes(node->right, rightL);",
-      "outLeft = concatNodes(rightR, node->right);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Provide CODE 3 inside the Rope split() routine."
+    },
+    "options": {
+      "A": "outLeft = concatNodes(node->left, rightL);",
+      "B": "outLeft = concatNodes(rightL, node->left);",
+      "C": "outLeft = concatNodes(node->right, rightL);",
+      "D": "outLeft = concatNodes(rightR, node->right);"
+    },
+    "answer": "A"
   },
   {
     "id": 47,
     "chapter": "Tree",
-    "question": "This data is used for questions 47 to 50. The code is currently missing CODE 1 in the Zig-Zig Right-Right scenario of a Splay Tree implementation:",
-    "context": "class SplayTree {\n  // Splay implementation\n};",
-    "options": [
-      "rotateLeft(g); rotateLeft(p);",
-      "rotateRight(g); rotateRight(p);",
-      "rotateLeft(p); rotateRight(g);",
-      "rotateRight(p); rotateLeft(g);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in CODE 1 for the Zig-Zig Right-Right case in a Splay Tree."
+    },
+    "options": {
+      "A": "rotateLeft(g); rotateLeft(p);",
+      "B": "rotateRight(g); rotateRight(p);",
+      "C": "rotateLeft(p); rotateRight(g);",
+      "D": "rotateRight(p); rotateLeft(g);"
+    },
+    "answer": "A"
   },
   {
     "id": 48,
     "chapter": "Tree",
-    "question": "This data is used for questions 47 to 50. The code is currently missing CODE 2 in the Zig-Zag Right-Left scenario of a Splay Tree implementation:",
-    "context": "class SplayTree {\n  // Splay implementation\n};",
-    "options": [
-      "rotateLeft(p); rotateRight(g);",
-      "rotateRight(p); rotateRight(g);",
-      "rotateLeft(g); rotateLeft(p);",
-      "rotateRight(g); rotateLeft(p);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in CODE 2 for the Zig-Zag Right-Left case in a Splay Tree."
+    },
+    "options": {
+      "A": "rotateLeft(p); rotateRight(g);",
+      "B": "rotateRight(p); rotateRight(g);",
+      "C": "rotateLeft(g); rotateLeft(p);",
+      "D": "rotateRight(g); rotateLeft(p);"
+    },
+    "answer": "A"
   },
   {
     "id": 49,
     "chapter": "Tree",
-    "question": "This data is used for questions 47 to 50. The code is currently missing CODE 3 in the Zig-Zag Left-Right scenario of a Splay Tree implementation:",
-    "context": "class SplayTree {\n  // Splay implementation\n};",
-    "options": [
-      "rotateRight(g); rotateRight(p);",
-      "rotateLeft(g); rotateLeft(p);",
-      "rotateRight(p); rotateLeft(g);",
-      "rotateLeft(p); rotateRight(g);"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in CODE 3 for the Zig-Zag Left-Right case in a Splay Tree."
+    },
+    "options": {
+      "A": "rotateRight(g); rotateRight(p);",
+      "B": "rotateLeft(g); rotateLeft(p);",
+      "C": "rotateRight(p); rotateLeft(g);",
+      "D": "rotateLeft(p); rotateRight(g);"
+    },
+    "answer": "A"
   },
   {
     "id": 50,
     "chapter": "Tree",
-    "question": "This data is used for questions 47 to 50. The code is currently missing CODE 4 at the very end of the insert routine for a Splay Tree:",
-    "context": "void insert(int key) {\n  if (!root) { root = new Node(key); return; }\n  Node* cur = root; Node* parent = NULL;\n  while (cur) {\n    parent = cur;\n    if (key < cur->key) cur = cur->left;\n    else if (key > cur->key) cur = cur->right;\n  }\n  Node* newNode = new Node(key);\n  newNode->parent = parent;\n  if (key < parent->key) parent->left = newNode;\n  else parent->right = newNode;\n  /* CODE 4 */\n}",
-    "options": [
-      "splay(newNode);",
-      "splay(parent);",
-      "splay(root);",
-      "return;"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in CODE 4 at the end of the Splay Tree insert routine."
+    },
+    "options": {
+      "A": "splay(newNode);",
+      "B": "splay(parent);",
+      "C": "splay(root);",
+      "D": "return;"
+    },
+    "answer": "A"
   },
   {
     "id": 51,
     "chapter": "Tree",
-    "question": "Given an initially empty AVL tree, insert the keys sequentially in this exact order: 15, 20, 25, 30, 10, 5. After performing all necessary rebalancing rotations, which node becomes the absolute root of the final tree?",
-    "options": [
-      "15",
-      "20",
-      "25",
-      "30"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Insert keys 15, 20, 25, 30, 10, 5 into an AVL tree. Which node becomes the final root?"
+    },
+    "options": {
+      "A": "15",
+      "B": "20",
+      "C": "25",
+      "D": "30"
+    },
+    "answer": "B"
   },
   {
     "id": 52,
     "chapter": "Tree",
-    "question": "In an AVL tree, if a node has a balance factor of +2 and its left child node has a balance factor of -1, which rotation scenario must be applied to rebalance the tree?",
-    "options": [
-      "Single Right Rotation (LL)",
-      "Single Left Rotation (RR)",
-      "Left-Right Rotation (LR)",
-      "Right-Left Rotation (RL)"
-    ],
-    "answer": 2
+    "question": {
+      "main": "In an AVL tree, if a node has balance factor +2 and its left child has balance factor -1, which rotation is required?"
+    },
+    "options": {
+      "A": "Single Right Rotation (LL)",
+      "B": "Single Left Rotation (RR)",
+      "C": "Left-Right Rotation (LR)",
+      "D": "Right-Left Rotation (RL)"
+    },
+    "answer": "C"
   },
   {
     "id": 53,
     "chapter": "Tree",
-    "question": "A Binary Search Tree (BST) yields the following Pre-order traversal sequence: 10, 5, 3, 7, 15, 12, 18. Which of the following sequences represents the correct Post-order traversal of this tree?",
-    "options": [
-      "3, 5, 7, 10, 12, 15, 18",
-      "3, 7, 5, 12, 18, 15, 10",
-      "18, 15, 12, 10, 7, 5, 3",
-      "7, 3, 5, 18, 12, 15, 10"
-    ],
-    "answer": 1
+    "question": {
+      "main": "A BST has pre-order traversal: 10, 5, 3, 7, 15, 12, 18. What is the post-order traversal?"
+    },
+    "options": {
+      "A": "3, 5, 7, 10, 12, 15, 18",
+      "B": "3, 7, 5, 12, 18, 15, 10",
+      "C": "18, 15, 12, 10, 7, 5, 3",
+      "D": "7, 3, 5, 18, 12, 15, 10"
+    },
+    "answer": "B"
   },
   {
     "id": 54,
     "chapter": "Tree",
-    "question": "What is the maximum number of entries (keys) that a single internal node (excluding the root) can contain within a B-Tree of order m = 4?",
-    "options": [
-      "4",
-      "3",
-      "2",
-      "1"
-    ],
-    "answer": 1
+    "question": {
+      "main": "What is the maximum number of keys inside an internal node of a B-Tree with order m = 4?"
+    },
+    "options": {
+      "A": "4",
+      "B": "3",
+      "C": "2",
+      "D": "1"
+    },
+    "answer": "B"
   },
   {
     "id": 55,
     "chapter": "Tree",
-    "question": "Which of the following architectural constraints is MANDATORY for any standard valid B-Tree?",
-    "options": [
-      "All leaf nodes must reside at exactly the same level (depth)",
-      "Every internal node must contain exactly m/2 keys",
-      "A B-Tree can only store integer data types",
-      "The root node cannot have fewer than m/2 child subtrees"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Which architectural constraint is mandatory for any valid B-Tree?"
+    },
+    "options": {
+      "A": "All leaf nodes must be at the same level",
+      "B": "Every internal node must contain exactly m/2 keys",
+      "C": "A B-Tree can only store integer data",
+      "D": "The root node cannot have fewer than m/2 children"
+    },
+    "answer": "A"
   },
   {
     "id": 56,
     "chapter": "Tree",
-    "question": "In a Rope data structure, how is the 'weight' property of an internal node defined?",
-    "options": [
-      "The total length of the string character sequence located in its right subtree",
-      "The total length of the string sequence in its left subtree plus the current node length",
-      "The sum of the lengths of all string character segments contained within the leaf nodes of its left subtree",
-      "The maximum geometrical height calculated from that specific node down to the deepest leaf"
-    ],
-    "answer": 2
+    "question": {
+      "main": "In a Rope structure, how is the weight of an internal node defined?"
+    },
+    "options": {
+      "A": "Length of the right subtree",
+      "B": "Length of left subtree plus current node",
+      "C": "Total length of all leaf strings in the left subtree",
+      "D": "Maximum height from the node to deepest leaf"
+    },
+    "answer": "C"
   },
   {
     "id": 57,
     "chapter": "Tree",
-    "question": "Suppose the charAt(index) method on a Rope data structure is currently processing an internal node X with weight = 8. If the method is invoked with index = 10, what is the next logical step in the traversal?",
-    "options": [
-      "Throw an index out of bounds error exception",
-      "Traverse to the left child node of X keeping the query index as 10",
-      "Traverse to the right child node of X adjusting the query index to 10 - 8 = 2",
-      "Immediately return the character located at string position 2 inside node X"
-    ],
-    "answer": 2
+    "question": {
+      "main": "In Rope.charAt(), node X has weight = 8 and index = 10. What happens next?"
+    },
+    "options": {
+      "A": "Throw out-of-bounds error",
+      "B": "Traverse left with index 10",
+      "C": "Traverse right with index 2",
+      "D": "Return character at position 2 in X"
+    },
+    "answer": "C"
   },
   {
     "id": 58,
     "chapter": "Tree",
-    "question": "What is the core operational feature that distinguishes a Splay Tree from a standard Binary Search Tree?",
-    "options": [
-      "It maintains a strict structural height balance limit of 1 after insertions",
-      "It moves the most recently accessed or inserted node to the root position via a sequence of specialized rotations",
-      "It reorders all existing nodes in descending sequence after any deletion step",
-      "It splits a node into two equal parts whenever the key count exceeds the order threshold"
-    ],
-    "answer": 1
+    "question": {
+      "main": "What feature distinguishes a Splay Tree from a normal BST?"
+    },
+    "options": {
+      "A": "Strict balance factor enforcement",
+      "B": "Recently accessed node is moved to the root via rotations",
+      "C": "All nodes are reordered descending after deletion",
+      "D": "Nodes split when key count exceeds threshold"
+    },
+    "answer": "B"
   },
   {
     "id": 59,
     "chapter": "Tree",
-    "question": "In a Splay Tree structure, under what specific node layout condition is the 'Zig-Zag' rotation step performed?",
-    "options": [
-      "Node x is the left child of parent p, and p is the left child of grandparent g",
-      "Node x has no grandparent node g, and parent p is the absolute root of the tree",
-      "Node x is the right child of parent p, and p is the left child of grandparent g (or vice versa)",
-      "Node x is the right child of parent p, and p is the right child of grandparent g"
-    ],
-    "answer": 2
+    "question": {
+      "main": "When is the Zig-Zag operation performed in a Splay Tree?"
+    },
+    "options": {
+      "A": "x is left child of p and p is left child of g",
+      "B": "x has no grandparent",
+      "C": "x is right child of p and p is left child of g (or vice versa)",
+      "D": "x is right child of p and p is right child of g"
+    },
+    "answer": "C"
   },
   {
     "id": 60,
     "chapter": "Tree",
-    "question": "What is the amortized time complexity for Search, Insert, and Delete operations on a Splay Tree containing n elements?",
-    "options": [
-      "O(1)",
-      "O(log n)",
-      "O(n)",
-      "O(n log n)"
-    ],
-    "answer": 1
+    "question": {
+      "main": "What is the amortized complexity of Search, Insert, and Delete in a Splay Tree?"
+    },
+    "options": {
+      "A": "O(1)",
+      "B": "O(log n)",
+      "C": "O(n)",
+      "D": "O(n log n)"
+    },
+    "answer": "B"
   },
-  {
+   {
     "id": 61,
     "chapter": "Tree",
-    "question": "Identify the missing statement required to safely compute the height of an AVL node:\nint updateHeight(Node* node) {\n  if (!node) return 0;\n  node->height = 1 + _______;\n}",
-    "options": [
-      "max(node->left->height, node->right->height)",
-      "max(getHeight(node->left), getHeight(node->right))",
-      "getHeight(node->left) + getHeight(node->right)",
-      "getHeight(node) + 1"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Identify the missing statement required to safely compute the height of an AVL node."
+    },
+    "context": "int updateHeight(Node* node) {\n  if (!node) return 0;\n  node->height = 1 + _______;\n}",
+    "options": {
+      "A": "max(node->left->height, node->right->height)",
+      "B": "max(getHeight(node->left), getHeight(node->right))",
+      "C": "getHeight(node->left) + getHeight(node->right)",
+      "D": "getHeight(node) + 1"
+    },
+    "answer": "B"
   },
   {
     "id": 62,
     "chapter": "Tree",
-    "question": "When deleting an internal node with two active child subtrees from a Binary Search Tree (BST), what is the standard value replacement methodology used to preserve structural sorting integrity?",
-    "options": [
-      "Completely purge the entire right subtree branch below that node",
-      "Replace its value with the minimum key found in the left child node",
-      "Replace its value with either its In-order Predecessor (maximum of left subtree) or its In-order Successor (minimum of right subtree)",
-      "Shift the root node of the entire tree down into the slot of the deleted element"
-    ],
-    "answer": 2
+    "question": {
+      "main": "When deleting an internal node with two child subtrees from a BST, what replacement strategy preserves BST order?"
+    },
+    "options": {
+      "A": "Delete the entire right subtree",
+      "B": "Replace with the minimum value in the left child",
+      "C": "Replace with the In-order Predecessor or In-order Successor",
+      "D": "Replace with the root of the tree"
+    },
+    "answer": "C"
   },
   {
     "id": 63,
     "chapter": "Tree",
-    "question": "A Complete Binary Tree contains exactly 15 nodes. Assuming the root node resides at height = 0, what is the exact total height of this tree?",
-    "options": [
-      "3",
-      "4",
-      "15",
-      "2"
-    ],
-    "answer": 0
+    "question": {
+      "main": "A Complete Binary Tree contains exactly 15 nodes. Assuming the root is at height 0, what is the total height of the tree?"
+    },
+    "options": {
+      "A": "3",
+      "B": "4",
+      "C": "15",
+      "D": "2"
+    },
+    "answer": "A"
   },
   {
     "id": 64,
     "chapter": "Tree",
-    "question": "In a Rope structure, how does the concatNodes(Node* R1, Node* R2) helper method merge two separate string trees into one single tree?",
-    "options": [
-      "It allocates a new parent internal node, assigning R1 as its left pointer and R2 as its right pointer",
-      "It locates the terminal leaf of R1 and overwrites its memory space with a full copy of R2's data",
-      "It shifts all individual nodes belonging to tree R2 so they become left-side child nodes of R1",
-      "It applies a left rotation to R1 and attaches R2 into the empty position"
-    ],
-    "answer": 0
+    "question": {
+      "main": "In a Rope structure, how does concatNodes(Node* R1, Node* R2) merge two ropes?"
+    },
+    "options": {
+      "A": "Create a new parent node with R1 as left child and R2 as right child",
+      "B": "Copy all data from R2 into the last leaf of R1",
+      "C": "Move all nodes of R2 into the left subtree of R1",
+      "D": "Rotate R1 left and attach R2"
+    },
+    "answer": "A"
   },
   {
     "id": 65,
     "chapter": "Tree",
-    "question": "What structural modification takes place in a Splay Tree when a search query is executed for a key that does not exist anywhere in the tree?",
-    "options": [
-      "The tree structure remains entirely unchanged and simply outputs a NULL pointer",
-      "The execution routine stalls into an infinite looping runtime state",
-      "The last non-NULL node accessed along the search path before failure is splayed to the root position",
-      "The old root node is systematically stripped out of the tree structure"
-    ],
-    "answer": 2
+    "question": {
+      "main": "What happens in a Splay Tree when searching for a key that does not exist?"
+    },
+    "options": {
+      "A": "The tree remains unchanged",
+      "B": "The algorithm enters an infinite loop",
+      "C": "The last accessed non-null node is splayed to the root",
+      "D": "The old root is removed"
+    },
+    "answer": "C"
   },
   {
     "id": 66,
     "chapter": "Tree",
-    "question": "In an internal node of a B-Tree with order m = 5 (excluding the root node), what is the minimum number of child subtrees it must maintain?",
-    "options": [
-      "2",
-      "3",
-      "5",
-      "4"
-    ],
-    "answer": 1
+    "question": {
+      "main": "In a B-Tree of order m = 5, what is the minimum number of child subtrees required for an internal node (excluding the root)?"
+    },
+    "options": {
+      "A": "2",
+      "B": "3",
+      "C": "5",
+      "D": "4"
+    },
+    "answer": "B"
   },
   {
     "id": 67,
     "chapter": "Tree",
-    "question": "Which statement correctly evaluates the performative trade-offs between an AVL Tree and a Red-Black Tree?",
-    "options": [
-      "An AVL Tree is more strictly balanced than a Red-Black Tree, yielding faster lookups but requiring higher modification overhead during insertion/deletion",
-      "A Red-Black Tree maintains a strictly shorter total height profile than an AVL Tree for any matching dataset",
-      "Both structures degrade to a worst-case time complexity of O(n) during intensive lookups",
-      "An AVL Tree belongs to a class of multi-way search structures rather than binary search formats"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Which statement correctly compares AVL Trees and Red-Black Trees?"
+    },
+    "options": {
+      "A": "AVL Trees are more strictly balanced, giving faster lookups but more insertion/deletion overhead",
+      "B": "Red-Black Trees always have smaller height than AVL Trees",
+      "C": "Both structures degrade to O(n) for all lookups",
+      "D": "AVL Trees are multi-way search trees"
+    },
+    "answer": "A"
   },
   {
     "id": 68,
     "chapter": "Tree",
-    "question": "Complete the balance factor query function for an AVL tree node execution:\nint getBalance(Node* n) {\n  if (!n) return 0;\n  return _______;\n}",
-    "options": [
-      "getHeight(n->left) - getHeight(n->right)",
-      "getHeight(n->right) + getHeight(n->left)",
-      "n->left->height / n->right->height",
-      "max(getHeight(n->left), getHeight(n->right))"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Complete the AVL balance factor function."
+    },
+    "context": "int getBalance(Node* n) {\n  if (!n) return 0;\n  return _______;\n}",
+    "options": {
+      "A": "getHeight(n->left) - getHeight(n->right)",
+      "B": "getHeight(n->right) + getHeight(n->left)",
+      "C": "n->left->height / n->right->height",
+      "D": "max(getHeight(n->left), getHeight(n->right))"
+    },
+    "answer": "A"
   },
   {
     "id": 69,
     "chapter": "Tree",
-    "question": "If elements are inserted into a standard unweighted Binary Search Tree (BST) in a strictly pre-sorted order (e.g., 1, 2, 3, 4, 5), what is the resulting state of the tree structure?",
-    "options": [
-      "The tree achieves a perfectly symmetrical log-height balance profile",
-      "The tree degenerates into a linear Skewed Tree structure, driving operational complexity up to O(n)",
-      "The structure triggers a proactive multi-way node split routine similar to a B-Tree setup",
-      "The tree rejects the entry sequence entirely and triggers a structural violation alert"
-    ],
-    "answer": 1
+    "question": {
+      "main": "If values are inserted into a standard BST in sorted order (1, 2, 3, 4, 5), what happens?"
+    },
+    "options": {
+      "A": "The tree becomes perfectly balanced",
+      "B": "The tree degenerates into a skewed linear structure",
+      "C": "The tree automatically performs B-Tree splits",
+      "D": "The tree rejects the sequence"
+    },
+    "answer": "B"
   },
   {
     "id": 70,
     "chapter": "Tree",
-    "question": "In the split method of a Rope structure, when the specified splitting index matches the weight value of the target internal node exactly, what is the most efficient pointer assignment to form outLeft and outRight?",
-    "options": [
-      "outLeft = node->left; outRight = node->right;",
-      "Execute a recursive traversal down to all individual leaf nodes to split the data array directly",
-      "outLeft = nullptr; outRight = node;",
-      "Allocate two entirely new independent Rope instances from scratch based on text streaming"
-    ],
-    "answer": 0
+    "question": {
+      "main": "In a Rope split() operation, if the split index exactly equals the weight of the target internal node, what is the optimal pointer assignment?"
+    },
+    "options": {
+      "A": "outLeft = node->left; outRight = node->right;",
+      "B": "Recursively split all leaf nodes",
+      "C": "outLeft = nullptr; outRight = node;",
+      "D": "Create two entirely new Rope structures"
+    },
+    "answer": "A"
   }
 ]
 export default tree;
