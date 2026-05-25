@@ -1,371 +1,476 @@
 const tree = [
-  {
+   {
     "id": 1,
     "chapter": "Tree",
-    "question": "Consider the following scenarios when inserting keys into an empty AVL tree:\na. Inserting the keys 3, 2, 1 sequentially. The tree becomes Left-heavy.\nb. Inserting the keys 1, 2, 3 sequentially. The tree becomes Right-heavy.\nc. Inserting the keys 3, 1, 2 sequentially. The tree becomes Left-Right-heavy.\nd. Inserting the keys 1, 3, 2 sequentially. The tree becomes Right-Left-heavy.\nHow many of the statements above are correct?",
-    "options": [
-      "1",
-      "2",
-      "3",
-      "4"
-    ],
-    "answer": 3
+    "question": {
+      "main": "Consider the following scenarios when inserting keys into an empty AVL tree:",
+      "statements": [
+        "a. Insert 3, 2, 1 sequentially → the tree becomes Left-heavy.",
+        "b. Insert 1, 2, 3 sequentially → the tree becomes Right-heavy.",
+        "c. Insert 3, 1, 2 sequentially → the tree becomes Left-Right-heavy.",
+        "d. Insert 1, 3, 2 sequentially → the tree becomes Right-Left-heavy."
+      ],
+      "ask": "How many statements are correct?"
+    },
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "4"
+    },
+    "answer": "C"
   },
   {
     "id": 2,
     "chapter": "Tree",
-    "question": "Given an initially empty AVL tree, insert the keys sequentially: 1, 2, 3. After rebalancing, the resulting tree structure is 2 (1, 3).\na. Inserting 3, 2, 1: the tree is Left-heavy and needs a Right rotation.\nb. Inserting 1, 2, 3: the tree is Right-heavy and needs a Left rotation.\nc. Inserting 3, 1, 2: the tree is Left-Right-heavy and needs a Left-Right rotation.\nd. Inserting 1, 3, 2: the tree is Right-Left-heavy and needs a Right-Left rotation.\nHow many of the statements above are correct?",
-    "options": [
-      "1",
-      "2",
-      "3",
-      "4"
-    ],
-    "answer": 3
+    "question": {
+      "main": "Given an initially empty AVL tree, insert the keys sequentially: 1, 2, 3. After rebalancing, the resulting tree becomes 2(1,3).",
+      "statements": [
+        "a. Insert 3, 2, 1 → Left-heavy → Right rotation.",
+        "b. Insert 1, 2, 3 → Right-heavy → Left rotation.",
+        "c. Insert 3, 1, 2 → Left-Right-heavy → LR rotation.",
+        "d. Insert 1, 3, 2 → Right-Left-heavy → RL rotation."
+      ],
+      "ask": "How many statements are correct?"
+    },
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "4"
+    },
+    "answer": "C"
   },
   {
     "id": 3,
     "chapter": "Tree",
-    "question": "Given an initial AVL tree represented as: 5(3(1,4),6). Delete node 6 from the tree. After rebalancing (prioritize handling LL before LR if multiple options exist), the resulting AVL tree is:",
-    "options": [
-      "3 (1, 5 (4, N))",
-      "4 (3 (1, N), 5)",
-      "3 (1, 4)",
-      "5 (3 (1, N), 4)"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Given AVL tree:",
+      "tree": "5(3(1,4),6)",
+      "ask": "Delete node 6. After rebalancing (prioritize LL before LR), what is the resulting AVL tree?"
+    },
+    "options": {
+      "A": "3(1,5(4,N))",
+      "B": "4(3(1,N),5)",
+      "C": "3(1,4)",
+      "D": "5(3(1,N),4)"
+    },
+    "answer": "A"
   },
   {
     "id": 4,
     "chapter": "Tree",
-    "question": "Insert the following elements sequentially into an initially empty AVL tree in the exact order given: 10, 15, 12, 5, 2, 1, 11, 4, 17, 18. Which of the following representations describes the correct final AVL tree?",
-    "options": [
-      "5(2(1,4), 12(10,17(15,18)))",
-      "5(2(1,4), 12(10(NULL, 11), 17(15,18)))",
-      "5(2(1,4), 11(10, 17(15, 18)))",
-      "5(1(NULL, 2(4)), 12(10, 17(15,18)))"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Insert the following keys into an empty AVL tree in order:",
+      "sequence": [10, 15, 12, 5, 2, 1, 11, 4, 17, 18],
+      "ask": "Which representation is the correct final AVL tree?"
+    },
+    "options": {
+      "A": "5(2(1,4),12(10,17(15,18)))",
+      "B": "5(2(1,4),12(10(NULL,11),17(15,18)))",
+      "C": "5(2(1,4),11(10,17(15,18)))",
+      "D": "5(1(NULL,2(4)),12(10,17(15,18)))"
+    },
+    "answer": "B"
   },
   {
     "id": 5,
     "chapter": "Tree",
-    "question": "Continuing from the previous AVL tree: 5(2(1,4), 12(10(NULL, 11), 17(15,18))). Perform two successive deletions: delete node 2, then delete node 4. The final resulting AVL tree is:",
-    "options": [
-      "5(1,12(10(NULL,11), 17(15,18)))",
-      "12(5(1,10(NULL,11)), 17(15,18))",
-      "5(1, 11(10, 17(15,18)))",
-      "12(5(1,11), 17(15,18))"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Starting from AVL tree:",
+      "tree": "5(2(1,4),12(10(NULL,11),17(15,18)))",
+      "operations": [
+        "Delete node 2",
+        "Delete node 4"
+      ],
+      "ask": "What is the final AVL tree?"
+    },
+    "options": {
+      "A": "5(1,12(10(NULL,11),17(15,18)))",
+      "B": "12(5(1,10(NULL,11)),17(15,18))",
+      "C": "5(1,11(10,17(15,18)))",
+      "D": "12(5(1,11),17(15,18))"
+    },
+    "answer": "B"
   },
   {
     "id": 6,
     "chapter": "Tree",
-    "question": "How do you verify whether a binary tree is a valid Binary Search Tree (BST)?",
-    "options": [
-      "Perform a pre-order traversal and check if the resulting sequence is sorted",
-      "Perform an in-order traversal and check if the resulting sequence is sorted",
-      "Perform a post-order traversal and check if the resulting sequence is sorted",
-      "Perform a breadth-first traversal and check if the resulting sequence is sorted"
-    ],
-    "answer": 1
+    "question": {
+      "main": "How do you verify whether a binary tree is a valid Binary Search Tree (BST)?"
+    },
+    "options": {
+      "A": "Perform a pre-order traversal and check if the sequence is sorted",
+      "B": "Perform an in-order traversal and check if the sequence is sorted",
+      "C": "Perform a post-order traversal and check if the sequence is sorted",
+      "D": "Perform a breadth-first traversal and check if the sequence is sorted"
+    },
+    "answer": "B"
   },
   {
     "id": 7,
     "chapter": "Tree",
-    "question": "In practice, when a database contains an extremely large number of records and each record contains multiple different keys, which solution is most appropriate to meet the search requirements efficiently under real-time processing conditions?",
-    "options": [
-      "Utilize multiple AVL or Red-Black balanced trees",
-      "Utilize multiple B-Trees or their advanced variants",
-      "Use a hashing algorithm where the key is a heuristic function combining all the sub-keys",
-      "Utilize a k-D tree"
-    ],
-    "answer": 3
+    "question": {
+      "main": "When a database contains a huge number of records and multiple keys per record, which solution is most suitable for efficient real-time searching?"
+    },
+    "options": {
+      "A": "Use multiple AVL or Red-Black trees",
+      "B": "Use multiple B-Trees or advanced B-Tree variants",
+      "C": "Use hashing with heuristic combined keys",
+      "D": "Use a k-D tree"
+    },
+    "answer": "D"
   },
   {
     "id": 8,
     "chapter": "Tree",
-    "question": "What is a disadvantage of using a Splay Tree?",
-    "options": [
-      "The splay operation is difficult to execute",
-      "There are no significant disadvantages",
-      "The splay tree performs redundant, unnecessary splay steps even when a node is only read",
-      "The height of a splay tree can become linear when elements are accessed in sequentially increasing order"
-    ],
-    "answer": 3
+    "question": {
+      "main": "What is a disadvantage of using a Splay Tree?"
+    },
+    "options": {
+      "A": "The splay operation is difficult to execute",
+      "B": "There are no disadvantages",
+      "C": "The tree performs unnecessary splay operations even for read access",
+      "D": "The height can become linear with sequential accesses"
+    },
+    "answer": "D"
   },
   {
     "id": 9,
     "chapter": "Tree",
-    "question": "What is the worst-case time complexity of inserting n^2 elements into an existing AVL tree that initially contains n elements?",
-    "options": [
-      "O(n log2 n)",
-      "O(n^2 log2 n)",
-      "O(n^3)",
-      "O(n^3 log2 n)"
-    ],
-    "answer": 1
+    "question": {
+      "main": "What is the worst-case time complexity of inserting n² elements into an AVL tree initially containing n elements?"
+    },
+    "options": {
+      "A": "O(n log n)",
+      "B": "O(n² log n)",
+      "C": "O(n³)",
+      "D": "O(n³ log n)"
+    },
+    "answer": "B"
   },
   {
     "id": 10,
     "chapter": "Tree",
-    "question": "Choose the correct statement:",
-    "options": [
-      "A Binary Search Tree always guarantees search operations with a time complexity of O(log2 N)",
-      "A Heap allows searching with a time complexity of O(log2 N)",
-      "Hashing algorithms allow searching with a time complexity of O(1) in the best case",
-      "All three of the statements above are correct"
-    ],
-    "answer": 2
+    "question": {
+      "main": "Choose the correct statement."
+    },
+    "options": {
+      "A": "A BST always guarantees O(log N) search",
+      "B": "A Heap supports O(log N) search",
+      "C": "Hashing allows O(1) search in the best case",
+      "D": "All statements above are correct"
+    },
+    "answer": "C"
   },
   {
     "id": 11,
     "chapter": "Tree",
-    "question": "In a binary tree, the depth of a node is defined as:",
-    "options": [
-      "The number of direct child nodes of that node",
-      "The number of direct parent nodes of that node",
-      "The number of direct and indirect child nodes of that node",
-      "The number of direct and indirect ancestor nodes above that node"
-    ],
-    "answer": 3
+    "question": {
+      "main": "In a binary tree, the depth of a node is defined as:"
+    },
+    "options": {
+      "A": "The number of direct child nodes",
+      "B": "The number of direct parent nodes",
+      "C": "The number of direct and indirect child nodes",
+      "D": "The number of direct and indirect ancestor nodes above it"
+    },
+    "answer": "D"
   },
   {
     "id": 12,
     "chapter": "Tree",
-    "question": "How do you find the Lowest Common Ancestor (LCA) of two nodes in a Binary Search Tree (BST)?",
-    "options": [
-      "Start from the root and traverse the tree until both nodes reside on the same side of the current node",
-      "Start from the root and traverse the tree until both nodes equal the current node",
-      "Start from the root and traverse the tree until both nodes are either strictly smaller or strictly larger than the current node",
-      "Start from the root and traverse the tree until the two nodes diverge into different sides of the current node, or one of them matches the current node itself"
-    ],
-    "answer": 3
+    "question": {
+      "main": "How do you find the Lowest Common Ancestor (LCA) of two nodes in a BST?"
+    },
+    "options": {
+      "A": "Traverse until both nodes are on the same side",
+      "B": "Traverse until both nodes equal the current node",
+      "C": "Traverse until both nodes are strictly smaller or larger",
+      "D": "Traverse until the nodes diverge to different sides or one matches the current node"
+    },
+    "answer": "D"
   },
   {
     "id": 13,
     "chapter": "Tree",
-    "question": "Suppose the numbers 7, 5, 1, 8, 3, 6, 0, 9, 4, 2 are inserted sequentially into an initially empty Binary Search Tree (BST). What is the result of an in-order traversal of this tree?",
-    "options": [
-      "0123456789",
-      "0243165987",
-      "7510324689",
-      "9864230157"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Insert the following keys into an empty BST:",
+      "sequence": [7, 5, 1, 8, 3, 6, 0, 9, 4, 2],
+      "ask": "What is the in-order traversal result?"
+    },
+    "options": {
+      "A": "0123456789",
+      "B": "0243165987",
+      "C": "7510324689",
+      "D": "9864230157"
+    },
+    "answer": "A"
   },
   {
     "id": 14,
     "chapter": "Tree",
-    "question": "Construct a B-Tree of order 3 using the following sequence of keys: (18, 4, 2, 46, 48, 29, 30). Which of the following sets of keys, if inserted into the resulting B-Tree, will trigger a node split?",
-    "options": [
-      "1, 32, 53",
-      "1, 19, 20",
-      "1, 19, 32",
-      "1, 19, 32, 53"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Construct a B-Tree of order 3 using keys:",
+      "sequence": [18, 4, 2, 46, 48, 29, 30],
+      "ask": "Which inserted set of keys will trigger a node split?"
+    },
+    "options": {
+      "A": "1, 32, 53",
+      "B": "1, 19, 20",
+      "C": "1, 19, 32",
+      "D": "1, 19, 32, 53"
+    },
+    "answer": "B"
   },
   {
     "id": 15,
     "chapter": "Tree",
-    "question": "Which of the following statements regarding a B-Tree of order m is INCORRECT?",
-    "options": [
-      "The root node has at most m subtrees",
-      "All leaf nodes reside on exactly the same level",
-      "The keys inside the root node are kept in sorted order",
-      "An internal node has at least m/2+1 non-empty subtrees (if m is even) or m/2-1 non-empty subtrees (if m is odd)"
-    ],
-    "answer": 3
+    "question": {
+      "main": "Which statement about a B-Tree of order m is INCORRECT?"
+    },
+    "options": {
+      "A": "The root has at most m subtrees",
+      "B": "All leaf nodes are on the same level",
+      "C": "Keys in the root are sorted",
+      "D": "An internal node has at least m/2+1 children if m is even, or m/2-1 if m is odd"
+    },
+    "answer": "D"
   },
   {
     "id": 16,
     "chapter": "Tree",
-    "question": "Insert the following numbers sequentially into an empty AVL tree: 50, 23, 70, 19, 29, 65, 83, 25, 35, 53. Once insertion is complete, delete the following numbers from the tree one by one: 19, 23, 83. List the nodes located at level 2 from left to right in the final tree.",
-    "options": [
-      "25, 29, 50, 70",
-      "25, 35, 53, 70",
-      "25, 50, 53, 70",
-      "29, 35, 65, 70"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Insert sequentially into an AVL tree:",
+      "insertions": [50, 23, 70, 19, 29, 65, 83, 25, 35, 53],
+      "deletions": [19, 23, 83],
+      "ask": "List the nodes at level 2 from left to right in the final tree."
+    },
+    "options": {
+      "A": "25, 29, 50, 70",
+      "B": "25, 35, 53, 70",
+      "C": "25, 50, 53, 70",
+      "D": "29, 35, 65, 70"
+    },
+    "answer": "B"
   },
   {
     "id": 17,
     "chapter": "Tree",
-    "question": "What is the maximum number of entries (keys) contained within a B-Tree of order m=4 and a height of 4?",
-    "options": [
-      "255",
-      "160",
-      "127",
-      "64"
-    ],
-    "answer": 0
+    "question": {
+      "main": "What is the maximum number of keys in a B-Tree of order 4 and height 4?"
+    },
+    "options": {
+      "A": "255",
+      "B": "160",
+      "C": "127",
+      "D": "64"
+    },
+    "answer": "A"
   },
   {
     "id": 18,
     "chapter": "Tree",
-    "question": "Which of the following assertions about an AVL tree is FALSE?\ni) An AVL tree is a Binary Search Tree (BST)\nii) An AVL tree is a balanced tree\niii) An AVL tree must be a complete or nearly complete binary tree",
-    "options": [
-      "Assertion i) is incorrect",
-      "Assertion ii) is incorrect",
-      "Assertion iii) is incorrect",
-      "None of the assertions are incorrect"
-    ],
-    "answer": 2
+    "question": {
+      "main": "Which assertion about AVL trees is FALSE?",
+      "statements": [
+        "i) AVL tree is a BST",
+        "ii) AVL tree is balanced",
+        "iii) AVL tree must be complete or nearly complete"
+      ]
+    },
+    "options": {
+      "A": "i is incorrect",
+      "B": "ii is incorrect",
+      "C": "iii is incorrect",
+      "D": "None are incorrect"
+    },
+    "answer": "C"
   },
   {
     "id": 19,
     "chapter": "Tree",
-    "question": "Which of the following claims about a B-Tree of order m are TRUE?\ni) Every node must contain at least 2 non-empty child subtrees\nii) Each node can hold at most m - 1 entries (keys)\niii) All leaf nodes are located at the exact same level",
-    "options": [
-      "Only i) and iii) are true",
-      "Only i) and ii) are true",
-      "Only ii) and iii) are true",
-      "All three claims are true"
-    ],
-    "answer": 2
+    "question": {
+      "main": "Which statements about a B-Tree of order m are TRUE?",
+      "statements": [
+        "i) Every node must contain at least 2 non-empty child subtrees",
+        "ii) Each node can hold at most m - 1 keys",
+        "iii) All leaf nodes are on the same level"
+      ]
+    },
+    "options": {
+      "A": "Only i and iii",
+      "B": "Only i and ii",
+      "C": "Only ii and iii",
+      "D": "All are true"
+    },
+    "answer": "C"
   },
   {
     "id": 20,
     "chapter": "Tree",
-    "question": "In a valid AVL tree, the balance factor (the height difference between the left and right subtrees) of every node must fall strictly within the interval:",
-    "options": [
-      "[0, 1]",
-      "[-1, 1]",
-      "[1, 2]",
-      "[-2, 2]"
-    ],
-    "answer": 1
+    "question": {
+      "main": "In a valid AVL tree, the balance factor of every node must be within:"
+    },
+    "options": {
+      "A": "[0,1]",
+      "B": "[-1,1]",
+      "C": "[1,2]",
+      "D": "[-2,2]"
+    },
+    "answer": "B"
   },
   {
     "id": 21,
     "chapter": "Tree",
-    "question": "A Binary Search Tree produces the following post-order traversal sequence: 28, 30, 29, 33, 35, 34, 31. Find the sum of all keys located on the leaf nodes of this tree.",
-    "options": [
-      "126",
-      "127",
-      "125",
-      "128"
-    ],
-    "answer": 0
+    "question": {
+      "main": "A BST has the following post-order traversal:",
+      "sequence": [28, 30, 29, 33, 35, 34, 31],
+      "ask": "Find the sum of all leaf node keys."
+    },
+    "options": {
+      "A": "126",
+      "B": "127",
+      "C": "125",
+      "D": "128"
+    },
+    "answer": "A"
   },
   {
     "id": 22,
     "chapter": "Tree",
-    "question": "Given an AVL tree represented in parenthesis notation as follows: 44(38(31(27,34), 41(39,N)),109(89, 114)) where N is NULL. Sequentially delete nodes 109 and 89 from the tree (always substitute with the largest element from the left subtree during deletion). Find the sum of the keys of all nodes located at Level 0 and Level 1.",
-    "options": [
-      "83",
-      "81",
-      "85",
-      "84"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Given AVL tree:",
+      "tree": "44(38(31(27,34),41(39,N)),109(89,114))",
+      "operations": [
+        "Delete 109",
+        "Delete 89"
+      ],
+      "rule": "Always replace using the largest element in the left subtree.",
+      "ask": "Find the sum of keys at level 0 and level 1."
+    },
+    "options": {
+      "A": "83",
+      "B": "81",
+      "C": "85",
+      "D": "84"
+    },
+    "answer": "A"
   },
   {
     "id": 23,
     "chapter": "Tree",
-    "question": "Complete the missing section in the code below for inserting a new value into an AVL tree. Which function call should replace the blank space? Assume standard specifications from lecture slides and labs apply.",
-    "context": "Node insert (Node*& subroot, const T& value) {\n  Node* pNew = new Node(value);\n  if (!subroot) return pNew;\n  if (value < subroot->data) {\n    subroot->pLeft = insert(subroot->pLeft, value);\n  } else if (value > subroot->data) {\n    subroot->pRight = insert(subroot->pRight, value);\n  } else return subroot;\n\n  int balance = getBalance(subroot);\n  if (balance > 1 && value < subroot->pLeft->data) return /* Code */;\n}",
-    "options": [
-      "rotateLeft(subroot)",
-      "rotateLeft(subroot->pLeft)",
-      "rotateRight(subroot)",
-      "rotateRight(root)"
-    ],
-    "answer": 2
+    "question": {
+      "main": "Fill in the missing code for AVL insertion.",
+      "context": "if (balance > 1 && value < subroot->pLeft->data) return /* Code */;"
+    },
+    "options": {
+      "A": "rotateLeft(subroot)",
+      "B": "rotateLeft(subroot->pLeft)",
+      "C": "rotateRight(subroot)",
+      "D": "rotateRight(root)"
+    },
+    "answer": "C"
   },
   {
     "id": 24,
     "chapter": "Tree",
-    "question": "This data is used for questions 24 to 25. Select the appropriate code to fill in the blank space Code1 in the checkNode function so that the isComplete function can determine if the binary tree with the root node 'root' is a complete tree.",
-    "context": "template<typename E>\nbool checkNode(BNode<E> *node, bool &flag, Queue<BNode<E>> &q) {\n  if (node) {\n    if (/*Code1*/) return false;\n    /*Code2*/;\n  } else flag = true;\n  return true;\n}\n\ntemplate<typename E>\nbool isComplete(BNode<E> *root) {\n  if (root == nullptr) return true;\n  Queue<BNode<E>*> q;\n  q.push(root);\n  bool flag = false;\n\n  while (!q.empty()) {\n    BNode<E> *temp = q.front();\n    q.pop();\n\n    if (!checkNode(temp->left(), flag, q))\n      return false;\n\n    if (!checkNode(temp->right(), flag, q))\n      return false;\n  }\n}",
-    "options": [
-      "flag",
-      "flag == false",
-      "q.empty()",
-      "q.empty() == false"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in Code1 for checking whether a binary tree is complete.",
+      "context": "if (/* Code1 */) return false;"
+    },
+    "options": {
+      "A": "flag",
+      "B": "flag == false",
+      "C": "q.empty()",
+      "D": "q.empty() == false"
+    },
+    "answer": "A"
   },
   {
     "id": 25,
     "chapter": "Tree",
-    "question": "This data is used for questions 24 to 25. Select the appropriate code to fill in the blank space Code2 in the checkNode function:",
-    "context": "template<typename E>\nbool checkNode(BNode<E> *node, bool &flag, Queue<BNode<E>> &q) {\n  if (node) {\n    if (/*Code1*/) return false;\n    /*Code2*/;\n  } else flag = true;\n  return true;\n}\n\ntemplate<typename E>\nbool isComplete(BNode<E> *root) {\n  if (root == nullptr) return true;\n  Queue<BNode<E>*> q;\n  q.push(root);\n  bool flag = false;\n\n  while (!q.empty()) {\n    BNode<E> *temp = q.front();\n    q.pop();\n\n    if (!checkNode(temp->left(), flag, q))\n      return false;\n\n    if (!checkNode(temp->right(), flag, q))\n      return false;\n  }\n}",
-    "options": [
-      "node = q.front()",
-      "flag = false",
-      "q.push(node)",
-      "q.pop()"
-    ],
-    "answer": 2
+    "question": {
+      "main": "Fill in Code2 for the complete tree checking function.",
+      "context": "/* Code2 */;"
+    },
+    "options": {
+      "A": "node = q.front()",
+      "B": "flag = false",
+      "C": "q.push(node)",
+      "D": "q.pop()"
+    },
+    "answer": "C"
   },
   {
     "id": 26,
     "chapter": "Tree",
-    "question": "Duplicate keys are strictly prohibited. Complete the missing section in the code to finalize the bstInsert function which inserts a node into a Binary Search Tree:",
-    "context": "TreeNode bstInsert(TreeNode root, int val) {\n  if (root == nullptr) { return new TreeNode(val); }\n  TreeNode curr = root;\n  TreeNode prev = nullptr;\n  while (curr != nullptr) {\n    prev = curr;\n    // Code\n  }\n  if (val < prev->val) { prev->left = new TreeNode(val); }\n  else { prev->right = new TreeNode(val); }\n  return root;\n}",
-    "options": [
-      "if (val < curr->val) curr = curr->left; else curr = curr->right;",
-      "if (val < curr->val) curr = curr->left; else if (val > curr->val) curr = curr->right; else break;",
-      "if (val < curr->val) curr = curr->left; else if (val > curr->val) curr = curr->right;",
-      "if (val < curr->val) curr = curr->left; else if (val > curr->val) curr = curr->right; else return root;"
-    ],
-    "answer": 3
+    "question": {
+      "main": "Complete the missing code in bstInsert(). Duplicate keys are not allowed."
+    },
+    "options": {
+      "A": "if (val < curr->val) curr = curr->left; else curr = curr->right;",
+      "B": "if (val < curr->val) curr = curr->left; else if (val > curr->val) curr = curr->right; else break;",
+      "C": "if (val < curr->val) curr = curr->left; else if (val > curr->val) curr = curr->right;",
+      "D": "if (val < curr->val) curr = curr->left; else if (val > curr->val) curr = curr->right; else return root;"
+    },
+    "answer": "D"
   },
   {
     "id": 27,
     "chapter": "Tree",
-    "question": "Fill in the Code blank space to complete the function that returns the total count of leaf nodes in the binary tree below:",
-    "context": "int countL0(Node *root) {\n  if (root == NULL) return 0;\n  // Code\n  return countL0(root->left) + countL0(root->right);\n}",
-    "options": [
-      "if (!root->left && !root->right) return 1;",
-      "if (!root->left || !root->right) return 1;",
-      "if (!root->left && !root->right) return 0;",
-      "if (!root->left || !root->right) return 0;"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in the code to count leaf nodes in a binary tree."
+    },
+    "options": {
+      "A": "if (!root->left && !root->right) return 1;",
+      "B": "if (!root->left || !root->right) return 1;",
+      "C": "if (!root->left && !root->right) return 0;",
+      "D": "if (!root->left || !root->right) return 0;"
+    },
+    "answer": "A"
   },
   {
     "id": 28,
     "chapter": "Tree",
-    "question": "This data is used for questions 28 to 29. Fill in Code1 to complete the function that finds the lowest common ancestor (lowestCommonAncestor) of two nodes p and q:",
-    "context": "template<typename E>\nBNode<E> lowestCommonAncestor(BNode<E> root, BNode<E> p, BNode<E> q) {\n  if (root == nullptr || root == p || root == q) return root;\n  BNode<E> left = /* Code 1 */;\n  BNode<E> right = /* TODO */;\n  if (left != nullptr && right != nullptr) return root;\n  return /* Code 2 */;\n}",
-    "options": [
-      "lowestCommonAncestor(root->left(), p->left, q)",
-      "lowestCommonAncestor(root->left(), p, q)",
-      "lowestCommonAncestor(root->left(), p, q->left)",
-      "lowestCommonAncestor(root->left(), p->left, q->left)"
-    ],
-    "answer": 1
+    "question": {
+      "main": "Fill in Code1 for lowestCommonAncestor()."
+    },
+    "options": {
+      "A": "lowestCommonAncestor(root->left(), p->left, q)",
+      "B": "lowestCommonAncestor(root->left(), p, q)",
+      "C": "lowestCommonAncestor(root->left(), p, q->left)",
+      "D": "lowestCommonAncestor(root->left(), p->left, q->left)"
+    },
+    "answer": "B"
   },
   {
     "id": 29,
     "chapter": "Tree",
-    "question": "This data is used for questions 28 to 29. Fill in Code2 to complete the lowestCommonAncestor function of two nodes p and q:",
-    "context": "template<typename E>\nBNode<E> lowestCommonAncestor(BNode<E> root, BNode<E> p, BNode<E> q) {\n  if (root == nullptr || root == p || root == q) return root;\n  BNode<E> left = /* Code 1 */;\n  BNode<E> right = /* TODO */;\n  if (left != nullptr && right != nullptr) return root;\n  return /* Code 2 */;\n}",
-    "options": [
-      "left != nullptr ? left : right",
-      "left == nullptr ? left : right",
-      "left != nullptr ? right : left",
-      "all three choices are incorrect"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in Code2 for lowestCommonAncestor()."
+    },
+    "options": {
+      "A": "left != nullptr ? left : right",
+      "B": "left == nullptr ? left : right",
+      "C": "left != nullptr ? right : left",
+      "D": "all three are incorrect"
+    },
+    "answer": "A"
   },
   {
     "id": 30,
     "chapter": "Tree",
-    "question": "This data is used for questions 30 to 31. Fill in Code 1 for the function that checks the depth of each node (If the depth of a node is an even number, accumulate its value into a running sum):",
-    "context": "template<typename E>\nint sumEvenDepthNodes(BNode<E>* root) {\n  if (root == nullptr) return 0;\n  std::queue<std::pair<BNode<E>*, int>> q;\n  q.push({root, 0});\n  int sum = 0;\n  while (!q.empty()) {\n    auto [current, depth] = q.front();\n    q.pop();\n    if (/* Code 1 */) {\n      // TODO\n    }\n    if (current->left()) {\n      /* Code 2 */\n    }\n    if (current->right()) {\n      // TODO\n    }\n  }\n  return sum;\n}",
-    "options": [
-      "depth % 2 == 0",
-      "depth % 2 != 0",
-      "depth == 0",
-      "depth != 0"
-    ],
-    "answer": 0
+    "question": {
+      "main": "Fill in Code1 for sumEvenDepthNodes()."
+    },
+    "options": {
+      "A": "depth % 2 == 0",
+      "B": "depth % 2 != 0",
+      "C": "depth == 0",
+      "D": "depth != 0"
+    },
+    "answer": "A"
   },
   {
     "id": 31,
