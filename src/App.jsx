@@ -265,7 +265,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 25/05/2026 • 18:58:23 (DSA Tree Added)
+          Last Updated: 25/05/2026 • 19:05:16 (DSA Tree is in progress, will be available soon!)
         </p>
       </div>
 
