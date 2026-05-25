@@ -4,10 +4,12 @@ import ktct1 from "./data/ktct1"
 import ktct2 from "./data/ktct2"
 import ktct3 from "./data/ktct3"
 import ktct_quizzlet from "./data/quizzlet"
-import tree from "./data/tree"  
+import tree from "./data/tree"
+
 const subjects = [
 
   {
+
     id: "KTMT",
 
     quizzes: [
@@ -108,6 +110,7 @@ const subjects = [
   }
 
 ]
+
 export default function App() {
 
   const [screen, setScreen] = useState("subject")
@@ -118,139 +121,93 @@ export default function App() {
   const [score, setScore] = useState(0)
   const [activeSubject, setActiveSubject] = useState(null)
   const [selectedQuiz, setSelectedQuiz] = useState(null)
+
   useEffect(() => {
+    const savedData = localStorage.getItem("quiz-progress")
 
-  const savedData = localStorage.getItem("quiz-progress")
+    if (savedData) {
+      const parsedData = JSON.parse(savedData)
 
-  if (savedData) {
+      setScreen(parsedData.screen || "subject")
+      setCurrentQuestion(parsedData.currentQuestion || 0)
+      setScore(parsedData.score || 0)
+      setAnswers(parsedData.answers || [])
+      setActiveSubject(parsedData.activeSubject || null)
 
-    const parsedData = JSON.parse(savedData)
+      if (parsedData.selectedQuizId) {
+        const foundQuiz = subjects
+          .flatMap(subject => subject.quizzes)
+          .find(quiz => quiz.id === parsedData.selectedQuizId)
 
-    setScreen(parsedData.screen || "subject")
-    setCurrentQuestion(parsedData.currentQuestion || 0)
-    setScore(parsedData.score || 0)
-    setAnswers(parsedData.answers || [])
-    setActiveSubject(parsedData.activeSubject || null)
-
-    if (parsedData.selectedQuizId) {
-
-      const foundQuiz = subjects
-        .flatMap(subject => subject.quizzes)
-        .find(quiz => quiz.id === parsedData.selectedQuizId)
-
-      if (foundQuiz) {
-        setSelectedQuiz(foundQuiz)
+        if (foundQuiz) {
+          setSelectedQuiz(foundQuiz)
+        }
       }
-
     }
+  }, [])
 
-  }
-
-}, [])
-  
   useEffect(() => {
-
-  localStorage.setItem(
-
-    "quiz-progress",
-
-    JSON.stringify({
-
-      screen,
-      currentQuestion,
-      score,
-      activeSubject,
-      selectedQuizId: selectedQuiz?.id || null,
-      answers
-
-    })
-
-  )
-
-}, [
-  screen,
-  currentQuestion,
-  score,
-  activeSubject,
-  selectedQuiz,
-  answers
-])
+    localStorage.setItem(
+      "quiz-progress",
+      JSON.stringify({
+        screen,
+        currentQuestion,
+        score,
+        activeSubject,
+        selectedQuizId: selectedQuiz?.id || null,
+        answers
+      })
+    )
+  }, [screen, currentQuestion, score, activeSubject, selectedQuiz, answers])
 
   const question = selectedQuiz?.questions?.[currentQuestion]
+  const q = question?.question
+
   useEffect(() => {
-
-
-  if (answers[currentQuestion] !== undefined) {
-    setSelectedAnswer(answers[currentQuestion])
-  } else {
-    setSelectedAnswer(null)
-  }
-
-}, [currentQuestion, answers, selectedQuiz])
-  const handleAnswer = (key) => {
-
-  const updatedAnswers = [...answers]
-
-  updatedAnswers[currentQuestion] = key
-
-  setAnswers(updatedAnswers)
-
-  setSelectedAnswer(key)
-
-  let newScore = 0
-
-  updatedAnswers.forEach((answer, questionIndex) => {
-
-    if (
-      selectedQuiz.questions[questionIndex] &&
-      answer === selectedQuiz.questions[questionIndex].answer
-    ) {
-      newScore++
+    if (answers[currentQuestion] !== undefined) {
+      setSelectedAnswer(answers[currentQuestion])
+    } else {
+      setSelectedAnswer(null)
     }
+  }, [currentQuestion, answers, selectedQuiz])
 
-  })
+  const handleAnswer = (key) => {
+    const updatedAnswers = [...answers]
+    updatedAnswers[currentQuestion] = key
+    setAnswers(updatedAnswers)
+    setSelectedAnswer(key)
 
-  setScore(newScore)
-
-}
+    let newScore = 0
+    updatedAnswers.forEach((answer, questionIndex) => {
+      if (
+        selectedQuiz.questions[questionIndex] &&
+        answer === selectedQuiz.questions[questionIndex].answer
+      ) {
+        newScore++
+      }
+    })
+    setScore(newScore)
+  }
 
   const handleNextQuestion = () => {
-
-  if (currentQuestion < selectedQuiz.questions.length - 1) {
-
-    const nextQuestion = currentQuestion + 1
-
-    setCurrentQuestion(nextQuestion)
-
-    setSelectedAnswer(
-      answers[nextQuestion] ?? null
-    )
-
-  } else {
-
-    setScreen("result")
+    if (currentQuestion < (selectedQuiz?.questions?.length || 0) - 1) {
+      const nextQuestion = currentQuestion + 1
+      setCurrentQuestion(nextQuestion)
+      setSelectedAnswer(answers[nextQuestion] ?? null)
+    } else {
+      setScreen("result")
+    }
   }
-
-}
 
   const handlePreviousQuestion = () => {
-
-  if (currentQuestion > 0) {
-
-    const previousQuestion = currentQuestion - 1
-
-    setCurrentQuestion(previousQuestion)
-
-    setSelectedAnswer(
-      answers[previousQuestion] ?? null
-    )
-
+    if (currentQuestion > 0) {
+      const previousQuestion = currentQuestion - 1
+      setCurrentQuestion(previousQuestion)
+      setSelectedAnswer(answers[previousQuestion] ?? null)
+    }
   }
 
-}
-
   const restartQuiz = () => {
-
     setCurrentQuestion(0)
     setSelectedAnswer(null)
     setScore(0)
@@ -259,10 +216,9 @@ export default function App() {
   }
 
   return (
-
     <div className="min-h-screen bg-pink-200 p-5">
 
-          {/* LAST UPDATED */}
+      {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
           Last Updated: 25/05/2026 • 19:05:16 (DSA Tree is in progress, will be available soon!)
@@ -271,24 +227,19 @@ export default function App() {
 
       {/* HEADER */}
       <div className="flex items-center gap-10 mb-10">
-
         <h1 className="text-5xl font-black text-yellow-500 leading-none">
           ÔN TẬP
           <br />
           THUI
         </h1>
-
         <div className="text-3xl font-bold text-blue-600">
           Hạnh phúc rồi sẽ đến, cho cậu, cho tôi, cho chúng ta.
         </div>
-
       </div>
 
       {/* PROGRESS BARS */}
       <div className="flex gap-4 mb-10 flex-wrap">
-
         {subjects.map((subject) => (
-
           <button
             key={subject.id}
             onClick={() => {
@@ -302,464 +253,180 @@ export default function App() {
               font-bold
               text-xl
               transition
-
-              ${
-                activeSubject === subject.id
-                  ? "bg-blue-600 text-white"
-                  : "bg-white"
-              }
+              ${activeSubject === subject.id ? "bg-blue-600 text-white" : "bg-white"}
             `}
           >
-
             {subject.id}
-
           </button>
-
         ))}
-
       </div>
 
       {/* SUBJECT SCREEN */}
       {screen === "subject" && activeSubject && (
-
         <div className="grid md:grid-cols-2 gap-6">
-
-          {
-            subjects
-              .find(subject => subject.id === activeSubject)
-              ?.quizzes.map((quiz) => (
-
-                <div
-                  key={quiz.id}
-                  onClick={() => {
-
-                    if (!quiz.comingSoon) {
-
-                      setSelectedQuiz(quiz)
-
-                      setCurrentQuestion(0)
-                      setSelectedAnswer(null)
-                      setAnswers([])
-                      setScore(0)
-
-                      setScreen("quiz")
-                    }
-
-                  }}
-                  className="
-                    bg-white/50
-                    border
-                    rounded-[30px]
-                    p-10
-                    transition
-                    hover:border-blue-500
-                  "
-                >
-
-                  <h1 className="text-5xl font-black mb-5">
-                    {quiz.title}
-                  </h1>
-
-                  <p className="text-2xl text-gray-600">
-
-                    {
-                      quiz.comingSoon
-                        ? "Coming Soon"
-                        : `${quiz.questionsCount} questions`
-                    }
-
-                  </p>
-
-                </div>
-
-            ))
-          }
-
+          {subjects.find(subject => subject.id === activeSubject)?.quizzes.map((quiz) => (
+            <div
+              key={quiz.id}
+              onClick={() => {
+                if (!quiz.comingSoon) {
+                  setSelectedQuiz(quiz)
+                  setCurrentQuestion(0)
+                  setSelectedAnswer(null)
+                  setAnswers([])
+                  setScore(0)
+                  setScreen("quiz")
+                }
+              }}
+              className="bg-white/50 border rounded-[30px] p-10 transition hover:border-blue-500"
+            >
+              <h1 className="text-5xl font-black mb-5">{quiz.title}</h1>
+              <p className="text-2xl text-gray-600">
+                {quiz.comingSoon ? "Coming Soon" : `${quiz.questionsCount} questions`}
+              </p>
+            </div>
+          ))}
         </div>
-
       )}
+
       {/* QUIZ FINISHED */}
       {screen === "result" && selectedQuiz && (
-
         <div className="bg-white p-10 rounded-[30px] shadow-xl text-center">
-
-          <h1 className="text-5xl font-black mb-6">
-            Quiz Finished 🎉
-          </h1>
-
-          <p className="text-3xl mb-8">
-            Your Score: {score} / {selectedQuiz.questions.length}
-          </p>
-
-          <button
-            onClick={restartQuiz}
-            className="
-              bg-blue-600
-              text-white
-              px-8
-              py-4
-              rounded-2xl
-              hover:bg-blue-700
-              transition
-            "
-          >
-            Restart Quiz
-          </button>
-
+          <h1 className="text-5xl font-black mb-6">Quiz Finished 🎉</h1>
+          <p className="text-3xl mb-8">Your Score: {score} / {selectedQuiz.questions.length}</p>
+          <button onClick={restartQuiz} className="bg-blue-600 text-white px-8 py-4 rounded-2xl hover:bg-blue-700 transition">Restart Quiz</button>
         </div>
-
       )}
 
       {/* QUIZ SCREEN */}
       {screen === "quiz" && selectedQuiz && question && (
-
         <>
-          <button
-            onClick={() => {
+          <button onClick={() => { setScreen("subject"); setSelectedQuiz(null) }} className="mb-6 bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition">← Back</button>
 
-              setScreen("subject")
-              setSelectedQuiz(null)
-
-            }}
-            className="
-              mb-6
-              bg-white
-              px-5
-              py-3
-              rounded-2xl
-              border
-              hover:border-blue-500
-              transition
-            "
-          >
-            ← Back
-          </button>
           {/* Tabs */}
           <div className="bg-[#efe5d4] rounded-full p-2 flex gap-3 mb-8 overflow-x-auto">
-            {[
-              "Overview",
-              "Fundamentals",
-              "Inheritance",
-              "Polymorphism",
-              "Patterns",
-              "Review",
-              "MCQ Quiz"
-            ].map((tab, index) => (
-
-              <button
-                key={index}
-                className={`
-                  px-4 py-2 rounded-full whitespace-nowrap transition
-                  ${tab === "MCQ Quiz"
-                    ? "bg-blue-600 text-white"
-                    : "hover:bg-white"}
-                `}
-              >
-                {tab}
-              </button>
-
+            {["Overview","Fundamentals","Inheritance","Polymorphism","Patterns","Review","MCQ Quiz"].map((tab, index) => (
+              <button key={index} className={`px-4 py-2 rounded-full whitespace-nowrap transition ${tab === "MCQ Quiz" ? "bg-blue-600 text-white" : "hover:bg-white"}`}>{tab}</button>
             ))}
-
           </div>
 
           {/* Quiz Info */}
           <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-
-        <div>
-          <p className="text-lg font-semibold">
-            {selectedQuiz.title}
-          </p>
-
-          <p className="text-gray-600">
-            Question {currentQuestion + 1} of {selectedQuiz.questions.length}
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-
-          <button
-            onClick={handlePreviousQuestion}
-            disabled={currentQuestion === 0}
-            className="
-              bg-gray-300
-              px-5
-              py-2
-              rounded-2xl
-              transition
-              disabled:opacity-50
-            "
-          >
-            ← Previous
-          </button>
-
-          <button
-            onClick={handleNextQuestion}
-            className="
-              bg-blue-600
-              text-white
-              px-5
-              py-2
-              rounded-2xl
-              hover:bg-blue-700
-              transition
-            "
-          >
-            Next →
-          </button>
-
-        </div>
-
-      </div>
+            <div>
+              <p className="text-lg font-semibold">{selectedQuiz.title}</p>
+              <p className="text-gray-600">Question {currentQuestion + 1} of {selectedQuiz.questions.length}</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={handlePreviousQuestion} disabled={currentQuestion === 0} className="bg-gray-300 px-5 py-2 rounded-2xl transition disabled:opacity-50">← Previous</button>
+              <button onClick={handleNextQuestion} className="bg-blue-600 text-white px-5 py-2 rounded-2xl hover:bg-blue-700 transition">Next →</button>
+            </div>
+          </div>
 
           {/* Progress */}
           <div className="w-full h-3 bg-gray-300 rounded-full mb-10 overflow-hidden">
-
-            <div
-              style={{
-                width: `${((currentQuestion + 1) / selectedQuiz.questions.length) * 100}%`
-              }}
-              className="h-full bg-gradient-to-r from-blue-500 to-yellow-400"
-            ></div>
-
+            <div style={{ width: `${((currentQuestion + 1) / selectedQuiz.questions.length) * 100}%` }} className="h-full bg-gradient-to-r from-blue-500 to-yellow-400"></div>
           </div>
 
           {/* Question Card */}
           <div className="bg-white/50 border rounded-[30px] p-8">
+            <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">{selectedQuiz.title}</p>
 
-            <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">
-            {selectedQuiz.title}
-          </p>
+            {q?.context && (
+              <div className="mb-6 bg-yellow-100 border border-yellow-300 p-5 rounded-2xl">
+                <p className="text-lg leading-relaxed">{q.context}</p>
+              </div>
+            )}
 
-          {question.context && (
+            {q?.code && (
+              <pre className="bg-gray-900 text-green-400 p-5 rounded-2xl overflow-x-auto mb-6 text-sm"><code>{q.code}</code></pre>
+            )}
 
-            <div className="mb-6 bg-yellow-100 border border-yellow-300 p-5 rounded-2xl">
-              <p className="text-lg leading-relaxed">
-                {question.context}
-              </p>
-            </div>
+            {q?.image && (
+              <img src={q.image} alt="question" className="mb-6 rounded-2xl border w-full" />
+            )}
 
-          )}
+            {q?.images && (
+              <div className="space-y-4 mb-6">{q.images.map((img, index) => (<img key={index} src={img} alt={`question-${index}`} className="rounded-2xl border w-full" />))}</div>
+            )}
 
-          {question.code && (
-            <pre className="
-              bg-gray-900
-              text-green-400
-              p-5
-              rounded-2xl
-              overflow-x-auto
-              mb-6
-              text-sm
-            ">
-              <code>{question.code}</code>
-            </pre>
-          )}
-
-          {question.image && (
-
-            <img
-              src={question.image}
-              alt="question"
-              className="mb-6 rounded-2xl border w-full"
-            />
-
-          )}
-
-          {question.images && (
-
-            <div className="space-y-4 mb-6">
-
-              {question.images.map((img, index) => (
-
-                <img
-                  key={index}
-                  src={img}
-                  alt={`question-${index}`}
-                  className="rounded-2xl border w-full"
-                />
-
-              ))}
-
-            </div>
-
-          )}
-
-          {/* MAIN QUESTION */}
-            {question.main && (
+            {q?.main && (
               <h1 className="text-4xl font-black mb-6 leading-relaxed">
-                {question.link ? (
-                  <a
-                    href={question.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 underline hover:text-blue-800"
-                  >
-                    {question.main}
-                  </a>
+                {q?.link ? (
+                  <a href={q.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{q.main}</a>
                 ) : (
-                  question.main
+                  q.main
                 )}
               </h1>
             )}
 
-            {/* TREE */}
-            {question.tree && (
+            {q?.tree && (
               <div className="mb-6 bg-purple-100 border border-purple-300 p-5 rounded-2xl">
-                <p className="font-bold text-purple-700 mb-2">
-                  Tree
-                </p>
-
-                <code className="text-lg">
-                  {question.tree}
-                </code>
+                <p className="font-bold text-purple-700 mb-2">Tree</p>
+                <code className="text-lg">{q.tree}</code>
               </div>
             )}
 
-            {/* SEQUENCE */}
-            {question.sequence && (
+            {q?.sequence && (
               <div className="mb-6 bg-blue-100 border border-blue-300 p-5 rounded-2xl">
-                <p className="font-bold text-blue-700 mb-2">
-                  Sequence
-                </p>
-
-                <p className="text-lg">
-                  {question.sequence.join(", ")}
-                </p>
+                <p className="font-bold text-blue-700 mb-2">Sequence</p>
+                <p className="text-lg">{q.sequence.join(", ")}</p>
               </div>
             )}
 
-            {/* INSERTIONS */}
-            {question.insertions && (
+            {q?.insertions && (
               <div className="mb-6 bg-green-100 border border-green-300 p-5 rounded-2xl">
-                <p className="font-bold text-green-700 mb-2">
-                  Insertions
-                </p>
-
-                <p className="text-lg">
-                  {question.insertions.join(", ")}
-                </p>
+                <p className="font-bold text-green-700 mb-2">Insertions</p>
+                <p className="text-lg">{q.insertions.join(", ")}</p>
               </div>
             )}
 
-            {/* DELETIONS */}
-            {question.deletions && (
+            {q?.deletions && (
               <div className="mb-6 bg-red-100 border border-red-300 p-5 rounded-2xl">
-                <p className="font-bold text-red-700 mb-2">
-                  Deletions
-                </p>
-
-                <p className="text-lg">
-                  {question.deletions.join(", ")}
-                </p>
+                <p className="font-bold text-red-700 mb-2">Deletions</p>
+                <p className="text-lg">{q.deletions.join(", ")}</p>
               </div>
             )}
 
-            {/* OPERATIONS */}
-            {question.operations && (
+            {q?.operations && (
               <div className="mb-6 bg-orange-100 border border-orange-300 p-5 rounded-2xl">
-                <p className="font-bold text-orange-700 mb-3">
-                  Operations
-                </p>
-
-                <ul className="list-disc pl-6 space-y-2">
-                  {question.operations.map((op, index) => (
-                    <li key={index} className="text-lg">
-                      {op}
-                    </li>
-                  ))}
-                </ul>
+                <p className="font-bold text-orange-700 mb-3">Operations</p>
+                <ul className="list-disc pl-6 space-y-2">{q.operations.map((op, index) => (<li key={index} className="text-lg">{op}</li>))}</ul>
               </div>
             )}
 
-            {/* STATEMENTS */}
-            {question.statements && (
+            {q?.statements && (
               <div className="mb-6 bg-gray-100 border border-gray-300 p-5 rounded-2xl">
-                <p className="font-bold text-gray-700 mb-3">
-                  Statements
-                </p>
-
-                <ul className="space-y-3">
-                  {question.statements.map((statement, index) => (
-                    <li
-                      key={index}
-                      className="text-lg leading-relaxed"
-                    >
-                      {statement}
-                    </li>
-                  ))}
-                </ul>
+                <p className="font-bold text-gray-700 mb-3">Statements</p>
+                <ul className="space-y-3">{q.statements.map((statement, index) => (<li key={index} className="text-lg leading-relaxed">{statement}</li>))}</ul>
               </div>
             )}
 
-            {/* RULE */}
-            {question.rule && (
+            {q?.rule && (
               <div className="mb-6 bg-pink-100 border border-pink-300 p-5 rounded-2xl">
-                <p className="font-bold text-pink-700 mb-2">
-                  Rule
-                </p>
-
-                <p className="text-lg">
-                  {question.rule}
-                </p>
+                <p className="font-bold text-pink-700 mb-2">Rule</p>
+                <p className="text-lg">{q.rule}</p>
               </div>
             )}
 
-            {/* ASK */}
-            {question.ask && (
-              <div className="mb-8">
-                <p className="text-2xl font-bold text-blue-700">
-                  {question.ask}
-                </p>
+            {q?.ask && (
+              <div className="mb-8"><p className="text-2xl font-bold text-blue-700">{q.ask}</p></div>
+            )}
+
+            {question.options && (
+              <div className="space-y-4">
+                {Object.entries(question.options).map(([key, answer]) => (
+                  <button key={key} onClick={() => handleAnswer(key)} className={`w-full border rounded-2xl p-5 text-left transition ${selectedAnswer !== null ? (key === question.answer ? "bg-green-200 border-green-600" : selectedAnswer === key ? "bg-red-200 border-red-600" : "bg-white") : "bg-white hover:border-blue-500 hover:bg-blue-50"}`}>
+                    <span className="font-bold mr-3">{key}.</span>
+                    {answer}
+                  </button>
+                ))}
               </div>
             )}
 
-          {question.options && (
-            <div className="space-y-4">
-
-              {Object.entries(question.options).map(([key, answer]) => (
-
-                <button
-                  key={key}
-                  onClick={() => handleAnswer(key)}
-                  className={`
-                    w-full
-                    border
-                    rounded-2xl
-                    p-5
-                    text-left
-                    transition
-
-                    ${
-                      selectedAnswer !== null
-                        ? key === question.answer
-                          ? "bg-green-200 border-green-600"
-                          : selectedAnswer === key
-                          ? "bg-red-200 border-red-600"
-                          : "bg-white"
-                        : "bg-white hover:border-blue-500 hover:bg-blue-50"
-                    }
-                  `}
-                >
-
-                  <span className="font-bold mr-3">
-                    {key}.
-                  </span>
-
-                  {answer}
-
-                </button>
-
-              ))}
-
-            </div>
-          )}
-          
           </div>
-          
-        </>
 
+        </>
       )}
 
     </div>
-
   )
 }
