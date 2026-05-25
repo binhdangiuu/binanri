@@ -265,7 +265,7 @@ export default function App() {
           {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 25/05/2026 • 18:58:23 (KTCT Quizizz (Chương 2-6) từ Ngân hàng đề Added)
+          Last Updated: 25/05/2026 • 18:58:23 (DSA Tree Added)
         </p>
       </div>
 
