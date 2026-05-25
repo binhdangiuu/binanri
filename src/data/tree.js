@@ -18,7 +18,7 @@ const tree = [
       "C": "3",
       "D": "4"
     },
-    "answer": "C"
+    "answer": "D"
   },
   {
     "id": 2,
@@ -39,7 +39,7 @@ const tree = [
       "C": "3",
       "D": "4"
     },
-    "answer": "C"
+    "answer": "D"
   },
   {
     "id": 3,
