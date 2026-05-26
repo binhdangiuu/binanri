@@ -523,14 +523,23 @@ bool isCompleteBinaryTree(BNode<E>* root) {
     "chapter": "Tree",
     "question": {
       "main": "Fill in Code1 for lowestCommonAncestor().",
-    "context": `// Thông tin dùng cho câu 28 và 29:
-Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
+      "context": `// Thông tin dùng cho câu 28 và 29:
+template<typename E>
+class BNode {
+public:
+    virtual E element() = 0; // return the node value
+    virtual BNode<E>* left() const = 0; // return the node's left child
+    virtual BNode<E>* right() const = 0; // return the node's right child
+};
+
+template<typename E>
+BNode<E>* lowestCommonAncestor(BNode<E>* root, BNode<E>* p, BNode<E>* q) {
     if (root == nullptr || root == p || root == q) return root;
-    Node* left = /* Code1 */;
-    Node* right = lowestCommonAncestor(root->right(), p, q);
+    BNode<E>* left = /* Code1 */;
+    BNode<E>* right = lowestCommonAncestor(root->right(), p, q);
     if (left != nullptr && right != nullptr) return root;
     return /* Code2 */;
-}`,
+}`
     },
     "options": {
       "A": "lowestCommonAncestor(root->left(), p->left, q)",
@@ -545,14 +554,23 @@ Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     "chapter": "Tree",
     "question": {
       "main": "Fill in Code2 for lowestCommonAncestor().",
-    "context": `// Thông tin dùng cho câu 28 và 29:
-Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
+      "context": `// Thông tin dùng cho câu 28 và 29:
+template<typename E>
+class BNode {
+public:
+    virtual E element() = 0; // return the node value
+    virtual BNode<E>* left() const = 0; // return the node's left child
+    virtual BNode<E>* right() const = 0; // return the node's right child
+};
+
+template<typename E>
+BNode<E>* lowestCommonAncestor(BNode<E>* root, BNode<E>* p, BNode<E>* q) {
     if (root == nullptr || root == p || root == q) return root;
-    Node* left = /* Code1 */;
-    Node* right = lowestCommonAncestor(root->right(), p, q);
+    BNode<E>* left = /* Code1 */;
+    BNode<E>* right = lowestCommonAncestor(root->right(), p, q);
     if (left != nullptr && right != nullptr) return root;
     return /* Code2 */;
-}`,
+}`
     },
     "options": {
       "A": "left != nullptr ? left : right",
@@ -638,19 +656,25 @@ int sumEvenDepthNodes(Node* root) {
     "question": {
       "main": "The AVL insert routine is missing CODE 1.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
+struct Node { int val; Node* left; Node* right; int height; };
+int getHeight(Node* n);
+int getBalance(Node* n);
+void updateHeight(Node* n);
+Node* rotateRight(Node* y);
+Node* rotateLeft(Node* x);
 Node* insert(Node* root, int key) {
-    if (root == NULL) return new Node(key);
+    if (!root) return new Node(key);
     if (key < root->key) root->left = insert(root->left, key);
     else if (key > root->key) /* CODE 1 */
     else return root;
-    
-    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-    int val = getBalance(root);
-    
-    if (val > 1 && key < root->left->key) /* CODE 2 */
-    if (val < -1 && key > root->right->key) /* CODE 3 */
-    if (val > 1 && key > root->left->key) { /* CODE 4 */ }
-    if (val < -1 && key < root->right->key) { /* CODE 5 */ }
+
+    updateHeight(root);
+    int balance = getBalance(root);
+
+    if (balance > 1 && key < root->left->val) /* CODE 2 */
+    if (balance < -1 && key > root->right->val) /* CODE 3 */
+    if (balance > 1 && key > root->left->val) { /* CODE 4 */ }
+    if (balance < -1 && key < root->right->val) { /* CODE 5 */ }
     return root;
 }`,
     },
@@ -668,19 +692,25 @@ Node* insert(Node* root, int key) {
     "question": {
       "main": "The AVL insert routine is missing CODE 2 for the Left-Left case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
+struct Node { int val; Node* left; Node* right; int height; };
+int getHeight(Node* n);
+int getBalance(Node* n);
+void updateHeight(Node* n);
+Node* rotateRight(Node* y);
+Node* rotateLeft(Node* x);
 Node* insert(Node* root, int key) {
-    if (root == NULL) return new Node(key);
+    if (!root) return new Node(key);
     if (key < root->key) root->left = insert(root->left, key);
     else if (key > root->key) /* CODE 1 */
     else return root;
-    
-    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-    int val = getBalance(root);
-    
-    if (val > 1 && key < root->left->key) /* CODE 2 */
-    if (val < -1 && key > root->right->key) /* CODE 3 */
-    if (val > 1 && key > root->left->key) { /* CODE 4 */ }
-    if (val < -1 && key < root->right->key) { /* CODE 5 */ }
+
+    updateHeight(root);
+    int balance = getBalance(root);
+
+    if (balance > 1 && key < root->left->val) /* CODE 2 */
+    if (balance < -1 && key > root->right->val) /* CODE 3 */
+    if (balance > 1 && key > root->left->val) { /* CODE 4 */ }
+    if (balance < -1 && key < root->right->val) { /* CODE 5 */ }
     return root;
 }`,
     },
@@ -698,19 +728,25 @@ Node* insert(Node* root, int key) {
     "question": {
       "main": "The AVL insert routine is missing CODE 3 for the Right-Right case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
+struct Node { int val; Node* left; Node* right; int height; };
+int getHeight(Node* n);
+int getBalance(Node* n);
+void updateHeight(Node* n);
+Node* rotateRight(Node* y);
+Node* rotateLeft(Node* x);
 Node* insert(Node* root, int key) {
-    if (root == NULL) return new Node(key);
+    if (!root) return new Node(key);
     if (key < root->key) root->left = insert(root->left, key);
     else if (key > root->key) /* CODE 1 */
     else return root;
-    
-    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-    int val = getBalance(root);
-    
-    if (val > 1 && key < root->left->key) /* CODE 2 */
-    if (val < -1 && key > root->right->key) /* CODE 3 */
-    if (val > 1 && key > root->left->key) { /* CODE 4 */ }
-    if (val < -1 && key < root->right->key) { /* CODE 5 */ }
+
+    updateHeight(root);
+    int balance = getBalance(root);
+
+    if (balance > 1 && key < root->left->val) /* CODE 2 */
+    if (balance < -1 && key > root->right->val) /* CODE 3 */
+    if (balance > 1 && key > root->left->val) { /* CODE 4 */ }
+    if (balance < -1 && key < root->right->val) { /* CODE 5 */ }
     return root;
 }`,
     },
@@ -728,19 +764,25 @@ Node* insert(Node* root, int key) {
     "question": {
       "main": "The AVL insert routine is missing CODE 4 for the Left-Right case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
+struct Node { int val; Node* left; Node* right; int height; };
+int getHeight(Node* n);
+int getBalance(Node* n);
+void updateHeight(Node* n);
+Node* rotateRight(Node* y);
+Node* rotateLeft(Node* x);
 Node* insert(Node* root, int key) {
-    if (root == NULL) return new Node(key);
+    if (!root) return new Node(key);
     if (key < root->key) root->left = insert(root->left, key);
     else if (key > root->key) /* CODE 1 */
     else return root;
-    
-    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-    int val = getBalance(root);
-    
-    if (val > 1 && key < root->left->key) /* CODE 2 */
-    if (val < -1 && key > root->right->key) /* CODE 3 */
-    if (val > 1 && key > root->left->key) { /* CODE 4 */ }
-    if (val < -1 && key < root->right->key) { /* CODE 5 */ }
+
+    updateHeight(root);
+    int balance = getBalance(root);
+
+    if (balance > 1 && key < root->left->val) /* CODE 2 */
+    if (balance < -1 && key > root->right->val) /* CODE 3 */
+    if (balance > 1 && key > root->left->val) { /* CODE 4 */ }
+    if (balance < -1 && key < root->right->val) { /* CODE 5 */ }
     return root;
 }`,
     },
@@ -758,19 +800,25 @@ Node* insert(Node* root, int key) {
     "question": {
       "main": "The AVL insert routine is missing CODE 5 for the Right-Left case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
+struct Node { int val; Node* left; Node* right; int height; };
+int getHeight(Node* n);
+int getBalance(Node* n);
+void updateHeight(Node* n);
+Node* rotateRight(Node* y);
+Node* rotateLeft(Node* x);
 Node* insert(Node* root, int key) {
-    if (root == NULL) return new Node(key);
+    if (!root) return new Node(key);
     if (key < root->key) root->left = insert(root->left, key);
     else if (key > root->key) /* CODE 1 */
     else return root;
-    
-    root->height = 1 + max(getHeight(root->left), getHeight(root->right));
-    int val = getBalance(root);
-    
-    if (val > 1 && key < root->left->key) /* CODE 2 */
-    if (val < -1 && key > root->right->key) /* CODE 3 */
-    if (val > 1 && key > root->left->key) { /* CODE 4 */ }
-    if (val < -1 && key < root->right->key) { /* CODE 5 */ }
+
+    updateHeight(root);
+    int balance = getBalance(root);
+
+    if (balance > 1 && key < root->left->val) /* CODE 2 */
+    if (balance < -1 && key > root->right->val) /* CODE 3 */
+    if (balance > 1 && key > root->left->val) { /* CODE 4 */ }
+    if (balance < -1 && key < root->right->val) { /* CODE 5 */ }
     return root;
 }`,
     },
