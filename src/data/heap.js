@@ -151,14 +151,20 @@ const heap = [
     },
     "answer": "C"
   },
-  {
+{
     "id": 11,
     "chapter": "Heap",
     "question": {
-      "main": "Given a max-heap containing the following integer values:",
-      "sequence": [29, 20, 10, 15, 18, 9, 5, 13, 2, 4, 15],
-      "ask": "Elements are sequentially extracted from the root of the max-heap one by one. Let m be the maximum number of elements that can be extracted such that their total sum does not exceed 70. What is the value of m?"
+      "main": "Given a max-heap array:",
+      "sequence": [29, 20, 10, 15, 18, 9, 5, 13, 2, 4, 15]
     },
+    "renderRule": {
+      "operations": [
+        "Sequentially extract elements from the root of the heap one by one."
+      ],
+      "rule": "Let m be the maximum number of extracted elements such that their total sum does not exceed 70."
+    },
+    "ask": "What is the value of m?",
     "options": {
       "A": "2",
       "B": "3",
@@ -201,9 +207,16 @@ const heap = [
     "id": 14,
     "chapter": "Heap",
     "question": {
-      "main": "A perfect binary min-heap is constructed by including each integer in the range [1, 1023] exactly once. The depth of a node in the heap is defined as the length of the path from the root of the heap to that node (thus, the root is at depth 0). What is the maximum depth at which the integer 9 can appear?",
-      "ask": "Choose the correct maximum depth:"
+      "main": "A perfect binary min-heap is constructed by including each integer in the range [1, 1023] exactly once."
     },
+    "renderRule": {
+      "operations": [
+        "Construct a perfect binary tree with 1023 nodes.",
+        "Fill the tree with values satisfying the min-heap property."
+      ],
+      "rule": "The depth of a node is the path length from the root. The root is at depth 0."
+    },
+    "ask": "What is the maximum depth at which the integer 9 can appear?",
     "options": {
       "A": "6",
       "B": "7",
@@ -211,7 +224,196 @@ const heap = [
       "D": "9"
     },
     "answer": "C"
-  }
+  },
+  // CÂU 15
+  {
+    "id": 15,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an array consisting of 7 variables [x0, ..., x6]. Suppose that after the process of converting this array into a min-heap, we obtain the following array:",
+      "sequence": ["x6", "x4", "x2", "x3", "x1", "x5", "x0"],
+      "ask": "Which of the following sequences could be the result of sorting the original array in ascending order?"
+    },
+    "options": {
+      "A": "[x6, x1, x2, x3, x4, x5, x0]",
+      "B": "[x6, x2, x5, x0, x3, x4, x1]",
+      "C": "[x6, x4, x2, x5, x0, x1]",
+      "D": "[x6, x4, x1, x3, x5, x2, x0]"
+    },
+    "answer": "C"
+  },
+
+  // CÂU 16 - TỐI ƯU UI
+  {
+    "id": 16,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given a max-heap array:",
+      "sequence": [90, 73, 41, 25, 36, 17, 1, 2, 3, 19, 26, 7]
+    },
+    "renderRule": {
+      "operations": [
+        "Delete the element 36 from the heap."
+      ],
+      "rule": "After deleting an internal node, replace it with the last element of the heap and perform reheapification to maintain the max-heap property."
+    },
+    "ask": "What is the state of the heap after the deletion?",
+    "options": {
+      "A": "[90, 73, 41, 25, 26, 17, 1, 2, 3, 7, 19]",
+      "B": "[90, 73, 41, 25, 19, 17, 1, 2, 3, 7, 26]",
+      "C": "[90, 73, 41, 25, 26, 17, 1, 2, 3, 19, 7]",
+      "D": "[90, 73, 41, 25, 19, 17, 1, 2, 3, 26, 7]"
+    },
+    "answer": "C"
+  },
+
+  // CÂU 17 - TỐI ƯU UI
+  {
+    "id": 17,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an initial array:",
+      "sequence": [1, 3, 5, 4, 6, 11, 10, 8, 7, 13, 15]
+    },
+    "renderRule": {
+      "operations": [
+        "Apply the bottom-up heapify algorithm to build a max-heap with O(N) complexity.",
+        "Execute exactly two steps of the heapify process."
+      ],
+      "rule": "Iterate from index floor(n/2) - 1 down to 0, calling heapify() at each index."
+    },
+    "ask": "Which array represents the state after the first two heapify steps?",
+    "options": {
+      "A": "[15, 13, 11, 8, 6, 5, 10, 4, 7, 3, 1]",
+      "B": "[1, 15, 11, 8, 13, 5, 10, 4, 7, 3, 6]",
+      "C": "[1, 3, 5, 8, 15, 11, 10, 4, 7, 13, 6]",
+      "D": "All of the above are incorrect"
+    },
+    "answer": "C"
+  },
+
+  // CÂU 18 - TỐI ƯU UI
+  {
+    "id": 18,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an initial array:",
+      "sequence": [10, 7, 11, 5, 4, 13, 1, 2]
+    },
+    "renderRule": {
+      "operations": [
+        "Construct a min-heap by inserting elements from the array one by one in the original order."
+      ],
+      "rule": "For each insertion, append the element to the end of the heap and perform a reheap-up operation."
+    },
+    "ask": "What is the resulting min-heap array?",
+    "options": {
+      "A": "[1, 2, 4, 5, 7, 13, 11, 10]",
+      "B": "[1, 2, 5, 4, 7, 13, 11, 10]",
+      "C": "[1, 2, 5, 4, 7, 11, 13, 10]",
+      "D": "[1, 2, 4, 5, 7, 10, 11, 13]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 19 - TỐI ƯU UI
+  {
+    "id": 19,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given a min-heap array:",
+      "sequence": [1, 2, 6, 4, 7, 13, 11, 10]
+    },
+    "renderRule": {
+      "operations": [
+        "Insert a new element with a value of 3 into this min-heap."
+      ],
+      "rule": "Place the new element at the first available position at the bottom level, then perform reheap-up."
+    },
+    "ask": "What is the state of the min-heap array after the insertion?",
+    "options": {
+      "A": "[1, 2, 3, 4, 7, 13, 11, 10, 6]",
+      "B": "[1, 2, 6, 3, 7, 13, 11, 10, 4]",
+      "C": "[1, 2, 6, 4, 7, 13, 11, 10, 3]",
+      "D": "[1, 2, 6, 4, 3, 13, 11, 10, 7]"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 20 - CÂU LÝ THUYẾT TẬP TRUNG
+  {
+    "id": 20,
+    "chapter": "Heap",
+    "question": {
+      "main": "Which of the following statements is TRUE for a heap of height h?",
+      "ask": "Choose the correct statement:"
+    },
+    "options": {
+      "A": "The element with the largest key will always be the root of the heap.",
+      "B": "The leaf nodes of the heap can only be located at height h.",
+      "C": "A heap is a complete binary tree.",
+      "D": "All of the other statements are correct."
+    },
+    "answer": "D"
+  },
+
+  // CÂU 21 - CÂU LÝ THUYẾT TẬP TRUNG
+  {
+    "id": 21,
+    "chapter": "Heap",
+    "question": {
+      "main": "What are the respective time complexities of the individual heapify operation and the bottom-up build heap algorithm?",
+      "ask": "Select the correct complexity pair:"
+    },
+    "options": {
+      "A": "O(log n) and O(n)",
+      "B": "O(n) and O(log n)",
+      "C": "O(n) and O(n)",
+      "D": "O(log n) and O(log n)"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 22 - CÂU LÝ THUYẾT TẬP TRUNG
+  {
+    "id": 22,
+    "chapter": "Heap",
+    "question": {
+      "main": "Consider a function 'minDistance' that repeatedly needs to retrieve the position of the vertex with the smallest weight and subsequently remove this root element from the list. Which data structure is the most appropriate to minimize the execution time complexity?",
+      "ask": "Select the optimal data structure:"
+    },
+    "options": {
+      "A": "Heap (Min-Heap)",
+      "B": "Stack",
+      "C": "Singly Linked List",
+      "D": "AVL Tree"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 23 - TỐI ƯU UI
+  {
+    "id": 23,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given a 3-ary max-heap array:",
+      "sequence": [27, 21, 15, 18, 19, 11, 9, 10, 12, 14, 8]
+    },
+    "renderRule": {
+      "operations": [
+        "Delete the element 19 from this 3-ary max-heap."
+      ],
+      "rule": "In a 3-ary heap, each node has at most 3 children. Maintain the structural integrity and heap property post-deletion."
+    },
+    "ask": "What is the state of the heap array after removing the element 19?",
+    "options": {
+      "A": "[27, 21, 15, 18, 14, 11, 9, 10, 12, 8]",
+      "B": "[27, 21, 15, 18, 12, 11, 9, 10, 14, 8]",
+      "C": "[27, 21, 15, 18, 8, 11, 9, 10, 14, 12]",
+      "D": "[27, 21, 15, 18, 8, 11, 9, 10, 12, 14]"
+    },
+    "answer": "D"
+  },
 
 ]
 export default heap
