@@ -161,7 +161,8 @@ export default function App() {
   }, [screen, currentQuestion, score, activeSubject, selectedQuiz, answers])
 
   const question = selectedQuiz?.questions?.[currentQuestion]
-  const q = question?.question
+  const q = question?.question || {}
+  const contextText = question?.context || q?.context
 
   useEffect(() => {
     if (answers[currentQuestion] !== undefined) {
@@ -330,9 +331,9 @@ export default function App() {
           <div className="bg-white/50 border rounded-[30px] p-8">
             <p className="uppercase tracking-[4px] text-blue-600 text-sm mb-5">{selectedQuiz.title}</p>
 
-            {q?.context && (
+            {contextText && (
               <div className="mb-6 bg-yellow-100 border border-yellow-300 p-5 rounded-2xl">
-                <pre className="text-lg leading-relaxed whitespace-pre-wrap">{q.context}</pre>
+                <pre className="text-lg leading-relaxed whitespace-pre-wrap overflow-x-auto"><code>{contextText}</code></pre>
               </div>
             )}
 

@@ -362,7 +362,6 @@ const tree = [
     "chapter": "Tree",
     "question": {
       "main": "Fill in the missing code for AVL insertion.",
-    },
     "context": `Node insert (Node*& subroot, const T& value) {
     Node* pNew = new Node(value);
     if (!subroot) return pNew;
@@ -375,6 +374,7 @@ const tree = [
     int balance = getBalance(subroot);
     if (balance > 1 && value < subroot->pLeft->data) return /* Code */;
 }`,
+    },
     "options": {
       "A": "rotateLeft(subroot)",
       "B": "rotateLeft(subroot->pLeft)",
@@ -388,7 +388,6 @@ const tree = [
     "chapter": "Tree",
     "question": {
       "main": "Fill in Code1 for checking whether a binary tree is complete.",
-    },
     "context": `// Information used for questions 24 and 25:
 bool isCompleteBinaryTree(Node* root) {
     if (!root) return true;
@@ -408,6 +407,7 @@ bool isCompleteBinaryTree(Node* root) {
     }
     return true;
 }`,
+    },
     "options": {
       "A": "flag",
       "B": "flag == false",
@@ -421,7 +421,6 @@ bool isCompleteBinaryTree(Node* root) {
     "chapter": "Tree",
     "question": {
       "main": "Fill in Code2 for the complete tree checking function.",
-    },
     "context": `// Information used for questions 24 and 25:
 bool isCompleteBinaryTree(Node* root) {
     if (!root) return true;
@@ -441,6 +440,7 @@ bool isCompleteBinaryTree(Node* root) {
     }
     return true;
 }`,
+    },
     "options": {
       "A": "node = q.front()",
       "B": "flag = false",
@@ -481,8 +481,7 @@ bool isCompleteBinaryTree(Node* root) {
     "id": 28,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in Code1 for lowestCommonAncestor()."
-    },
+      "main": "Fill in Code1 for lowestCommonAncestor().",
     "context": `// Thông tin dùng cho câu 28 và 29:
 Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     if (root == nullptr || root == p || root == q) return root;
@@ -491,6 +490,7 @@ Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     if (left != nullptr && right != nullptr) return root;
     return /* Code2 */;
 }`,
+    },
     "options": {
       "A": "lowestCommonAncestor(root->left(), p->left, q)",
       "B": "lowestCommonAncestor(root->left(), p, q)",
@@ -503,8 +503,7 @@ Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     "id": 29,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in Code2 for lowestCommonAncestor()."
-    },
+      "main": "Fill in Code2 for lowestCommonAncestor().",
     "context": `// Thông tin dùng cho câu 28 và 29:
 Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     if (root == nullptr || root == p || root == q) return root;
@@ -513,6 +512,7 @@ Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     if (left != nullptr && right != nullptr) return root;
     return /* Code2 */;
 }`,
+    },
     "options": {
       "A": "left != nullptr ? left : right",
       "B": "left == nullptr ? left : right",
@@ -525,8 +525,7 @@ Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
     "id": 30,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in Code1 for sumEvenDepthNodes()."
-    },
+      "main": "Fill in Code1 for sumEvenDepthNodes().",
     "context": `// Thông tin dùng cho câu 30 và 31:
 int sumEvenDepthNodes(Node* root) {
     if (!root) return 0;
@@ -548,6 +547,7 @@ int sumEvenDepthNodes(Node* root) {
     }
     return sum;
 }`,
+    },
     "options": {
       "A": "depth % 2 == 0",
       "B": "depth % 2 != 0",
@@ -560,8 +560,7 @@ int sumEvenDepthNodes(Node* root) {
     "id": 31,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in Code2 for the sumEvenDepthNodes function."
-    },
+      "main": "Fill in Code2 for the sumEvenDepthNodes function.",
     "context": `// Thông tin dùng cho câu 30 và 31:
 int sumEvenDepthNodes(Node* root) {
     if (!root) return 0;
@@ -583,6 +582,7 @@ int sumEvenDepthNodes(Node* root) {
     }
     return sum;
 }`,
+    },
     "options": {
       "A": "q.push({current->left(), depth + 1});",
       "B": "q.push({current->right(), depth - 1});",
@@ -595,8 +595,7 @@ int sumEvenDepthNodes(Node* root) {
     "id": 32,
     "chapter": "Tree",
     "question": {
-      "main": "The AVL insert routine is missing CODE 1."
-    },
+      "main": "The AVL insert routine is missing CODE 1.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
 Node* insert(Node* root, int key) {
     if (root == NULL) return new Node(key);
@@ -613,6 +612,7 @@ Node* insert(Node* root, int key) {
     if (val < -1 && key < root->right->key) { /* CODE 5 */ }
     return root;
 }`,
+    },
     "options": {
       "A": "root->right = insert(root->right, key);",
       "B": "root->left = insert(root->right, key);",
@@ -625,8 +625,7 @@ Node* insert(Node* root, int key) {
     "id": 33,
     "chapter": "Tree",
     "question": {
-      "main": "The AVL insert routine is missing CODE 2 for the Left-Left case."
-    },
+      "main": "The AVL insert routine is missing CODE 2 for the Left-Left case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
 Node* insert(Node* root, int key) {
     if (root == NULL) return new Node(key);
@@ -643,6 +642,7 @@ Node* insert(Node* root, int key) {
     if (val < -1 && key < root->right->key) { /* CODE 5 */ }
     return root;
 }`,
+    },
     "options": {
       "A": "return rotateLeft(root);",
       "B": "return rotateRight(root);",
@@ -655,8 +655,7 @@ Node* insert(Node* root, int key) {
     "id": 34,
     "chapter": "Tree",
     "question": {
-      "main": "The AVL insert routine is missing CODE 3 for the Right-Right case."
-    },
+      "main": "The AVL insert routine is missing CODE 3 for the Right-Right case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
 Node* insert(Node* root, int key) {
     if (root == NULL) return new Node(key);
@@ -673,6 +672,7 @@ Node* insert(Node* root, int key) {
     if (val < -1 && key < root->right->key) { /* CODE 5 */ }
     return root;
 }`,
+    },
     "options": {
       "A": "return rotateLeft(root);",
       "B": "return rotateRight(root);",
@@ -685,8 +685,7 @@ Node* insert(Node* root, int key) {
     "id": 35,
     "chapter": "Tree",
     "question": {
-      "main": "The AVL insert routine is missing CODE 4 for the Left-Right case."
-    },
+      "main": "The AVL insert routine is missing CODE 4 for the Left-Right case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
 Node* insert(Node* root, int key) {
     if (root == NULL) return new Node(key);
@@ -703,6 +702,7 @@ Node* insert(Node* root, int key) {
     if (val < -1 && key < root->right->key) { /* CODE 5 */ }
     return root;
 }`,
+    },
     "options": {
       "A": "root->left = rotateLeft(root->left); return rotateRight(root);",
       "B": "root->left = rotateRight(root->left); return rotateRight(root);",
@@ -715,8 +715,7 @@ Node* insert(Node* root, int key) {
     "id": 36,
     "chapter": "Tree",
     "question": {
-      "main": "The AVL insert routine is missing CODE 5 for the Right-Left case."
-    },
+      "main": "The AVL insert routine is missing CODE 5 for the Right-Left case.",
     "context": `// Thông tin dùng cho câu từ 32 đến 36:
 Node* insert(Node* root, int key) {
     if (root == NULL) return new Node(key);
@@ -733,6 +732,7 @@ Node* insert(Node* root, int key) {
     if (val < -1 && key < root->right->key) { /* CODE 5 */ }
     return root;
 }`,
+    },
     "options": {
       "A": "root->right = rotateRight(root->right); return rotateLeft(root);",
       "B": "root->right = rotateLeft(root->right); return rotateLeft(root);",
@@ -843,8 +843,7 @@ Node* insert(Node* root, int key) {
     "id": 44,
     "chapter": "Tree",
     "question": {
-      "main": "Provide CODE 1 inside the Rope split() routine."
-    },
+      "main": "Provide CODE 1 inside the Rope split() routine.",
     "context": `// Thông tin dùng cho câu từ 44 đến 46:
 void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (node->isLeaf) {
@@ -863,6 +862,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
         outRight = rightR;
     }
 }`,
+    },
     "options": {
       "A": "node->data = node->data.substr(index); node->weight = node->data.size();",
       "B": "new Node(node->data.substr(0, index));",
@@ -875,8 +875,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "id": 45,
     "chapter": "Tree",
     "question": {
-      "main": "Provide CODE 2 inside the Rope split() routine."
-    },
+      "main": "Provide CODE 2 inside the Rope split() routine.",
     "context": `// Thông tin dùng cho câu từ 44 đến 46:
 void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (node->isLeaf) {
@@ -895,6 +894,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
         outRight = rightR;
     }
 }`,
+    },
     "options": {
       "A": "split(node->right, index - node->weight, rightL, rightR);",
       "B": "split(node->right, index, rightL, rightR);",
@@ -907,8 +907,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "id": 46,
     "chapter": "Tree",
     "question": {
-      "main": "Provide CODE 3 inside the Rope split() routine."
-    },
+      "main": "Provide CODE 3 inside the Rope split() routine.",
     "context": `// Thông tin dùng cho câu từ 44 đến 46:
 void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (node->isLeaf) {
@@ -927,6 +926,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
         outRight = rightR;
     }
 }`,
+    },
     "options": {
       "A": "outLeft = concatNodes(node->left, rightL);",
       "B": "outLeft = concatNodes(rightL, node->left);",
@@ -939,8 +939,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "id": 47,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in CODE 1 for the Zig-Zig Right-Right case in a Splay Tree."
-    },
+      "main": "Fill in CODE 1 for the Zig-Zig Right-Right case in a Splay Tree.",
     "context": `// Thông tin dùng cho câu từ 47 đến 50:
 class SplayTree {
     Node* root;
@@ -960,6 +959,7 @@ class SplayTree {
         /* CODE 4 */
     }
 };`,
+    },
     "options": {
       "A": "rotateLeft(g); rotateLeft(p);",
       "B": "rotateRight(g); rotateRight(p);",
@@ -972,8 +972,7 @@ class SplayTree {
     "id": 48,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in CODE 2 for the Zig-Zag Right-Left case in a Splay Tree."
-    },
+      "main": "Fill in CODE 2 for the Zig-Zag Right-Left case in a Splay Tree.",
     "context": `// Thông tin dùng cho câu từ 47 đến 50:
 class SplayTree {
     Node* root;
@@ -993,6 +992,7 @@ class SplayTree {
         /* CODE 4 */
     }
 };`,
+    },
     "options": {
       "A": "rotateLeft(p); rotateRight(g);",
       "B": "rotateRight(p); rotateRight(g);",
@@ -1005,8 +1005,7 @@ class SplayTree {
     "id": 49,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in CODE 3 for the Zig-Zag Left-Right case in a Splay Tree."
-    },
+      "main": "Fill in CODE 3 for the Zig-Zag Left-Right case in a Splay Tree.",
     "context": `// Thông tin dùng cho câu từ 47 đến 50:
 class SplayTree {
     Node* root;
@@ -1026,6 +1025,7 @@ class SplayTree {
         /* CODE 4 */
     }
 };`,
+    },
     "options": {
       "A": "rotateRight(g); rotateRight(p);",
       "B": "rotateLeft(g); rotateLeft(p);",
@@ -1038,8 +1038,7 @@ class SplayTree {
     "id": 50,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in CODE 4 at the end of the Splay Tree insert routine."
-    },
+      "main": "Fill in CODE 4 at the end of the Splay Tree insert routine.",
     "context": `// Thông tin dùng cho câu từ 47 đến 50:
 class SplayTree {
     Node* root;
@@ -1059,6 +1058,7 @@ class SplayTree {
         /* CODE 4 */
     }
 };`,
+    },
     "options": {
       "A": "splay(newNode);",
       "B": "splay(parent);",
@@ -1211,12 +1211,12 @@ class SplayTree {
     "id": 61,
     "chapter": "Tree",
     "question": {
-      "main": "Identify the missing statement required to safely compute the height of an AVL node."
-    },
+      "main": "Identify the missing statement required to safely compute the height of an AVL node.",
     "context": `int updateHeight(Node* node) {
     if (!node) return 0;
     node->height = 1 + _______;
 }`,
+    },
     "options": {
       "A": "max(node->left->height, node->right->height)",
       "B": "max(getHeight(node->left), getHeight(node->right))",
@@ -1313,12 +1313,12 @@ class SplayTree {
     "id": 68,
     "chapter": "Tree",
     "question": {
-      "main": "Complete the AVL balance factor function."
-    },
+      "main": "Complete the AVL balance factor function.",
     "context": `int getBalance(Node* n) {
     if (!n) return 0;
     return _______;
 }`,
+    },
     "options": {
       "A": "getHeight(n->left) - getHeight(n->right)",
       "B": "getHeight(n->right) + getHeight(n->left)",
