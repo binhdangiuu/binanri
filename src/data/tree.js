@@ -362,7 +362,7 @@ const tree = [
     "chapter": "Tree",
     "question": {
       "main": "Fill in the missing code for AVL insertion.",
-      "context": "if (balance > 1 && value < subroot->pLeft->data) return /* Code */;"
+      "context": "Node insert (Node*& subroot, const T& value) {\n  Node* pNew = new Node(value);\n  if (!subroot) return pNew;\n  if (value < subroot->data) {\n    subroot->pLeft = insert(subroot->pLeft, value);\n  } else if (value > subroot->data) {\n    subroot->pRight = insert(subroot->pRight, value);\n  } else return subroot;\n\n  int balance = getBalance(subroot);\n  if (balance > 1 && value < subroot->pLeft->data) return /* Code */;\n}"
     },
     "options": {
       "A": "rotateLeft(subroot)",
