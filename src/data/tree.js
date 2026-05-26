@@ -925,7 +925,8 @@ Node* insert(Node* root, int key) {
     "id": 39,
     "chapter": "Tree",
     "question": {
-      "main": "Insert keys 10, 20, 30, 40, 50, 60, 70, 25 into an empty AVL tree. Which structure is correct after balancing?"
+      "main": "Insert keys 10, 20, 30, 40, 50, 60, 70, 25 into an empty AVL tree. Which structure is correct after balancing?",
+      "insertions": [10, 20, 30, 40, 50, 60, 70, 25]
     },
     "options": {
       "A": "50 (20 (10, 30 (25, 40)), 60 (null, 70))",
@@ -1431,7 +1432,8 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "id": 51,
     "chapter": "Tree",
     "question": {
-      "main": "Insert keys 15, 20, 25, 30, 10, 5 into an AVL tree. Which node becomes the final root?"
+      "main": "Insert keys 15, 20, 25, 30, 10, 5 into an AVL tree. Which node becomes the final root?",
+      "insertions": [15, 20, 25, 30, 10, 5]
     },
     "options": {
       "A": "15",
@@ -1691,7 +1693,8 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "id": 69,
     "chapter": "Tree",
     "question": {
-      "main": "If values are inserted into a standard BST in sorted order (1, 2, 3, 4, 5), what happens?"
+      "main": "If values are inserted into a standard BST in sorted order (1, 2, 3, 4, 5), what happens?",
+      "sequence": [1, 2, 3, 4, 5]
     },
     "options": {
       "A": "The tree becomes perfectly balanced",
