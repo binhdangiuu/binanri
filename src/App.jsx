@@ -222,7 +222,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 25/05/2026 • 22:29:41 (DSA Tree added, but it is error when we deploy the code questions)
+          Last Updated: 26/05/2026 • 12:10:33 (DSA Tree added, DSA Heap is in progress)
         </p>
       </div>
 
