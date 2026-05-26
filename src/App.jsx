@@ -332,7 +332,7 @@ export default function App() {
 
             {q?.context && (
               <div className="mb-6 bg-yellow-100 border border-yellow-300 p-5 rounded-2xl">
-                <p className="text-lg leading-relaxed">{q.context}</p>
+                <pre className="text-lg leading-relaxed whitespace-pre-wrap">{q.context}</pre>
               </div>
             )}
 
