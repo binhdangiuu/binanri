@@ -389,7 +389,7 @@ const tree = [
     "question": {
       "main": "Fill in Code1 for checking whether a binary tree is complete.",
     },
-    "context": `// Thông tin dùng cho câu 24 và 25:
+    "context": `// Information used for questions 24 and 25:
 bool isCompleteBinaryTree(Node* root) {
     if (!root) return true;
     queue<Node*> q;
@@ -422,7 +422,7 @@ bool isCompleteBinaryTree(Node* root) {
     "question": {
       "main": "Fill in Code2 for the complete tree checking function.",
     },
-    "context": `// Thông tin dùng cho câu 24 và 25:
+    "context": `// Information used for questions 24 and 25:
 bool isCompleteBinaryTree(Node* root) {
     if (!root) return true;
     queue<Node*> q;
