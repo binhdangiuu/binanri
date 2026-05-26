@@ -158,12 +158,10 @@ const heap = [
       "main": "Given a max-heap array:",
       "sequence": [29, 20, 10, 15, 18, 9, 5, 13, 2, 4, 15]
     },
-    "renderRule": {
-      "operations": [
-        "Sequentially extract elements from the root of the heap one by one."
-      ],
-      "rule": "Let m be the maximum number of extracted elements such that their total sum does not exceed 70."
-    },
+    "operations": [
+      "Sequentially extract elements from the root of the heap one by one."
+    ],
+    "rule": "Let m be the maximum number of extracted elements such that their total sum does not exceed 70.",
     "ask": "What is the value of m?",
     "options": {
       "A": "2",
@@ -209,13 +207,11 @@ const heap = [
     "question": {
       "main": "A perfect binary min-heap is constructed by including each integer in the range [1, 1023] exactly once."
     },
-    "renderRule": {
-      "operations": [
-        "Construct a perfect binary tree with 1023 nodes.",
-        "Fill the tree with values satisfying the min-heap property."
-      ],
-      "rule": "The depth of a node is the path length from the root. The root is at depth 0."
-    },
+    "operations": [
+      "Construct a perfect binary tree with 1023 nodes.",
+      "Fill the tree with values satisfying the min-heap property."
+    ],
+    "rule": "The depth of a node is the path length from the root. The root is at depth 0.",
     "ask": "What is the maximum depth at which the integer 9 can appear?",
     "options": {
       "A": "6",
@@ -251,12 +247,10 @@ const heap = [
       "main": "Given a max-heap array:",
       "sequence": [90, 73, 41, 25, 36, 17, 1, 2, 3, 19, 26, 7]
     },
-    "renderRule": {
-      "operations": [
-        "Delete the element 36 from the heap."
-      ],
-      "rule": "After deleting an internal node, replace it with the last element of the heap and perform reheapification to maintain the max-heap property."
-    },
+    "operations": [
+      "Delete the element 36 from the heap."
+    ],
+    "rule": "After deleting an internal node, replace it with the last element of the heap and perform reheapification to maintain the max-heap property.",
     "ask": "What is the state of the heap after the deletion?",
     "options": {
       "A": "[90, 73, 41, 25, 26, 17, 1, 2, 3, 7, 19]",
@@ -267,7 +261,7 @@ const heap = [
     "answer": "C"
   },
 
-  // CÂU 17 - TỐI ƯU UI
+  // CÂU 17
   {
     "id": 17,
     "chapter": "Heap",
@@ -275,13 +269,11 @@ const heap = [
       "main": "Given an initial array:",
       "sequence": [1, 3, 5, 4, 6, 11, 10, 8, 7, 13, 15]
     },
-    "renderRule": {
-      "operations": [
-        "Apply the bottom-up heapify algorithm to build a max-heap with O(N) complexity.",
-        "Execute exactly two steps of the heapify process."
-      ],
-      "rule": "Iterate from index floor(n/2) - 1 down to 0, calling heapify() at each index."
-    },
+    "operations": [
+      "Apply the bottom-up heapify algorithm to build a max-heap with O(N) complexity.",
+      "Execute exactly two steps of the heapify process."
+    ],
+    "rule": "Iterate from index floor(n/2) - 1 down to 0, calling heapify() at each index.",
     "ask": "Which array represents the state after the first two heapify steps?",
     "options": {
       "A": "[15, 13, 11, 8, 6, 5, 10, 4, 7, 3, 1]",
@@ -292,7 +284,7 @@ const heap = [
     "answer": "C"
   },
 
-  // CÂU 18 - TỐI ƯU UI
+  // CÂU 18
   {
     "id": 18,
     "chapter": "Heap",
@@ -300,12 +292,10 @@ const heap = [
       "main": "Given an initial array:",
       "sequence": [10, 7, 11, 5, 4, 13, 1, 2]
     },
-    "renderRule": {
-      "operations": [
-        "Construct a min-heap by inserting elements from the array one by one in the original order."
-      ],
-      "rule": "For each insertion, append the element to the end of the heap and perform a reheap-up operation."
-    },
+    "operations": [
+      "Construct a min-heap by inserting elements from the array one by one in the original order."
+    ],
+    "rule": "For each insertion, append the element to the end of the heap and perform a reheap-up operation.",
     "ask": "What is the resulting min-heap array?",
     "options": {
       "A": "[1, 2, 4, 5, 7, 13, 11, 10]",
@@ -316,7 +306,7 @@ const heap = [
     "answer": "A"
   },
 
-  // CÂU 19 - TỐI ƯU UI
+  // CÂU 19
   {
     "id": 19,
     "chapter": "Heap",
@@ -324,12 +314,10 @@ const heap = [
       "main": "Given a min-heap array:",
       "sequence": [1, 2, 6, 4, 7, 13, 11, 10]
     },
-    "renderRule": {
-      "operations": [
-        "Insert a new element with a value of 3 into this min-heap."
-      ],
-      "rule": "Place the new element at the first available position at the bottom level, then perform reheap-up."
-    },
+    "operations": [
+      "Insert a new element with a value of 3 into this min-heap."
+    ],
+    "rule": "Place the new element at the first available position at the bottom level, then perform reheap-up.",
     "ask": "What is the state of the min-heap array after the insertion?",
     "options": {
       "A": "[1, 2, 3, 4, 7, 13, 11, 10, 6]",
@@ -399,12 +387,10 @@ const heap = [
       "main": "Given a 3-ary max-heap array:",
       "sequence": [27, 21, 15, 18, 19, 11, 9, 10, 12, 14, 8]
     },
-    "renderRule": {
-      "operations": [
-        "Delete the element 19 from this 3-ary max-heap."
-      ],
-      "rule": "In a 3-ary heap, each node has at most 3 children. Maintain the structural integrity and heap property post-deletion."
-    },
+    "operations": [
+      "Delete the element 19 from this 3-ary max-heap."
+    ],
+    "rule": "In a 3-ary heap, each node has at most 3 children. Maintain the structural integrity and heap property post-deletion.",
     "ask": "What is the state of the heap array after removing the element 19?",
     "options": {
       "A": "[27, 21, 15, 18, 14, 11, 9, 10, 12, 8]",
