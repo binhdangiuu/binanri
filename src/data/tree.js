@@ -876,7 +876,46 @@ Node* insert(Node* root, int key) {
     "id": 40,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in CODE 1 and CODE 2 in rotateLeft() for the Rope structure."
+      "main": "Fill in CODE 1 and CODE 2 in rotateLeft() for the Rope structure.",
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
+Node* rotateLeft(Node* x) {
+    Node *y = x->right;
+    /* CODE 1 */
+    y->left = x;
+    /* CODE 2 */
+    return y;
+}`
     },
     "options": {
       "A": "CODE 1: x->right = y->left; CODE 2: updateHeight(x);",
@@ -890,7 +929,50 @@ Node* insert(Node* root, int key) {
     "id": 41,
     "chapter": "Tree",
     "question": {
-      "main": "Complete the missing sections within the Rope charAt() method."
+      "main": "Complete the missing sections within the Rope charAt() method.",
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
+char charAt(Node *node, int index) const {
+    if (node->isLeaf()) {
+        /* CODE 1 */
+    }
+    if (/* CODE 2 */)
+    {
+        // TODO
+    }
+    else
+        return charAt(node->right, /* CODE 3 */);
+}`
     },
     "options": {
       "A": "CODE 1: return node->data[index]; CODE 2: index < node->weight; CODE 3: index - node->weight;",
@@ -904,7 +986,49 @@ Node* insert(Node* root, int key) {
     "id": 42,
     "chapter": "Tree",
     "question": {
-      "main": "What is the time complexity of findFirstChar() using Rope.charAt()?"
+      "main": "What is the time complexity of findFirstChar() using Rope.charAt()?",
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    int length() const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
+char findFirstChar(const Rope &rope, char target) {
+    int n = rope.length();
+    for (int i = 0; i < n; ++i) {
+        if (rope.charAt(i) == target) {
+            return rope.charAt(i);
+        }
+    }
+    return '\0'; // Không tìm thấy
+}`
     },
     "options": {
       "A": "O(n)",
@@ -918,7 +1042,49 @@ Node* insert(Node* root, int key) {
     "id": 43,
     "chapter": "Tree",
     "question": {
-      "main": "Provide CODE 1 inside the Rope substringHelper() routine."
+      "main": "Provide CODE 1 inside the Rope substringHelper() routine.",
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    int length() const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
+string substringHelper(Node *node, int start, int end) const {
+    if (end < leftWeight) {
+        return substringHelper(node->left, start, end);
+    } else if (start >= leftWeight) {
+        return substringHelper(node->right, start - leftWeight, end - leftWeight);
+    } else {
+        return substringHelper(node->left, start, leftWeight - 1) + /* CODE 1 */;
+    }
+}`
     },
     "options": {
       "A": "substringHelper(node->right, 0, end - leftWeight);",
@@ -933,7 +1099,39 @@ Node* insert(Node* root, int key) {
     "chapter": "Tree",
     "question": {
       "main": "Provide CODE 1 inside the Rope split() routine.",
-    "context": `// Thông tin dùng cho câu từ 44 đến 46:
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    int length() const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
 void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (node->isLeaf) {
         /* CODE 1 */
@@ -950,7 +1148,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
         /* CODE 3 */
         outRight = rightR;
     }
-}`,
+}`
     },
     "options": {
       "A": "node->data = node->data.substr(index); node->weight = node->data.size();",
@@ -965,7 +1163,39 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "chapter": "Tree",
     "question": {
       "main": "Provide CODE 2 inside the Rope split() routine.",
-    "context": `// Thông tin dùng cho câu từ 44 đến 46:
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    int length() const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
 void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (node->isLeaf) {
         /* CODE 1 */
@@ -982,7 +1212,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
         /* CODE 3 */
         outRight = rightR;
     }
-}`,
+}`
     },
     "options": {
       "A": "split(node->right, index - node->weight, rightL, rightR);",
@@ -997,7 +1227,39 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "chapter": "Tree",
     "question": {
       "main": "Provide CODE 3 inside the Rope split() routine.",
-    "context": `// Thông tin dùng cho câu từ 44 đến 46:
+      "context": `// Thông tin dùng cho câu từ 40 đến 46:
+class Rope {
+private:
+    class Node {
+    public:
+        enum BalanceFactor { LH = 1, EH = 0, RH = -1 };
+        friend class Rope;
+    private:
+        Node* left;
+        Node* right;
+        string data;
+        int weight;
+        int height;
+        BalanceFactor balance;
+        Node();
+        explicit Node(const string &s);
+        bool isLeaf() const;
+    };
+    Node* root;
+    Node* rotateLeft(Node* x);
+    Node* rebalance(Node* node);
+    void split(Node* node, int index, Node*& outLeft, Node*& outRight);
+    Node* concatNodes(Node* left, Node* right);
+    char charAt(Node* node, int index) const;
+public:
+    Rope();
+    ~Rope();
+    char charAt(int index) const;
+    int length() const;
+    string substring(int start, int len) const;
+    void insert(int index, const string &s);
+};
+
 void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (node->isLeaf) {
         /* CODE 1 */
@@ -1014,7 +1276,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
         /* CODE 3 */
         outRight = rightR;
     }
-}`,
+}`
     },
     "options": {
       "A": "outLeft = concatNodes(node->left, rightL);",
@@ -1029,7 +1291,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "chapter": "Tree",
     "question": {
       "main": "Fill in CODE 1 for the Zig-Zig Right-Right case in a Splay Tree.",
-    "context": `// Thông tin dùng cho câu từ 47 đến 50:
+      "context": `// Thông tin dùng cho câu từ 47 đến 50:
 class SplayTree {
     Node* root;
     void insert(int key) {
@@ -1062,7 +1324,7 @@ class SplayTree {
     "chapter": "Tree",
     "question": {
       "main": "Fill in CODE 2 for the Zig-Zag Right-Left case in a Splay Tree.",
-    "context": `// Thông tin dùng cho câu từ 47 đến 50:
+      "context": `// Thông tin dùng cho câu từ 47 đến 50:
 class SplayTree {
     Node* root;
     void insert(int key) {
