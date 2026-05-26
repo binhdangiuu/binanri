@@ -1,3 +1,23 @@
+const splayContext = `// Thông tin dùng cho câu từ 47 đến 50:
+class SplayTree {
+    Node* root;
+    void insert(int key) {
+        if (!root) { root = new Node(key); return; }
+        Node* cur = root;
+        Node* parent = NULL;
+        while (cur) {
+            parent = cur;
+            if (key < cur->key) cur = cur->left;
+            else if (key > cur->key) cur = cur->right;
+        }
+        Node* newNode = new Node(key);
+        newNode->parent = parent;
+        if (key < parent->key) parent->left = newNode;
+        else parent->right = newNode;
+        /* CODE 4 */
+    }
+};`;
+
 const tree = [
   {
     "id": 1,
@@ -1084,6 +1104,12 @@ string substringHelper(Node *node, int start, int end) const {
     } else {
         return substringHelper(node->left, start, leftWeight - 1) + /* CODE 1 */;
     }
+
+string Rope::substring(int start, int len) const {
+    if (start < 0 || start >= length() || len < 0 || start + len > length()) {
+        throw std::out_of_range("Invalid start or length");
+    }
+    return substringHelper(root, start, start + len - 1);
 }`
     },
     "options": {
@@ -1142,12 +1168,16 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (index < node->weight) {
         split(node->left, index, outLeft, outRight);
         outRight = concatNodes(outRight, node->right);
-    } else {
+    } else if (index > node->weight) {
         Node *rightL = NULL, *rightR = NULL;
         /* CODE 2 */
         /* CODE 3 */
         outRight = rightR;
+    } else {
+        outLeft = node->left;
+        outRight = node->right;
     }
+        delete node;
 }`
     },
     "options": {
@@ -1206,12 +1236,16 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (index < node->weight) {
         split(node->left, index, outLeft, outRight);
         outRight = concatNodes(outRight, node->right);
-    } else {
+    } else if (index > node->weight) {
         Node *rightL = NULL, *rightR = NULL;
         /* CODE 2 */
         /* CODE 3 */
         outRight = rightR;
+    } else {
+        outLeft = node->left;
+        outRight = node->right;
     }
+        delete node;
 }`
     },
     "options": {
@@ -1270,12 +1304,16 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     if (index < node->weight) {
         split(node->left, index, outLeft, outRight);
         outRight = concatNodes(outRight, node->right);
-    } else {
+    } else if (index > node->weight) {
         Node *rightL = NULL, *rightR = NULL;
         /* CODE 2 */
         /* CODE 3 */
         outRight = rightR;
+    } else {
+        outLeft = node->left;
+        outRight = node->right;
     }
+        delete node;
 }`
     },
     "options": {
@@ -1291,25 +1329,7 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "chapter": "Tree",
     "question": {
       "main": "Fill in CODE 1 for the Zig-Zig Right-Right case in a Splay Tree.",
-      "context": `// Thông tin dùng cho câu từ 47 đến 50:
-class SplayTree {
-    Node* root;
-    void insert(int key) {
-        if (!root) { root = new Node(key); return; }
-        Node* cur = root;
-        Node* parent = NULL;
-        while (cur) {
-            parent = cur;
-            if (key < cur->key) cur = cur->left;
-            else if (key > cur->key) cur = cur->right;
-        }
-        Node* newNode = new Node(key);
-        newNode->parent = parent;
-        if (key < parent->key) parent->left = newNode;
-        else parent->right = newNode;
-        /* CODE 4 */
-    }
-};`,
+      "context": splayContext,
     },
     "options": {
       "A": "rotateLeft(g); rotateLeft(p);",
@@ -1324,25 +1344,7 @@ class SplayTree {
     "chapter": "Tree",
     "question": {
       "main": "Fill in CODE 2 for the Zig-Zag Right-Left case in a Splay Tree.",
-      "context": `// Thông tin dùng cho câu từ 47 đến 50:
-class SplayTree {
-    Node* root;
-    void insert(int key) {
-        if (!root) { root = new Node(key); return; }
-        Node* cur = root;
-        Node* parent = NULL;
-        while (cur) {
-            parent = cur;
-            if (key < cur->key) cur = cur->left;
-            else if (key > cur->key) cur = cur->right;
-        }
-        Node* newNode = new Node(key);
-        newNode->parent = parent;
-        if (key < parent->key) parent->left = newNode;
-        else parent->right = newNode;
-        /* CODE 4 */
-    }
-};`,
+      "context": splayContext,
     },
     "options": {
       "A": "rotateLeft(p); rotateRight(g);",
@@ -1357,25 +1359,7 @@ class SplayTree {
     "chapter": "Tree",
     "question": {
       "main": "Fill in CODE 3 for the Zig-Zag Left-Right case in a Splay Tree.",
-    "context": `// Thông tin dùng cho câu từ 47 đến 50:
-class SplayTree {
-    Node* root;
-    void insert(int key) {
-        if (!root) { root = new Node(key); return; }
-        Node* cur = root;
-        Node* parent = NULL;
-        while (cur) {
-            parent = cur;
-            if (key < cur->key) cur = cur->left;
-            else if (key > cur->key) cur = cur->right;
-        }
-        Node* newNode = new Node(key);
-        newNode->parent = parent;
-        if (key < parent->key) parent->left = newNode;
-        else parent->right = newNode;
-        /* CODE 4 */
-    }
-};`,
+      "context": splayContext,
     },
     "options": {
       "A": "rotateRight(g); rotateRight(p);",
@@ -1390,25 +1374,7 @@ class SplayTree {
     "chapter": "Tree",
     "question": {
       "main": "Fill in CODE 4 at the end of the Splay Tree insert routine.",
-    "context": `// Thông tin dùng cho câu từ 47 đến 50:
-class SplayTree {
-    Node* root;
-    void insert(int key) {
-        if (!root) { root = new Node(key); return; }
-        Node* cur = root;
-        Node* parent = NULL;
-        while (cur) {
-            parent = cur;
-            if (key < cur->key) cur = cur->left;
-            else if (key > cur->key) cur = cur->right;
-        }
-        Node* newNode = new Node(key);
-        newNode->parent = parent;
-        if (key < parent->key) parent->left = newNode;
-        else parent->right = newNode;
-        /* CODE 4 */
-    }
-};`,
+      "context": splayContext,
     },
     "options": {
       "A": "splay(newNode);",
