@@ -17,15 +17,47 @@ const heap = [
     "id": 2,
     "chapter": "Heap",
     "question": {
-      "main": "Given an array consisting of 9 elements [a_1, a_2, \dots, a_9]. Suppose that after the process of building it into a heap, we obtain the following array:",
+      "main": "Given an array consisting of 9 elements [a1, a2, ..., a9]. Suppose that after the process of building it into a heap, we obtain the following array:",
       "sequence": [["a9", " a6", " a3", " a4", " a7", " a1", " a2", " a5", " a8"]],
-      "ask": "What is the in-order traversal result?"
+      "ask": "Which of the following sequences could be the result of sorting the original array in ascending order?"
     },
     "options": {
       "A": "[a9, a6, a7, a3, a4, a2, a1, a8, a5]",
       "B": "[a9, a3, a1, a2, a4, a5, a6, a7, a8]",
       "C": "[a9, a6, a7, a3, a1, a2, a5, a4, a8]",
       "D": "[a6, a3, a9, a1, a4, a2, a7, a5, a8]"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 2,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an array consisting of 9 elements [a1, a2, ..., a9]. Suppose that after the process of building it into a heap, we obtain the following array:",
+      "sequence": [["a9", " a6", " a3", " a4", " a7", " a1", " a2", " a5", " a8"]],
+      "ask": "Which of the following sequences could be the result of sorting the original array in descending order?"
+    },
+    "options": {
+      "A": "[a9, a6, a7, a3, a4, a2, a1, a8, a5]",
+      "B": "[a9, a3, a1, a2, a4, a5, a6, a7, a8]",
+      "C": "[a9, a6, a7, a3, a1, a2, a5, a4, a8]",
+      "D": "[a6, a3, a9, a1, a4, a2, a7, a5, a8]"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 3,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an array consisting of 10 elements [b1, b2, ..., b10]. Suppose that after the process of building it into a 3-ary max-heap (each node has at most 3 children), we obtain the following array:",
+      "sequence": ["b2", " b4", " b1", " b6", " b7", " b5", " b8", " b9", " b10", " b3"],
+      "ask": "Which of the following sequences could be the result of sorting the original array in descending order?"
+    },
+    "options": {
+      "A": "[b2, b4, b7, b5, b1, b9, b8, b10, b6, b3]",
+      "B": "[b2, b1, b3, b5, b4, b6, b7, b8, b9, b10]",
+      "C": "[b2, b3, b6, b1, b4, b5, b7, b8, b9, b10]",
+      "D": "[b4, b5, b3, b1, b2, b6, b7, b8, b9, b10]"
     },
     "answer": "A"
   },
