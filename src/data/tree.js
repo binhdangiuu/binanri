@@ -367,7 +367,7 @@ const tree = [
     if (!subroot) return pNew;
     if (value < subroot->data) {
         subroot->pLeft = insert(subroot->pLeft, value);
-    } else if (value > subroot->data) {
+    } else if (value >= subroot->data) {
         subroot->pRight = insert(subroot->pRight, value);
     } else return subroot;
 
@@ -388,25 +388,37 @@ const tree = [
     "chapter": "Tree",
     "question": {
       "main": "Fill in Code1 for checking whether a binary tree is complete.",
-    "context": `// Information used for questions 24 and 25:
-bool isCompleteBinaryTree(Node* root) {
-    if (!root) return true;
-    queue<Node*> q;
+      "context": `template<typename E>
+class BNode {
+public:
+    virtual E element() = 0; // return the node value
+    virtual BNode<E>* left() const = 0; // return the node's left child
+    virtual BNode<E>* right() const = 0; // return the node's right child
+};
+
+template<typename E>
+bool checkNode(BNode<E>* node, bool &flag, Queue<BNode<E>*> &q) {
+    if (node) {
+        if (/* Code1 */) return false;
+        /* Code2 */;
+    } else flag = true;
+    return true;
+}
+
+template<typename E>
+bool isCompleteBinaryTree(BNode<E>* root) {
+    if (root == nullptr) return true;
+    Queue<BNode<E>*> q;
     q.push(root);
     bool flag = false;
     while (!q.empty()) {
-        Node* curr = q.front();
+        BNode<E>* temp = q.front();
         q.pop();
-        if (curr == nullptr) {
-            flag = true;
-        } else {
-            if (/* Code1 */) return false;
-            /* Code2 */;
-            q.push(curr->right);
-        }
+        if (!checkNode(temp->left(), flag, q)) return false;
+        if (!checkNode(temp->right(), flag, q)) return false;
     }
     return true;
-}`,
+}`
     },
     "options": {
       "A": "flag",
@@ -421,25 +433,37 @@ bool isCompleteBinaryTree(Node* root) {
     "chapter": "Tree",
     "question": {
       "main": "Fill in Code2 for the complete tree checking function.",
-    "context": `// Information used for questions 24 and 25:
-bool isCompleteBinaryTree(Node* root) {
-    if (!root) return true;
-    queue<Node*> q;
+      "context": `template<typename E>
+class BNode {
+public:
+    virtual E element() = 0; // return the node value
+    virtual BNode<E>* left() const = 0; // return the node's left child
+    virtual BNode<E>* right() const = 0; // return the node's right child
+};
+
+template<typename E>
+bool checkNode(BNode<E>* node, bool &flag, Queue<BNode<E>*> &q) {
+    if (node) {
+        if (/* Code1 */) return false;
+        /* Code2 */;
+    } else flag = true;
+    return true;
+}
+
+template<typename E>
+bool isCompleteBinaryTree(BNode<E>* root) {
+    if (root == nullptr) return true;
+    Queue<BNode<E>*> q;
     q.push(root);
     bool flag = false;
     while (!q.empty()) {
-        Node* curr = q.front();
+        BNode<E>* temp = q.front();
         q.pop();
-        if (curr == nullptr) {
-            flag = true;
-        } else {
-            if (/* Code1 */) return false;
-            /* Code2 */;
-            q.push(curr->right);
-        }
+        if (!checkNode(temp->left(), flag, q)) return false;
+        if (!checkNode(temp->right(), flag, q)) return false;
     }
     return true;
-}`,
+}`
     },
     "options": {
       "A": "node = q.front()",
@@ -453,7 +477,19 @@ bool isCompleteBinaryTree(Node* root) {
     "id": 26,
     "chapter": "Tree",
     "question": {
-      "main": "Complete the missing code in bstInsert(). Duplicate keys are not allowed."
+      "main": "Complete the missing code in bstInsert(). Duplicate keys are not allowed.",
+      "context": `TreeNode* bstInsert(TreeNode* root, int val) {
+    if (root == nullptr) return new TreeNode(val);
+    TreeNode* curr = root;
+    TreeNode* prev = nullptr;
+    while (curr != nullptr) {
+        prev = curr;
+        // Code
+    }
+    if (val < prev->val) prev->left = new TreeNode(val);
+    else { prev->right = new TreeNode(val); }
+    return root;
+}`
     },
     "options": {
       "A": "if (val < curr->val) curr = curr->left; else curr = curr->right;",
@@ -467,7 +503,12 @@ bool isCompleteBinaryTree(Node* root) {
     "id": 27,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in the code to count leaf nodes in a binary tree."
+      "main": "Fill in the code to count leaf nodes in a binary tree.",
+      "context": `int countLO(Node *root) {
+    if (!root) return 0;
+    // Code
+    return countLO(root->left) + countLO(root->right);
+}`
     },
     "options": {
       "A": "if (!root->left && !root->right) return 1;",
