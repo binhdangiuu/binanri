@@ -1,8 +1,51 @@
 const splayContext = `// Thông tin dùng cho câu từ 47 đến 50:
+struct Node {
+    int key;
+    Node* left;
+    Node* right;
+    Node* parent;
+    Node(int k) : key(k), left(NULL), right(NULL), parent(NULL) {}
+};
+
 class SplayTree {
+private:
     Node* root;
+    void rotateLeft(Node* x);
+    void rotateRight(Node* x);
+    void splay(Node* x) {
+        while (x->parent) {
+            Node* p = x->parent;
+            Node* g = p->parent;
+            if (!g) {
+                // Zig
+            } else if ((x == p->left && p == g->left)) {
+                // Zig-Zig left
+            } else if ((x == p->right && p == g->right)) {
+                /* CODE 1 */
+            } else if ((x == p->right && p == g->left)) {
+                /* CODE 2 */
+            } else {
+                // Zig-Zag
+            }
+        }
+    }
+public:
+    SplayTree() : root(NULL) {}
+    Node* find(int key) {
+        Node* cur = root;
+        Node* prev = NULL;
+        while (cur) {
+            prev = cur;
+            if (key < cur->key) cur = cur->left;
+            else if (key > cur->key) cur = cur->right;
+            else {
+                /* CODE 3 */
+                return cur;
+            }
+        }
+        return NULL;
+    }
     void insert(int key) {
-        if (!root) { root = new Node(key); return; }
         Node* cur = root;
         Node* parent = NULL;
         while (cur) {
