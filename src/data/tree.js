@@ -1402,16 +1402,16 @@ void split(Node* node, int index, Node*& outLeft, Node*& outRight) {
     "id": 49,
     "chapter": "Tree",
     "question": {
-      "main": "Fill in CODE 3 for the Zig-Zag Left-Right case in a Splay Tree.",
+      "main": "In the missing CODE 3 in find(), when we find the key node...",
       "context": splayContext,
     },
     "options": {
-      "A": "rotateRight(g); rotateRight(p);",
-      "B": "rotateLeft(g); rotateLeft(p);",
-      "C": "rotateRight(p); rotateLeft(g);",
-      "D": "rotateLeft(p); rotateRight(g);"
+      "A": "return splay(cur);",
+      "B": "splay(cur);",
+      "C": "rotateLeft(cur);",
+      "D": "rotateRight(cur);"
     },
-    "answer": "A"
+    "answer": "B"
   },
   {
     "id": 50,
