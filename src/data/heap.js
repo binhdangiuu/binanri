@@ -942,6 +942,586 @@ std::vector<int> findKSmallest(const std::vector<int>& arr, int K) {
       "D": "K >= heap->size()"
     },
     "answer": "B"
+  },
+  // CÂU 38
+  {
+    "id": 38,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MinHeap {
+    int *harr;
+    int heap_size;
+public:
+    void decreaseKey(int i, int new_val) {
+        harr[i] = new_val;
+        while (i != 0 && /*Code1*/) {
+            std::swap(harr[i], harr[(i - 1) / 2]);
+            i = /*Code2*/;
+        }
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code1*/ in the decreaseKey function:"
+    },
+    "options": {
+      "A": "harr[(i - 1) / 2] > harr[i]",
+      "B": "harr[(i - 1) / 2] < harr[i]",
+      "C": "harr[i] > new_val",
+      "D": "harr[(i - 1) / 2] == harr[i]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 39
+  {
+    "id": 39,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MinHeap {
+    int *harr;
+    int heap_size;
+public:
+    void decreaseKey(int i, int new_val) {
+        harr[i] = new_val;
+        while (i != 0 && /*Code1*/) {
+            std::swap(harr[i], harr[(i - 1) / 2]);
+            i = /*Code2*/;
+        }
+    }
+};`,
+      "ask": "Please fill in the missing index update for /*Code2*/ to traverse up the tree:"
+    },
+    "options": {
+      "A": "i / 2",
+      "B": "(i - 1) / 2",
+      "C": "(i + 1) / 2",
+      "D": "i - 1"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 40
+  {
+    "id": 40,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an initial binary min-heap array:",
+      "sequence": [8, 12, 15, 20, 25, 30, 40],
+      "operations": [
+        "Perform a decreaseKey operation at index 4 (changing its value from 25 to 5)."
+      ],
+      "rule": "After updating the element's value, perform a reheap-up operation to maintain the min-heap property.",
+      "ask": "What is the state of the min-heap array after the update?"
+    },
+    "options": {
+      "A": "[5, 8, 15, 20, 12, 30, 40]",
+      "B": "[5, 12, 15, 20, 8, 30, 40]",
+      "C": "[8, 5, 15, 20, 12, 30, 40]",
+      "D": "[5, 8, 15, 12, 20, 30, 40]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 41
+  {
+    "id": 41,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+    int *harr;
+    int heap_size;
+public:
+    void increaseKey(int i, int new_val) {
+        harr[i] = new_val;
+        while (i != 0 && /*Code1*/) {
+            std::swap(harr[i], harr[(i - 1) / 2]);
+            i = /*Code2*/;
+        }
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code1*/ in the increaseKey function for a Max-Heap:"
+    },
+    "options": {
+      "A": "harr[(i - 1) / 2] < harr[i]",
+      "B": "harr[(i - 1) / 2] > harr[i]",
+      "C": "harr[i] < harr[2 * i + 1]",
+      "D": "harr[i] < harr[2 * i + 2]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 42
+  {
+    "id": 42,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+    int *harr;
+    int heap_size;
+public:
+    void increaseKey(int i, int new_val) {
+        harr[i] = new_val;
+        while (i != 0 && /*Code1*/) {
+            std::swap(harr[i], harr[(i - 1) / 2]);
+            i = /*Code2*/;
+        }
+    }
+};`,
+      "ask": "Please fill in the missing index update for /*Code2*/ to move to the parent node:"
+    },
+    "options": {
+      "A": "i / 2",
+      "B": "(i - 1) / 2",
+      "C": "i - 1",
+      "D": "(i + 1) / 2"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 43
+  {
+    "id": 43,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr;
+    int heap_size;
+public:
+    bool verifyMaxHeap(int i) {
+        if (i >= (heap_size - 1) / 2)
+            return true;
+
+        if (/*Code1*/)
+            return false;
+        if (/*Code2*/)
+            return false;
+
+        return verifyMaxHeap(2 * i + 1) && verifyMaxHeap(2 * i + 2);
+    }
+};`,
+      "ask": "Please fill in the missing conditional validation check for the left child node in /*Code1*/:"
+    },
+    "options": {
+      "A": "2 * i + 1 < heap_size && harr[i] < harr[2 * i + 1]",
+      "B": "2 * i + 1 < heap_size && harr[i] > harr[2 * i + 1]",
+      "C": "2 * i + 1 >= heap_size && harr[i] < harr[2 * i + 1]",
+      "D": "harr[i] == harr[2 * i + 1]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 44
+  {
+    "id": 44,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr;
+    int heap_size;
+public:
+    bool verifyMaxHeap(int i) {
+        if (i >= (heap_size - 1) / 2)
+            return true;
+
+        if (/*Code1*/)
+            return false;
+        if (/*Code2*/)
+            return false;
+
+        return verifyMaxHeap(2 * i + 1) && verifyMaxHeap(2 * i + 2);
+    }
+};`,
+      "ask": "Please fill in the missing conditional validation check for the right child node in /*Code2*/:"
+    },
+    "options": {
+      "A": "2 * i + 2 < heap_size && harr[i] > harr[2 * i + 2]",
+      "B": "2 * i + 2 < heap_size && harr[i] < harr[2 * i + 2]",
+      "C": "2 * i + 2 >= heap_size && harr[i] < harr[2 * i + 2]",
+      "D": "harr[i] == harr[2 * i + 2]"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 45
+  {
+    "id": 45,
+    "chapter": "Heap",
+    "question": {
+      "main": "In an array-based implementation of a d-ary heap, if a node is located at index i (0-indexed), what is the index formula for its first (leftmost) child node?",
+      "ask": "Select the correct formula:"
+    },
+    "options": {
+      "A": "d * i + 1",
+      "B": "d * i + 2",
+      "C": "d * (i - 1)",
+      "D": "d * i"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 46
+  {
+    "id": 46,
+    "chapter": "Heap",
+    "question": {
+      "main": "In an array-based implementation of a d-ary heap, if a non-root node is located at index i (0-indexed), what is the index formula to locate its parent node?",
+      "ask": "Select the correct formula:"
+    },
+    "options": {
+      "A": "i / d",
+      "B": "(i - 1) / d",
+      "C": "(i + 1) / d",
+      "D": "(i - d) / d"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 47
+  {
+    "id": 47,
+    "chapter": "Heap",
+    "question": {
+      "main": "What is the worst-case time complexity of the delete operation of an arbitrary node at a known index in a d-ary heap containing n elements?",
+      "ask": "Select the correct time complexity:"
+    },
+    "options": {
+      "A": "O(log_d n)",
+      "B": "O(d * log_d n)",
+      "C": "O(n)",
+      "D": "O(d * n)"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 48
+  {
+    "id": 48,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MinHeap {
+    int *harr;
+    int heap_size;
+public:
+    int extractMin() {
+        if (heap_size <= 0) return -1;
+        if (heap_size == 1) {
+            heap_size--;
+            return harr[0];
+        }
+        int root = harr[0];
+        harr[0] = /*Code1*/;
+        /*Code2*/;
+        MinHeapify(0);
+        return root;
+    }
+    void MinHeapify(int i);
+};`,
+      "ask": "Please fill in the missing assignment statement for /*Code1*/ to prepare for extraction:"
+    },
+    "options": {
+      "A": "harr[heap_size]",
+      "B": "harr[heap_size - 1]",
+      "C": "harr[1]",
+      "D": "0"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 49
+  {
+    "id": 49,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MinHeap {
+    int *harr;
+    int heap_size;
+public:
+    int extractMin() {
+        if (heap_size <= 0) return -1;
+        if (heap_size == 1) {
+            heap_size--;
+            return harr[0];
+        }
+        int root = harr[0];
+        harr[0] = /*Code1*/;
+        /*Code2*/;
+        MinHeapify(0);
+        return root;
+    }
+    void MinHeapify(int i);
+};`,
+      "ask": "Please fill in the missing state modification operation for /*Code2*/:"
+    },
+    "options": {
+      "A": "heap_size++",
+      "B": "heap_size--",
+      "C": "heap_size = 0",
+      "D": "harr[heap_size - 1] = 0"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 50
+  {
+    "id": 50,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given a min-heap array:",
+      "sequence": [3, 5, 9, 6, 8, 20, 10, 12, 18],
+      "operations": [
+        "Extract the root element from the min-heap."
+      ],
+      "rule": "Replace the root with the last element of the array, decrease the heap size, and invoke the min-heapify operation on the root node.",
+      "ask": "What is the state of the min-heap array after extracting the minimum element?"
+    },
+    "options": {
+      "A": "[5, 6, 9, 12, 8, 20, 10, 18]",
+      "B": "[5, 6, 9, 18, 8, 20, 10, 12]",
+      "C": "[5, 8, 9, 6, 18, 20, 10, 12]",
+      "D": "[5, 6, 9, 12, 18, 20, 10, 8]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 51
+  {
+    "id": 51,
+    "chapter": "Heap",
+    "question": {
+      "main": "An array of size n is sorted in descending order. If we build a max-heap using the bottom-up buildHeap algorithm, what is the best-case time complexity?",
+      "ask": "Choose the correct time complexity option:"
+    },
+    "options": {
+      "A": "O(1)",
+      "B": "O(n)",
+      "C": "O(n log n)",
+      "D": "O(log n)"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 52
+  {
+    "id": 52,
+    "chapter": "Heap",
+    "question": {
+      "main": "Which structural property is fundamentally required for a binary tree implementation to be represented efficiently as an array without storing explicit pointers?",
+      "ask": "Choose the correct structural property:"
+    },
+    "options": {
+      "A": "Full Binary Tree",
+      "B": "Complete Binary Tree",
+      "C": "Perfect Binary Tree",
+      "D": "Balanced Binary Tree"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 53
+  {
+    "id": 53,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an initial max-heap array:",
+      "sequence": [50, 30, 40, 20, 10, 15, 35],
+      "operations": [
+        "Insert a new node with a value of 45 into the max-heap."
+      ],
+      "rule": "Append the node at the end of the array representation, then perform a reheap-up operation.",
+      "ask": "What is the array state after completing the insertion?"
+    },
+    "options": {
+      "A": "[50, 45, 40, 30, 10, 15, 35, 20]",
+      "B": "[50, 30, 45, 20, 10, 15, 35, 40]",
+      "C": "[50, 45, 40, 20, 10, 15, 35, 30]",
+      "D": "[50, 40, 45, 20, 10, 15, 35, 30]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 54
+  {
+    "id": 54,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+    int *harr;
+    int heap_size;
+public:
+    void clearElement(int i) {
+        // Replaces element at index i with negative infinity and pops it out
+        harr[i] = -1e9; 
+        while (i != 0 && harr[(i - 1) / 2] < harr[i]) {
+            std::swap(harr[i], harr[(i - 1) / 2]);
+            i = /*Code1*/;
+        }
+        /*Code2*/;
+    }
+    int extractMax();
+};`,
+      "ask": "Please fill in the missing index tracking logic for /*Code1*/:"
+    },
+    "options": {
+      "A": "i / 2",
+      "B": "(i - 1) / 2",
+      "C": "i - 1",
+      "D": "(i + 1) / 2"
+    },
+    "answer": "B"
+  },
+
+  // CÂU 55
+  {
+    "id": 55,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+    int *harr;
+    int heap_size;
+public:
+    void clearElement(int i) {
+        // Replaces element at index i with negative infinity and pops it out
+        harr[i] = -1e9; 
+        while (i != 0 && harr[(i - 1) / 2] < harr[i]) {
+            std::swap(harr[i], harr[(i - 1) / 2]);
+            i = /*Code1*/;
+        }
+        /*Code2*/;
+    }
+    int extractMax();
+};`,
+      "ask": "Please fill in the missing method invocation for /*Code2*/ to complete the continuous removal:"
+    },
+    "options": {
+      "A": "extractMax()",
+      "B": "heap_size--",
+      "C": "this->extractMax()",
+      "D": "Any of the other options can work depending on usage context"
+    },
+    "answer": "C"
+  },
+
+  // CÂU 56
+  {
+    "id": 56,
+    "chapter": "Heap",
+    "question": {
+      "main": "In a max-heap stored as a 0-indexed array with n elements, what is the valid index range for all leaf nodes?",
+      "ask": "Choose the correct range expression:"
+    },
+    "options": {
+      "A": "From floor(n/2) to n - 1",
+      "B": "From floor(n/2) + 1 to n - 1",
+      "C": "From 0 to floor(n/2) - 1",
+      "D": "From 0 to floor(n/2)"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 57
+  {
+    "id": 57,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MinHeap {
+    int *harr;
+    int heap_size;
+public:
+    void mergeHeap(int otherArr[], int otherSize) {
+        for (int i = 0; i < otherSize; i++) {
+            /*Code1*/;
+        }
+        for (int i = /*Code2*/; i >= 0; i--) {
+            MinHeapify(i);
+        }
+    }
+    void MinHeapify(int i);
+};`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to copy elements into the current buffer array allocation:"
+    },
+    "options": {
+      "A": "harr[heap_size++] = otherArr[i]",
+      "B": "harr[++heap_size] = otherArr[i]",
+      "C": "harr[i] = otherArr[i]",
+      "D": "std::swap(harr[i], otherArr[i])"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 58
+  {
+    "id": 58,
+    "chapter": "Heap",
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MinHeap {
+    int *harr;
+    int heap_size;
+public:
+    void mergeHeap(int otherArr[], int otherSize) {
+        for (int i = 0; i < otherSize; i++) {
+            /*Code1*/;
+        }
+        for (int i = /*Code2*/; i >= 0; i--) {
+            MinHeapify(i);
+        }
+    }
+    void MinHeapify(int i);
+};`,
+      "ask": "Please fill in the initial loop tracking parameter statement for /*Code2*/ to rebuild the integrated structure via bottom-up heapify:"
+    },
+    "options": {
+      "A": "heap_size / 2 - 1",
+      "B": "heap_size - 1",
+      "C": "heap_size / 2",
+      "D": "otherSize / 2"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 59
+  {
+    "id": 59,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given two separate min-heaps with sizes n and m respectively. What is the optimal time complexity to merge them into a single valid min-heap?",
+      "ask": "Select the correct optimal complexity:"
+    },
+    "options": {
+      "A": "O(n + m)",
+      "B": "O(n log m)",
+      "C": "O(m log n)",
+      "D": "O(n * m)"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 60
+  {
+    "id": 60,
+    "chapter": "Heap",
+    "question": {
+      "main": "What is the space complexity of the in-place Heapsort algorithm when executed on a static data array?",
+      "ask": "Select the correct space complexity:"
+    },
+    "options": {
+      "A": "O(1)",
+      "B": "O(log n)",
+      "C": "O(n)",
+      "D": "O(n log n)"
+    },
+    "answer": "A"
   }
 ]
 export default heap
