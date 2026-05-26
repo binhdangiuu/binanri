@@ -135,6 +135,82 @@ const heap = [
       "D": "O(1)"
     },
     "answer": "A"
+  },
+  {
+    "id": 10,
+    "chapter": "Heap",
+    "question": {
+      "main": "What is the time complexity of the Heapsort algorithm in the best-case scenario?",
+      "ask": "Choose the correct time complexity:"
+    },
+    "options": {
+      "A": "O(log n)",
+      "B": "O(n)",
+      "C": "O(n log n)",
+      "D": "O(n^2)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 11,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given a max-heap containing the following integer values:",
+      "sequence": [29, 20, 10, 15, 18, 9, 5, 13, 2, 4, 15],
+      "ask": "Elements are sequentially extracted from the root of the max-heap one by one. Let m be the maximum number of elements that can be extracted such that their total sum does not exceed 70. What is the value of m?"
+    },
+    "options": {
+      "A": "2",
+      "B": "3",
+      "C": "4",
+      "D": "5"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 12,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given two max-heaps of size n, what is the minimum time complexity required to create a single max-heap from all the elements of both max-heaps?",
+      "ask": "Choose the correct time complexity:"
+    },
+    "options": {
+      "A": "O(log n)",
+      "B": "O(n)",
+      "C": "O(n log n)",
+      "D": "O(n^2)"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 13,
+    "chapter": "Heap",
+    "question": {
+      "main": "In a binary max-heap containing n elements, the smallest element can be found in what time complexity?",
+      "ask": "Choose the correct time complexity:"
+    },
+    "options": {
+      "A": "O(log n)",
+      "B": "O(n)",
+      "C": "O(1)",
+      "D": "O(n^2)"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 14,
+    "chapter": "Heap",
+    "question": {
+      "main": "A perfect binary min-heap is constructed by including each integer in the range [1, 1023] exactly once. The depth of a node in the heap is defined as the length of the path from the root of the heap to that node (thus, the root is at depth 0). What is the maximum depth at which the integer 9 can appear?",
+      "ask": "Choose the correct maximum depth:"
+    },
+    "options": {
+      "A": "6",
+      "B": "7",
+      "C": "8",
+      "D": "9"
+    },
+    "answer": "C"
   }
 
 ]
