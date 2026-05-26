@@ -18,7 +18,7 @@ const heap = [
     "chapter": "Heap",
     "question": {
       "main": "Given an array consisting of 9 elements [a_1, a_2, \dots, a_9]. Suppose that after the process of building it into a heap, we obtain the following array:",
-      "sequence": [["a9 ", "a6 ", "a3 ", "a4 ", "a7 ", "a1 ", "a2 ", "a5 ", "a8"]],
+      "sequence": [["a9", " a6", " a3", " a4", " a7", " a1", " a2", " a5", " a8"]],
       "ask": "What is the in-order traversal result?"
     },
     "options": {
