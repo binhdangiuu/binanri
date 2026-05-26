@@ -408,5 +408,540 @@ const heap = [
     },
     "answer": "D"
   },
+  // CÂU 24
+  {
+    "id": 24,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an initial 3-ary max-heap array:",
+      "sequence": [30, 20, 15, 18, 19, 11, 10],
+      "operations": [
+        "Insert the element 25 into the heap.",
+        "Insert the element 5 into the heap."
+      ],
+      "rule": "In a 3-ary max-heap, each node has at most 3 children. For each insertion, place the element at the next available position and perform reheap-up to restore the max-heap property.",
+      "ask": "What is the state of the heap array after inserting both elements?"
+    },
+    "options": {
+      "A": "[30, 25, 15, 20, 19, 11, 10, 18, 5]",
+      "B": "[30, 25, 15, 18, 19, 11, 10, 20, 5]",
+      "C": "[30, 20, 25, 18, 19, 11, 10, 15, 5]",
+      "D": "[30, 20, 15, 18, 19, 11, 10, 25, 5]"
+    },
+    "answer": "C"
+  },
+  // CÂU 25
+  {
+    "id": 25,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    bool isMinHeap() {
+        // This function will return true if given level order traversal is Min Heap
+        for (int i = (heap_size / 2 - 1); i >= 0; i--) {
+            if (/*Code1*/)
+                return false;
+            if (/*Code2*/) {
+                if (harr[i] > harr[2 * i + 2])
+                    return false;
+            }
+        }
+        return true;
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code1*/:"
+    },
+    "options": {
+      "A": "harr[i] < harr[2 * i + 1]",
+      "B": "harr[i] > harr[2 * i + 2]",
+      "C": "harr[i] < harr[2 * i + 2]",
+      "D": "harr[i] > harr[2 * i + 1]"
+    },
+    "answer": "D"
+  },
+
+  // CÂU 26
+  {
+    "id": 26,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    bool isMinHeap() {
+        // This function will return true if given level order traversal is Min Heap
+        for (int i = (heap_size / 2 - 1); i >= 0; i--) {
+            if (/*Code1*/)
+                return false;
+            if (/*Code2*/) {
+                if (harr[i] > harr[2 * i + 2])
+                    return false;
+            }
+        }
+        return true;
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code2*/:"
+    },
+    "options": {
+      "A": "2*i + 1 < heap_size",
+      "B": "2*i + 2 < heap_size",
+      "C": "2*i + 2 <= heap_size",
+      "D": "2*i + 1 == heap_size"
+    },
+    "answer": "B"
+  },
+  // CÂU 27
+  {
+    "id": 27,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    void buildHeap() {
+        // This function will build a heap from the array
+        for (int i = (heap_size / 2 - 1); i >= 0; i--) {
+            heapify(i);
+        }
+    }
+
+    void heapify(int i) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int smallest = i;
+
+        if (left < heap_size && /*Code1*/)
+            smallest = left;
+        if (right < heap_size && harr[right] < harr[smallest])
+            smallest = right;
+        if (smallest != i) {
+            std::swap(harr[i], harr[smallest]);
+            /*Code2*/
+        }
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code1*/:"
+    },
+    "options": {
+      "A": "harr[left] < harr[smallest]",
+      "B": "harr[left] < harr[smallest + 1]",
+      "C": "harr[left] > harr[smallest]",
+      "D": "harr[left] > harr[smallest + 1]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 28
+  {
+    "id": 28,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    void buildHeap() {
+        // This function will build a heap from the array
+        for (int i = (heap_size / 2 - 1); i >= 0; i--) {
+            heapify(i);
+        }
+    }
+
+    void heapify(int i) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int smallest = i;
+
+        if (left < heap_size && /*Code1*/)
+            smallest = left;
+        if (right < heap_size && harr[right] < harr[smallest])
+            smallest = right;
+        if (smallest != i) {
+            std::swap(harr[i], harr[smallest]);
+            /*Code2*/
+        }
+    }
+};`,
+      "ask": "Please fill in the missing recursive call for /*Code2*/:"
+    },
+    "options": {
+      "A": "heapify(left);",
+      "B": "heapify(right);",
+      "C": "heapify(smallest);",
+      "D": "heapify(smallest - 1);"
+    },
+    "answer": "C"
+  },
+  // CÂU 29
+  {
+    "id": 29,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    void buildHeap() {
+        // This function will build a heap from the array using reheap up
+        for (int i = 1; i < heap_size; i++) {
+            reheapUp(i);
+        }
+    }
+
+    void reheapUp(int i) {
+        int parent = /*Code2*/;
+
+        for (; i > 0 && /*Code1*/; i = parent) {
+            std::swap(harr[i], harr[parent]);
+            parent = (i - 1) / 2;
+        }
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code1*/:"
+    },
+    "options": {
+      "A": "harr[parent] > harr[i + 1]",
+      "B": "harr[parent] > harr[i - 1]",
+      "C": "harr[parent] < harr[i]",
+      "D": "harr[parent] < harr[i + 1]"
+    },
+    "answer": "C"
+  },
+
+  // CÂU 30
+  {
+    "id": 30,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    void buildHeap() {
+        // This function will build a heap from the array using reheap up
+        for (int i = 1; i < heap_size; i++) {
+            reheapUp(i);
+        }
+    }
+
+    void reheapUp(int i) {
+        int parent = /*Code2*/;
+
+        for (; i > 0 && /*Code1*/; i = parent) {
+            std::swap(harr[i], harr[parent]);
+            parent = (i - 1) / 2;
+        }
+    }
+};`,
+      "ask": "Please fill in the correct formula to calculate the parent's index for /*Code2*/:"
+    },
+    "options": {
+      "A": "(i - 1) / 2",
+      "B": "(i + 1) / 2",
+      "C": "i / 2",
+      "D": "i - 1"
+    },
+    "answer": "A"
+  },
+  // CÂU 31
+  {
+    "id": 31,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    // Constructor to initialize heap
+    Heap(int arr[], int n) {
+        // TODO
+    }
+
+    void heapSort() {
+        // Build a max heap
+        for (int i = /*Code1*/; i >= 0; i--) {
+            heapify(i);
+        }
+
+        // Extract elements from heap one by one
+        for (int i = heap_size - 1; i > 0; i--) {
+            std::swap(harr[0], harr[i]);
+            heap_size--;
+            /*Code2*/
+        }
+    }
+
+    // To maintain max-heap property
+    void heapify(int i) {
+        // TODO
+    }
+};`,
+      "ask": "Please fill in the missing initialization logic for /*Code1*/:"
+    },
+    "options": {
+      "A": "heap_size / 2 - 1",
+      "B": "heap_size + 1",
+      "C": "heap_size / 2 - 2",
+      "D": "heap_size * 2"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 32
+  {
+    "id": 32,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class Heap {
+    int *harr; // pointer to array of elements in heap
+    int heap_size; // Current number of elements.
+public:
+    // Constructor to initialize heap
+    Heap(int arr[], int n) {
+        // TODO
+    }
+
+    void heapSort() {
+        // Build a max heap
+        for (int i = /*Code1*/; i >= 0; i--) {
+            heapify(i);
+        }
+
+        // Extract elements from heap one by one
+        for (int i = heap_size - 1; i > 0; i--) {
+            std::swap(harr[0], harr[i]);
+            heap_size--;
+            /*Code2*/
+        }
+    }
+
+    // To maintain max-heap property
+    void heapify(int i) {
+        // TODO
+    }
+};`,
+      "ask": "Please fill in the missing function call for /*Code2*/:"
+    },
+    "options": {
+      "A": "heapify(0);",
+      "B": "heapify(1);",
+      "C": "heapify(i);",
+      "D": "heapify(i-1);"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 33 - CÂU LÝ THUYẾT ĐỘC LẬP
+  {
+    "id": 33,
+    "chapter": "Heap",
+    "question": {
+      "main": "Given an array of N elements, we want to find the K smallest elements. If you build a heap from the entire array and then perform the pop operation K times, what is the total overall time complexity?",
+      "ask": "Select the correct overall time complexity:"
+    },
+    "options": {
+      "A": "O(N log K)",
+      "B": "O(N + K log N)",
+      "C": "O(N log N + K)",
+      "D": "O(K log K)"
+    },
+    "answer": "B"
+  },
+  // CÂU 34
+  {
+    "id": 34,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+    int *harr;
+    int heap_size;
+public:
+    void remove(int i) {
+        harr[i] = harr[heap_size - 1];
+        heap_size--;
+
+        if (i > 0 && /*Code1*/) {
+            heapUp(i);
+        } else {
+            heapDown(i);
+        }
+    }
+
+    void heapUp(int i) { // TODO }
+
+    void heapDown(int i) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int largest = i;
+
+        if (left < heap_size && harr[left] > harr[largest])
+            largest = left;
+        if (right < heap_size && harr[right] > harr[largest])
+            largest = right;
+
+        if (largest != i) {
+            std::swap(harr[i], harr[largest]);
+            /*Code2*/
+        }
+    }
+};`,
+      "ask": "Please fill in the missing conditional logic for /*Code1*/ to check if the replaced element is larger than its parent:"
+    },
+    "options": {
+      "A": "harr[i] > harr[(i - 1) / 2]",
+      "B": "harr[i] < harr[(i - 1) / 2]",
+      "C": "harr[i] > harr[i - 1]",
+      "D": "harr[i] < harr[i - 1]"
+    },
+    "answer": "A"
+  },
+
+  // CÂU 35
+  {
+    "id": 35,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+    int *harr;
+    int heap_size;
+public:
+    void remove(int i) {
+        harr[i] = harr[heap_size - 1];
+        heap_size--;
+
+        if (i > 0 && /*Code1*/) {
+            heapUp(i);
+        } else {
+            heapDown(i);
+        }
+    }
+
+    void heapUp(int i) { // TODO }
+
+    void heapDown(int i) {
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
+        int largest = i;
+
+        if (left < heap_size && harr[left] > harr[largest])
+            largest = left;
+        if (right < heap_size && harr[right] > harr[largest])
+            largest = right;
+
+        if (largest != i) {
+            std::swap(harr[i], harr[largest]);
+            /*Code2*/
+        }
+    }
+};`,
+      "ask": "Please fill in the missing recursive statement for /*Code2*/ inside the heapDown function:"
+    },
+    "options": {
+      "A": "heapDown(largest);",
+      "B": "heapDown(left);",
+      "C": "heapDown(right);",
+      "D": "heapDown(largest + 1);"
+    },
+    "answer": "A"
+  },
+  // CÂU 36
+  {
+    "id": 36,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+public:
+    MaxHeap(const std::vector<int>& arr) {
+        // Code to build MaxHeap from vector arr
+    }
+
+    void push(int x);
+    void pop();
+    int top();
+    int size();
+};
+
+std::vector<int> findKSmallest(const std::vector<int>& arr, int K) {
+    MaxHeap* heap = /* Code1 */;
+
+    std::vector<int> res;
+    while (heap->size() && /* Code2 */) {
+        res.push_back(heap->top());
+        heap->pop();
+        K--;
+    }
+
+    delete heap;
+    return res;
+}`,
+      "ask": "Please fill in the missing initialization logic for /* Code1 */:"
+    },
+    "options": {
+      "A": "heap = new MaxHeap();",
+      "B": "heap = new MaxHeap(K);",
+      "C": "heap = new MaxHeap(arr);",
+      "D": "heap = new MaxHeap(arr, K);"
+    },
+    "answer": "C"
+  },
+
+  // CÂU 37
+  {
+    "id": 37,
+    "chapter": "Heap",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `class MaxHeap {
+public:
+    MaxHeap(const std::vector<int>& arr) {
+        // Code to build MaxHeap from vector arr
+    }
+
+    void push(int x);
+    void pop();
+    int top();
+    int size();
+};
+
+std::vector<int> findKSmallest(const std::vector<int>& arr, int K) {
+    MaxHeap* heap = /* Code1 */;
+
+    std::vector<int> res;
+    while (heap->size() && /* Code2 */) {
+        res.push_back(heap->top());
+        heap->pop();
+        K--;
+    }
+
+    delete heap;
+    return res;
+}`,
+      "ask": "Please fill in the missing loop continuation condition for /* Code2 */:"
+    },
+    "options": {
+      "A": "heap->size() > K",
+      "B": "K > 0",
+      "C": "heap->top() < K",
+      "D": "K >= heap->size()"
+    },
+    "answer": "B"
+  }
 ]
 export default heap
