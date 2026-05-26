@@ -5,6 +5,7 @@ import ktct2 from "./data/ktct2"
 import ktct3 from "./data/ktct3"
 import ktct_quizzlet from "./data/quizzlet"
 import tree from "./data/tree"
+import heap from "./data/heap"
 
 const subjects = [
 
@@ -90,6 +91,14 @@ const subjects = [
         questionsCount: tree.length,
         comingSoon: false,
         questions: tree
+      },
+
+      {
+        id: "dsa-heap",
+        title: "DSA Heap",
+        questionsCount: heap.length,
+        comingSoon: false,
+        questions: heap
       },
 
       {
