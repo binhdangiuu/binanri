@@ -3,9 +3,9 @@ const ktmtmach = [
   {
     "id": 1,
     "chapter": "Computer Architecture",
-    "image": mach1,
     "question": {
       "main": "What value appears at the output of Read Data 1?",
+      "image": mach1,
       "ask": "Select the correct hexadecimal value based on the datapath simulation:"
     },
     "options": {
