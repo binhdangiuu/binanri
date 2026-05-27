@@ -143,7 +143,13 @@ export default function App() {
       setScreen(parsedData.screen || "subject")
       setCurrentQuestion(parsedData.currentQuestion || 0)
       setScore(parsedData.score || 0)
-      setAnswers(parsedData.answers || [])
+      const restoredAnswers = (parsedData.answers || []).map((answer) => {
+        if (typeof answer === "number") {
+          return ["A", "B", "C", "D", "E", "F"][answer] || String(answer)
+        }
+        return answer
+      })
+      setAnswers(restoredAnswers)
       setActiveSubject(parsedData.activeSubject || null)
 
       if (parsedData.selectedQuizId) {
@@ -172,7 +178,63 @@ export default function App() {
     )
   }, [screen, currentQuestion, score, activeSubject, selectedQuiz, answers])
 
-  const question = selectedQuiz?.questions?.[currentQuestion]
+  const optionLetters = ["A", "B", "C", "D", "E", "F"]
+
+  const normalizeOptions = (options) => {
+    if (!options) return null
+    if (Array.isArray(options)) {
+      return Object.fromEntries(options.map((option, index) => [optionLetters[index] || String(index), option]))
+    }
+    return options
+  }
+
+  const normalizeAnswer = (answer) => {
+    if (typeof answer === "number") {
+      return optionLetters[answer] || String(answer)
+    }
+    return answer
+  }
+
+  const normalizeQuestionItem = (item) => {
+    if (!item) return item
+
+    const normalized = { ...item }
+    normalized.options = normalizeOptions(item.options)
+    normalized.answer = normalizeAnswer(item.answer)
+
+    const rawQuestion = item.question
+    if (typeof rawQuestion === "string") {
+      normalized.question = {
+        main: rawQuestion,
+        context: item.context,
+        image: item.image,
+        ask: item.ask,
+        code: item.code,
+        tree: item.tree,
+        sequence: item.sequence,
+        insertions: item.insertions,
+        deletions: item.deletions,
+        operations: item.operations,
+        statements: item.statements,
+        rule: item.rule,
+      }
+    } else if (rawQuestion && typeof rawQuestion === "object") {
+      normalized.question = { ...rawQuestion }
+      if (!normalized.question.context && item.context) {
+        normalized.question.context = item.context
+      }
+      if (!normalized.question.image && item.image) {
+        normalized.question.image = item.image
+      }
+      if (!normalized.question.ask && item.ask) {
+        normalized.question.ask = item.ask
+      }
+    }
+    return normalized
+  }
+
+  const normalizedQuizQuestions = selectedQuiz?.questions?.map(normalizeQuestionItem) || []
+  const question = normalizedQuizQuestions?.[currentQuestion]
   const q = question?.question || {}
   const contextText = question?.context || q?.context
 
@@ -193,8 +255,8 @@ export default function App() {
     let newScore = 0
     updatedAnswers.forEach((answer, questionIndex) => {
       if (
-        selectedQuiz.questions[questionIndex] &&
-        answer === selectedQuiz.questions[questionIndex].answer
+        normalizedQuizQuestions[questionIndex] &&
+        answer === normalizedQuizQuestions[questionIndex].answer
       ) {
         newScore++
       }
