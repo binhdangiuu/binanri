@@ -503,7 +503,7 @@ const ktmtmach = [
       "C": "160 ps",
       "D": "150 ps"
     },
-    "answer": "C"
+    "answer": "A"
   },
   {
     "id": 32,
@@ -519,7 +519,87 @@ const ktmtmach = [
       "C": "610 ps",
       "D": "960 ps"
     },
+    "answer": "A"
+  },
+  {
+    "id": 33,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "How many block offset bits are required?",
+      "context": "Assume a 32-bit address space and a cache with 64-byte blocks.",
+      "ask": "Select the correct number of block offset bits:"
+    },
+    "options": {
+      "A": "4",
+      "B": "16",
+      "C": "6",
+      "D": "8"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 34,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "If the cache has 256 lines and is direct-mapped, how many index bits are used?",
+      "context": "Assume a 32-bit address space and a cache with 64-byte blocks.",
+      "ask": "Select the correct number of index bits:"
+    },
+    "options": {
+      "A": "12",
+      "B": "10",
+      "C": "6",
+      "D": "8"
+    },
     "answer": "D"
   },
+  {
+    "id": 35,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "How many tag bits are used in this cache?",
+      "context": "Assume a 32-bit address space and a cache with 64-byte blocks. (Using the setup from the previous question where the cache has 256 lines and is direct-mapped)",
+      "ask": "Select the correct number of tag bits:"
+    },
+    "options": {
+      "A": "18",
+      "B": "16",
+      "C": "14",
+      "D": "20"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 36,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "Which cache miss occurs the first time a block is accessed?",
+      "context": "Assume a 32-bit address space and a cache with 64-byte blocks.",
+      "ask": "Identify the type of cache miss:"
+    },
+    "options": {
+      "A": "Compulsory miss",
+      "B": "Conflict miss",
+      "C": "Capacity miss",
+      "D": "Write miss"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 37,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "Which cache organization has the lowest hardware complexity?",
+      "context": "Assume a 32-bit address space and a cache with 64-byte blocks.",
+      "ask": "Select the cache organization with the simplest hardware implementation:"
+    },
+    "options": {
+      "A": "Direct-mapped",
+      "B": "Fully associative",
+      "C": "2-way set associative",
+      "D": "4-way set associative"
+    },
+    "answer": "A"
+  }
 ]
 export default ktmtmach
