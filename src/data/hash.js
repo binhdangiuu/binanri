@@ -525,7 +525,7 @@ cout << foo(arr, 0, sizeof(arr) / sizeof(arr[0]) - 1, 10);`,
     else 
         return mysterySearch(arr, mid1 + 1, mid2 - 1, key);
 }
-
+//execution
 int arr[] = {1, 4, 7, 9, 12, 15, 18, 21, 24};
 cout << mysterySearch(arr, 0, 8, 15);`,
       "ask": "What will be the output displayed on the screen after the above code snippet finishes execution?"
@@ -652,7 +652,7 @@ cout << mysterySearch(arr, 0, 8, 15);`,
     }
     return -1;
 }
-
+//execution
 int arr[] = {-10, -5, 0, 3, 7, 9, 12};
 cout << checkIndex(arr, 7);`,
       "ask": "What will be the output displayed on the screen after the above code snippet finishes execution?"
@@ -744,7 +744,7 @@ cout << checkIndex(arr, 7);`,
     }
     return res;
 }
-
+//execution
 int arr[] = {1, 2, 2, 2, 2, 3, 4};
 cout << countOccurrences(arr, 7, 2);`,
       "ask": "What will be the output displayed on the screen after the above code snippet finishes execution?"

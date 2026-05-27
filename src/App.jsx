@@ -234,7 +234,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 27/05/2026 • 11:11:12 (KTMT Các câu hỏi mạch added, DSA Hash is in progress)
+          Last Updated: 27/05/2026 • 21:02:24 (DSA Hash added, DSA Graph is in progress)
         </p>
       </div>
 
