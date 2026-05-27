@@ -6,7 +6,7 @@ import ktct3 from "./data/ktct3"
 import ktct_quizzlet from "./data/quizzlet"
 import tree from "./data/tree"
 import heap from "./data/heap"
-
+import ktmtmach from "./data/ktmt-mach"
 const subjects = [
 
   {
@@ -24,18 +24,12 @@ const subjects = [
       },
 
       {
-        id: "ktmt-final",
-        title: "KTMT Final Review",
-        questionsCount: 50,
-        comingSoon: true
+        id: "ktmt-mach",
+        title: "KTMT  Các câu hỏi Mạch",
+        questionsCount: ktmtmach.length,
+        comingSoon: false,
+        questions: ktmtmach
       },
-
-      {
-        id: "ktmt-chapter-1",
-        title: "KTMT Chapter 1",
-        questionsCount: 20,
-        comingSoon: true
-      }
 
     ]
   },
