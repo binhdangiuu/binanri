@@ -3,8 +3,10 @@ const hash = [
     "id": 1,
     "chapter": "Search Algorithms",
     "question": {
-      "main": "Use the interpolation search algorithm to find the position of 48 in the following array: [1,5,8,11,19,22,31,35,40,45,48,49,50]. How many comparisons need to be made?",
-      "ask": "Select the correct option:"
+      "main": "Use the interpolation search algorithm to find the position of the target value in the given array:",
+      "insertion": [1, 5, 8, 11, 19, 22, 31, 35, 40, 45, 48, 49, 50],
+      "rule": "Target value to find: 48",
+      "ask": "How many comparisons need to be made?"
     },
     "options": {
       "A": "2",
@@ -33,8 +35,12 @@ const hash = [
     "id": 3,
     "chapter": "Hashing",
     "question": {
-      "main": "Given an empty hash table of size 10, using the Linear Probing method with the hash function: h(k) = k mod 10. Insert the following keys into the hash table in order: 12, 15, 1, 6, 22, 32, 42. What is the total number of collisions that occur during the insertion process?",
-      "ask": "Select the correct option:"
+      "main": "Given an empty hash table of size 10, using the Linear Probing method with the following hash function:",
+      "operations": [
+        "h(k) = k mod 10"
+      ],
+      "insertion": [12, 15, 1, 6, 22, 32, 42],
+      "ask": "What is the total number of collisions that occur during the insertion process?"
     },
     "options": {
       "A": "3",
@@ -48,8 +54,13 @@ const hash = [
     "id": 4,
     "chapter": "Hashing",
     "question": {
-      "main": "Given an empty hash table of size 10, using the Quadratic Probing method with the hash function: h(k) = k mod 10. Quadratic probing means that if the initial slot is occupied, we will try alternative positions with a quadratically increasing distance: h(k), (h(k) + 1^2) mod 10, (h(k) + 2^2) mod 10, (h(k) + 3^2) mod 10,... until an empty slot is found. Insert the following keys into the hash table in order: 12, 22, 32, 42, 52. What is the total number of collisions that occur during the insertion process?",
-      "ask": "Select the correct option:"
+      "main": "Given an empty hash table of size 10, using the Quadratic Probing method with the following hash function:",
+      "operations": [
+        "h(k) = k mod 10"
+      ],
+      "rule": "Quadratic probing means that if the initial slot is occupied, we will try alternative positions with a quadratically increasing distance: h(k), (h(k) + 1^2) mod 10, (h(k) + 2^2) mod 10, (h(k) + 3^2) mod 10,... until an empty slot is found.",
+      "insertion": [12, 22, 32, 42, 52],
+      "ask": "What is the total number of collisions that occur during the insertion process?"
     },
     "options": {
       "A": "7",

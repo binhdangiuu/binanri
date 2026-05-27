@@ -98,7 +98,7 @@ const subjects = [
 
       {
         id: "dsa-hash",
-        title: "DSA Hashing",
+        title: "DSA Hash",
         questionsCount: hash.length,
         comingSoon: false,
         questions: hash
