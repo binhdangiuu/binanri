@@ -6,7 +6,7 @@ import ktct3 from "./data/ktct3"
 import ktct_quizzlet from "./data/quizzlet"
 import tree from "./data/tree"
 import heap from "./data/heap"
-import ktmtmach from "./data/ktmt-mach"
+import ktmtmach from "./data/ktmtmach"
 const subjects = [
 
   {
@@ -25,7 +25,7 @@ const subjects = [
 
       {
         id: "ktmt-mach",
-        title: "KTMT  Các câu hỏi Mạch",
+        title: "KTMT Các câu hỏi Mạch",
         questionsCount: ktmtmach.length,
         comingSoon: false,
         questions: ktmtmach
