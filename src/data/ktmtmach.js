@@ -1,4 +1,5 @@
 import mach1 from "../assets/mach1.png"
+import mach2 from "../assets/mach2.png"
 const ktmtmach = [
   {
     "id": 1,
@@ -230,6 +231,182 @@ const ktmtmach = [
       "D": "$t4"
     },
     "answer": "A"
-  }
+  },
+  {
+    "id": 15,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, what is the correct value of the control signal RegDst?",
+      "image": mach2,
+      "ask": "Select the correct control signal value:"
+    },
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "X",
+      "D": "Depends on ALUOp"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 16,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, what is the correct value of the control signal ALUSrc?",
+      "image": mach2,
+      "ask": "Select the correct control signal value:"
+    },
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "X",
+      "D": "Depends on Branch"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 17,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, what is the correct value of the control signal MemtoReg?",
+      "image": mach2,
+      "ask": "Select the correct control signal value:"
+    },
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "X",
+      "D": "Depends on ALU result"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 18,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, what is the correct value of the control signal RegWrite?",
+      "image": mach2,
+      "ask": "Select the correct control signal value:"
+    },
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "X",
+      "D": "Depends on Zero flag"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 19,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, what are the values of MemRead and MemWrite?",
+      "image": mach2,
+      "ask": "Select the correct combination of control signals:"
+    },
+    "options": {
+      "A": "MemRead=0, MemWrite=1",
+      "B": "MemRead=0, MemWrite=0",
+      "C": "MemRead=1, MemWrite=0",
+      "D": "MemRead=1, MemWrite=1"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 20,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, what is the correct value of the control signal Branch?",
+      "image": mach2,
+      "ask": "Select the correct control signal value:"
+    },
+    "options": {
+      "A": "1",
+      "B": "0",
+      "C": "X",
+      "D": "Depends on Zero"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 21,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "Which component performs the logical AND operation?",
+      "image": mach2,
+      "ask": "Identify the functional block responsible for this execution:"
+    },
+    "options": {
+      "A": "Register file",
+      "B": "Control unit",
+      "C": "Data memory",
+      "D": "ALU"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 22,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "Which block provides the next sequential instruction address?",
+      "image": mach2,
+      "ask": "Identify the logic block that computes PC + 4:"
+    },
+    "options": {
+      "A": "Sign extend",
+      "B": "Data memory",
+      "C": "Adder (PC + 4)",
+      "D": "ALU"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 23,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "Which block produces an output that is not used for the instruction AND Rd, Rs, Rt?",
+      "image": mach2,
+      "ask": "Select the hardware unit whose output is ignored in this cycle:"
+    },
+    "options": {
+      "A": "Register file",
+      "B": "ALU",
+      "C": "Instruction memory",
+      "D": "Data memory"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 24,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "For the instruction AND Rd, Rs, Rt, the second ALU input comes from:",
+      "image": mach2,
+      "ask": "Identify the source of the second operand for the execution unit:"
+    },
+    "options": {
+      "A": "Immediate field",
+      "B": "Sign-extended offset",
+      "C": "Data memory",
+      "D": "Register Rt"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 25,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "If a sub instruction is being executed, how should the control signal RegDst be set?",
+      "image": mach2,
+      "ask": "Select the correct destination register MUX control value:"
+    },
+    "options": {
+      "A": "0",
+      "B": "1",
+      "C": "doesn't matter",
+      "D": "depends on ALUOp"
+    },
+    "answer": "B"
+  },
 ]
 export default ktmtmach
