@@ -4,7 +4,7 @@ const hash = [
     "chapter": "Search Algorithms",
     "question": {
       "main": "Use the interpolation search algorithm to find the position of the target value in the given array:",
-      "insertion": [1, 5, 8, 11, 19, 22, 31, 35, 40, 45, 48, 49, 50],
+      "insertions": [1, 5, 8, 11, 19, 22, 31, 35, 40, 45, 48, 49, 50],
       "rule": "Target value to find: 48",
       "ask": "How many comparisons need to be made?"
     },
@@ -39,7 +39,7 @@ const hash = [
       "operations": [
         "h(k) = k mod 10"
       ],
-      "insertion": [12, 15, 1, 6, 22, 32, 42],
+      "insertions": [12, 15, 1, 6, 22, 32, 42],
       "ask": "What is the total number of collisions that occur during the insertion process?"
     },
     "options": {
@@ -59,7 +59,7 @@ const hash = [
         "h(k) = k mod 10"
       ],
       "rule": "Quadratic probing means that if the initial slot is occupied, we will try alternative positions with a quadratically increasing distance: h(k), (h(k) + 1^2) mod 10, (h(k) + 2^2) mod 10, (h(k) + 3^2) mod 10,... until an empty slot is found.",
-      "insertion": [12, 22, 32, 42, 52],
+      "insertions": [12, 22, 32, 42, 52],
       "ask": "What is the total number of collisions that occur during the insertion process?"
     },
     "options": {
@@ -80,7 +80,7 @@ const hash = [
       "h2(k) = 7 - (k mod 7)"
     ],
     "rule": "The probing formula for finding a new position when a collision occurs is: Index = (h1(k) + i * h2(k)) mod 11, with i = 1, 2, ...",
-    "insertion": [10, 22, 31, 4, 15],
+    "insertions": [10, 22, 31, 4, 15],
     "ask": "What is the total number of collisions that occur during the insertion process of these keys?"
   },
   "options": {
@@ -99,7 +99,7 @@ const hash = [
       "operations": [
         "h(k, i) = (h'(k) + 2 * i^2) % 11"
       ],
-      "insertion": [38, 35, 28, 45, 94, 71, 40, 80],
+      "insertions": [38, 35, 28, 45, 94, 71, 40, 80],
       "ask": "Insert the keys sequentially into the hash table. What is the total sum of the keys contained in the last 5 slots of the table?"
     },
     "options": {
@@ -115,7 +115,7 @@ const hash = [
     "chapter": "Hashing",
     "question": {
       "main": "Given a hash table of size m = 19 using the hash function h(k) = k mod 19. Insert the following keys into the hash table sequentially under the assumption that the Chaining method is used to resolve collisions:",
-      "insertion": [15, 78, 56, 25, 19, 38, 57, 76, 34, 53, 72, 91],
+      "insertions": [15, 78, 56, 25, 19, 38, 57, 76, 34, 53, 72, 91],
       "ask": "Count the total number of keys at the slot that experiences the most collisions:"
     },
     "options": {
@@ -131,6 +131,7 @@ const hash = [
     "chapter": "Hashing",
     "question": {
       "main": "For each sequence of keys below, when inserted sequentially into an empty hash table of size 19 with the hash function h(k) = k % 19:",
+      "insertions": ["0, 19, 57"],
       "ask": "Which sequence of keys results in the fewest collisions?"
     },
     "options": {
@@ -149,7 +150,7 @@ const hash = [
       "operations": [
         "p(k, i) = h(k) + 2 * i + 1"
       ],
-      "insertion": [5, 7, 12, 25, 36, 58],
+      "insertions": [5, 7, 12, 25, 36, 58],
       "ask": "What is the final position (index) of the key 58 in the hash table?"
     },
     "options": {
