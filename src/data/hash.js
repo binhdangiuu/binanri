@@ -270,6 +270,147 @@ const hash = [
     },
     "answer": "B"
   },
+  {
+    "id": 17,
+    "chapter": "Search Algorithms",
+    "question": {
+      "main": "The following algorithm searches for a target value within an ascending array a. Given that n = 13 and target > a[n-1], find the total number of comparisons performed inside the 'if' statements.",
+      "context": `int i, low = 0, high = n - 1;
+while (low < high) {
+    i = (low + high) / 2;
+    if (a[i] == target) return i;
+    else if (a[i] < target) low = i + 1;
+    else high = i - 1;
+}
+return -1;`
+    },
+    "options": {
+      "A": "4",
+      "B": "6",
+      "C": "7",
+      "D": "8"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 18,
+    "chapter": "Search Algorithms",
+    "question": {
+      "main": "Given the function foo3 which implements the Interpolation Search algorithm. Which statement(s) is/are suitable to fill into the position of Line 1?",
+      "context": `int foo3(int *arr, int n, int x) {
+    int i1 = 0, i2 = (n - 1), pos;
+    while (i1 <= i2 && x >= arr[i1] && x <= arr[i2]) {
+        if (i1 == i2) {
+            if (arr[i1] == x) return i1;
+            return -1;
+        }
+        //Line 1
+        if (arr[pos] == x) return pos;
+        if (arr[pos] < x) i1 = pos + 1;
+        else i2 = pos - 1;
+    }
+    return -1;
+}`,
+      "rule": "Consider the following options for Line 1:\n(a) pos = i1 + float(i2 - i1) * (x - arr[i1]) / (arr[i2] - arr[i1]);\n(b) pos = i1 + float(i2 - i1) * (x - arr[i1]) / (arr[i1] - arr[i2]);\n(c) pos = i1 + float(i2 - i1) * (arr[i1] - x) / (arr[i1] - arr[i2]);"
+    },
+    "options": {
+      "A": "There is exactly 1 statement that can be chosen.",
+      "B": "There are exactly 2 statements that can be chosen.",
+      "C": "There are exactly 3 statements that can be chosen.",
+      "D": "No statements are suitable."
+    },
+    "answer": "B"
+  },
+  {
+    "id": 19,
+    "chapter": "Search Algorithms",
+    "question": {
+      "main": "Given the function fun1:",
+      "context": `int fun1(int arr[], int size, int key, int k) {
+    int s = 0, e = size - 1, mid = s + (e - s) / 2;
+    int ans = -1;
+    while (s <= e) {
+        if (arr[mid] == key) {
+            if (arr[mid - k] == arr[mid]) e = mid - 1;
+            else if (arr[mid - (k - 1)] == arr[mid]) {
+                ans = mid;
+                break;
+            } else s = mid + 1;
+        } else if (key < arr[mid]) e = mid - 1;
+        else if (key > arr[mid]) s = mid + 1;
+        mid = s + (e - s) / 2;
+    }
+    return ans;
+}
+
+int arr[] = {1, 5, 5, 11, 19, 22, 22, 22, 22, 45, 48, 48, 48};
+cout << fun1(arr, 13, 22, 4);`,
+      "ask": "What will be the output displayed on the screen after the above code snippet is executed?"
+    },
+    "options": {
+      "A": "5",
+      "B": "6",
+      "C": "7",
+      "D": "8"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 20,
+    "chapter": "Search Algorithms",
+    "question": {
+      "main": "Given the function foo:",
+      "context": `int foo(int arr[], int left, int right, int x) {
+    if (right < left) return -1;
+    int mid = left + (right - left) / 2;
+    if (arr[mid] == x) return mid;
+    if (arr[mid] > x)
+        return foo(arr, left, mid - 1, x);
+    return foo(arr, mid + 1, right, x);
+}
+
+int arr[] = {2, 3, 4, 10, 40};
+cout << foo(arr, 0, sizeof(arr) / sizeof(arr[0]) - 1, 10);`,
+      "ask": "What will be the output displayed on the screen after the above code snippet finishes execution?"
+    },
+    "options": {
+      "A": "0",
+      "B": "3",
+      "C": "4",
+      "D": "5"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 21,
+    "chapter": "Search Algorithms",
+    "question": {
+      "main": "If an array is unsorted, which of the following search algorithms is appropriate to find an element?",
+      "ask": "Select the correct algorithm:"
+    },
+    "options": {
+      "A": "Binary Search",
+      "B": "Interpolation Search",
+      "C": "Linear Search",
+      "D": "Jump Search"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 22,
+    "chapter": "Search Algorithms",
+    "question": {
+      "main": "Given a sorted array containing n elements, what is the time complexity of the Binary Search algorithm?",
+      "ask": "Select the correct complexity:"
+    },
+    "options": {
+      "A": "O(n)",
+      "B": "O(log n)",
+      "C": "O(n log n)",
+      "D": "O(1)"
+    },
+    "answer": "B"
+  },
 
 ]
 export default hash
