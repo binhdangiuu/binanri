@@ -225,7 +225,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 26/05/2026 • 20:11:30 (DSA Heap added, KTMT Các câu hỏi mạch is in progress)
+          Last Updated: 27/05/2026 • 11:11:12 (KTMT Các câu hỏi mạch added, DSA Hash is in progress)
         </p>
       </div>
 
