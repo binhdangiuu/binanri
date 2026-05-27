@@ -7,6 +7,7 @@ import ktct_quizzlet from "./data/quizzlet"
 import tree from "./data/tree"
 import heap from "./data/heap"
 import ktmtmach from "./data/ktmtmach"
+import hash from "./data/hash"
 const subjects = [
 
   {
@@ -93,6 +94,14 @@ const subjects = [
         questionsCount: heap.length,
         comingSoon: false,
         questions: heap
+      },
+
+      {
+        id: "dsa-hash",
+        title: "DSA Hashing",
+        questionsCount: hash.length,
+        comingSoon: false,
+        questions: hash
       },
 
       {
