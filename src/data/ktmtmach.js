@@ -1,5 +1,6 @@
 import mach1 from "../assets/mach1.png"
 import mach2 from "../assets/mach2.png"
+import mach3 from "../assets/mach3.png"
 const ktmtmach = [
   {
     "id": 1,
@@ -407,6 +408,118 @@ const ktmtmach = [
       "D": "depends on ALUOp"
     },
     "answer": "B"
+  },
+  {
+    "id": 26,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "What is the minimum clock cycle time if the datapath is not pipelined?",
+      "image": mach3,
+      "ask": "Select the correct clock cycle time for a non-pipelined system:"
+    },
+    "options": {
+      "A": "800 ps",
+      "B": "190 ps",
+      "C": "760 ps",
+      "D": "610 ps"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 27,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "What is the minimum clock cycle time if the datapath is pipelined?",
+      "image": mach3,
+      "ask": "Select the correct clock period when the datapath operates in pipeline mode:"
+    },
+    "options": {
+      "A": "800 ps",
+      "B": "190 ps",
+      "C": "150 ps",
+      "D": "160 ps"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 28,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "What is the total latency for the add instruction if the datapath is not pipelined?",
+      "image": mach3,
+      "ask": "Identify the execution time required for a single add instruction without pipelining:"
+    },
+    "options": {
+      "A": "190 ps",
+      "B": "150 ps",
+      "C": "610 ps",
+      "D": "800 ps"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 29,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "What is the total latency for the add instruction if the datapath is pipelined?",
+      "image": mach3,
+      "ask": "Identify the total duration from start to finish for the add instruction in pipeline mode:"
+    },
+    "options": {
+      "A": "800 ps",
+      "B": "950 ps",
+      "C": "610 ps",
+      "D": "190 ps"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 30,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "Suppose that you could split one stage of the pipelined datapath into two new stages, each with half the latency of the original stage. Which stage should be split to minimize the clock cycle time?",
+      "image": mach3,
+      "ask": "Select the optimal stage to split to improve overall frequency:"
+    },
+    "options": {
+      "A": "WB",
+      "B": "IF",
+      "C": "EX",
+      "D": "ID"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 31,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "After splitting the stage identified above, what is the new minimum clock cycle time?",
+      "image": mach3,
+      "ask": "Calculate the updated clock cycle time based on the split stage configuration:"
+    },
+    "options": {
+      "A": "190 ps",
+      "B": "95 ps",
+      "C": "160 ps",
+      "D": "150 ps"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 32,
+    "chapter": "Computer Architecture",
+    "question": {
+      "main": "After splitting the stage identified above, what is the new total latency for the pipeline?",
+      "image": mach3,
+      "ask": "Determine the new overall latency for a single instruction passing through the modified pipeline:"
+    },
+    "options": {
+      "A": "1140 ps",
+      "B": "800 ps",
+      "C": "610 ps",
+      "D": "960 ps"
+    },
+    "answer": "D"
   },
 ]
 export default ktmtmach
