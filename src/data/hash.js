@@ -20,8 +20,12 @@ const hash = [
     "id": 2,
     "chapter": "Hashing",
     "question": {
-      "main": "Given an empty hash table of size 19, using the chaining method and the hash function h(k) = k mod 19. Insert the following keys into the hash table in order: 19, 20, 21, 22, 23, 40, 41, 57. Which of the following slots has the fewest elements among the 4 given options?",
-      "ask": "Select the correct option:"
+      "main": "Given an empty hash table of size 19, using the chaining method and the following hash function:",
+      "operations": [
+        "h(k) = k mod 19"
+      ],
+      "sequence": [19, 20, 21, 22, 23, 40, 41, 57],
+      "ask": "Which of the following slots has the fewest elements among the 4 given options?"
     },
     "options": {
       "A": "Slot 0",
@@ -175,7 +179,97 @@ const hash = [
       "D": "It can lead to both Linear clustering and Secondary clustering."
     },
     "answer": "C"
-  }
+  },
+  {
+    "id": 11,
+    "chapter": "Hashing",
+    "question": {
+      "main": "Which of the following statements is true regarding a collision in a hashing method?",
+      "ask": "Select the correct statement:"
+    },
+    "options": {
+      "A": "A collision is a situation where two different keys result in two different hash values.",
+      "B": "A collision is a situation where two identical keys result in two different hash values.",
+      "C": "A collision is a situation where two identical keys result in two identical hash values.",
+      "D": "A collision is a situation where two different keys result in two identical hash values."
+    },
+    "answer": "D"
+  },
+  {
+    "id": 12,
+    "chapter": "Hashing",
+    "question": {
+      "main": "Which of the following methods has the capability to effectively reduce the primary clustering phenomenon when using open addressing to resolve collisions?",
+      "ask": "Select the correct method:"
+    },
+    "options": {
+      "A": "Linear Probing",
+      "B": "Quadratic Probing",
+      "C": "Double Hashing",
+      "D": "Chaining"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 13,
+    "chapter": "Hashing",
+    "question": {
+      "main": "When using the Linear Probing method in a hash table with the hash function h(k) = k mod 19 and a table size of m = 19, under which condition will primary clustering occur?",
+      "ask": "Select the correct condition:"
+    },
+    "options": {
+      "A": "When all elements have the exact same hash value.",
+      "B": "When elements have hash values that are close to each other and experience consecutive collisions.",
+      "C": "When elements have hash values that are evenly distributed across the table.",
+      "D": "Primary clustering does not occur in this case."
+    },
+    "answer": "B"
+  },
+  {
+    "id": 14,
+    "chapter": "Hashing",
+    "question": {
+      "main": "When using Linear Probing or Quadratic Probing in a hash table with the hash function h(k) = k mod 19 and a table size of m = 19, under which condition will secondary clustering occur?",
+      "ask": "Select the correct condition:"
+    },
+    "options": {
+      "A": "When all elements have the exact same hash value.",
+      "B": "When elements have hash values that are close to each other and experience consecutive collisions.",
+      "C": "When elements have the same initial hash value, leading them to probe through the exact same sequence of fixed positions.",
+      "D": "Secondary clustering does not occur in this case."
+    },
+    "answer": "C"
+  },
+  {
+    "id": 15,
+    "chapter": "Hashing",
+    "question": {
+      "main": "With the Double Hashing method, when the secondary hash function is h2(k) = 1 + (k % (m - 1)), how does this method help in resolving collisions compared to Linear Probing or Quadratic Probing?",
+      "ask": "Select the correct benefit:"
+    },
+    "options": {
+      "A": "It significantly reduces clustering and distributes elements more evenly.",
+      "B": "It only reduces secondary clustering and does not affect primary clustering.",
+      "C": "It enhances the search capability for elements that have already collided.",
+      "D": "It has no effect on the clustering phenomenon."
+    },
+    "answer": "A"
+  },
+  {
+    "id": 16,
+    "chapter": "Hashing",
+    "question": {
+      "main": "Which of the following methods has the ability to reduce dependence on the hash table size when used in a system where the table size may change over time?",
+      "ask": "Select the correct method:"
+    },
+    "options": {
+      "A": "Double Hashing",
+      "B": "Chaining",
+      "C": "Quadratic Probing",
+      "D": "Linear Probing"
+    },
+    "answer": "B"
+  },
 
 ]
 export default hash
