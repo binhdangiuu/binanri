@@ -201,5 +201,465 @@ const graph = [
     },
     "answer": "C"
   },
+  {
+    "id": 13,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `void DFS(int u) {
+    visited[u] = true;
+    for (int v : adj[u]) {
+        if (!visited[v]) {
+            /*Code1*/
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to correctly traverse the undirected graph using recursive DFS:"
+    },
+    "options": {
+      "A": "DFS(v);",
+      "B": "visited[v] = true;",
+      "C": "DFS(u);",
+      "D": "continue;"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 14,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `int cnt = 0;
+for (int u = 1; u <= n; ++u) {
+    if (!visited[u]) {
+        /*Code2*/
+        ++cnt;
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code2*/ to correctly count the total number of connected components using recursive DFS:"
+    },
+    "options": {
+      "A": "DFS(cnt);",
+      "B": "visited[u] = true;",
+      "C": "DFS(u);",
+      "D": "cnt = 0;"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 15,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `// Giả sử MAX đã được khai báo
+vector<int> adj[MAX];
+bool visited[MAX];
+
+void DFS(int start) {
+    stack<int> st;
+    st.push(start);
+
+    while (!st.empty()) {
+        int u = /*Code1*/;
+        st.pop();
+
+        if (!visited[u]) {
+            visited[u] = true;
+            cout << u << " ";
+
+            for (int i = adj[u].size() - 1; i >= 0; --i) {
+                int v = /*Code2*/;
+                if (!visited[v]) {
+                    st.push(v);
+                }
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to correctly fetch the top element from the stack:"
+    },
+    "options": {
+      "A": "st.push(u)",
+      "B": "true",
+      "C": "st.pop()",
+      "D": "st.top()"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 16,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `// Giả sử MAX đã được khai báo
+vector<int> adj[MAX];
+bool visited[MAX];
+
+void DFS(int start) {
+    stack<int> st;
+    st.push(start);
+
+    while (!st.empty()) {
+        int u = /*Code1*/;
+        st.pop();
+
+        if (!visited[u]) {
+            visited[u] = true;
+            cout << u << " ";
+
+            for (int i = adj[u].size() - 1; i >= 0; --i) {
+                int v = /*Code2*/;
+                if (!visited[v]) {
+                    st.push(v);
+                }
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code2*/ to correctly get the adjacent vertex from the adjacency list:"
+    },
+    "options": {
+      "A": "adj[u][U]",
+      "B": "adj[u][i]",
+      "C": "adj[u+1][i]",
+      "D": "adj[u][i+1]"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 17,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `// Giả sử MAX đã được khai báo
+vector<int> adj[MAX];
+bool visited[MAX];
+
+void BFS(int start) {
+    queue<int> q;
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int u = /*Code1*/;
+        q.pop();
+        cout << u << " ";
+
+        for (int i = 0; i < adj[u].size(); ++i) {
+            int v = /*Code2*/;
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to correctly retrieve the first element from the queue:"
+    },
+    "options": {
+      "A": "q.size();",
+      "B": "q.front();",
+      "C": "q.pop();",
+      "D": "q.back();"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 18,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `// Giả sử MAX đã được khai báo
+vector<int> adj[MAX];
+bool visited[MAX];
+
+void BFS(int start) {
+    queue<int> q;
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int u = /*Code1*/;
+        q.pop();
+        cout << u << " ";
+
+        for (int i = 0; i < adj[u].size(); ++i) {
+            int v = /*Code2*/;
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code2*/ to correctly access the adjacent vertex of the current vertex being processed:"
+    },
+    "options": {
+      "A": "adj[u][i]",
+      "B": "adj[i][u]",
+      "C": "adj[u+i]",
+      "D": "adj[u][u]"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 19,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block demonstrates how to perform Topological Sort using `std::queue` (Kahn's Algorithm):",
+      "context": `vector<int> topoSort(int V, vector<int> adj[]) {
+    vector<int> inDegree(V, 0);
+    for (int u = 0; u < V; u++) {
+        for (int v : adj[u]) {
+            inDegree[v]++;
+        }
+    }
+
+    queue<int> q;
+    for (int i = 0; i < V; i++) {
+        if (inDegree[i] == 0) {
+            q.push(i);
+        }
+    }
+
+    vector<int> topoOrder;
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        topoOrder.push_back(u);
+
+        for (int v : adj[u]) {
+            inDegree[v]--;
+            /*Code1*/
+        }
+    }
+    return topoOrder;
+}`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to correctly push the vertex into the queue when its in-degree becomes 0:"
+    },
+    "options": {
+      "A": "if (inDegree[v] == 0) q.push(v);",
+      "B": "if (inDegree[v] != 0) q.push(v);",
+      "C": "if (inDegree[v] == 1) q.push(v);",
+      "D": "if (inDegree[v] < 0) q.push(v);"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 20,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 5 questions (implementing Dijkstra's Algorithm using an adjacency matrix):",
+      "context": `class Graph {
+private:
+    int nover; // number of vertices in the graph
+    int **wm;  // adjacency matrix representing weights
+    int minDistance(int dist[], bool sptSet[]) {
+        int min = INT_MAX, min_index;
+        for (int v = 0; v < nover; v++)
+            if (sptSet[v] == false && dist[v] <= min)
+                min = dist[v], min_index = v;
+        return min_index;
+    }
+public:
+    void dijkstra(int src) {
+        int dist[nover];
+        bool sptSet[nover];
+        for (int i = 0; i < nover; i++)
+            dist[i] = INT_MAX, sptSet[i] = false;
+        dist[src] = 0;
+        for (int count = 0; count < /*Code1*/; count++) {
+            int u = minDistance(dist, sptSet);
+            /*Code2*/ = true;
+            for (int v = 0; v < nover; v++)
+                if (!sptSet[v] && dist[u] != INT_MAX && /*Code3*/)
+                    dist[v] = /*Code4*/;
+        }
+        // printSolution(dist);
+    }
+};`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to ensure the outer loop runs the correct number of iterations to process the remaining vertices:"
+    },
+    "options": {
+      "A": "nover",
+      "B": "nover - 1",
+      "C": "src",
+      "D": "src - 1"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 21,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 5 questions (implementing Dijkstra's Algorithm using an adjacency matrix):",
+      "context": `class Graph {
+private:
+    int nover; // number of vertices in the graph
+    int **wm;  // adjacency matrix representing weights
+    int minDistance(int dist[], bool sptSet[]) {
+        int min = INT_MAX, min_index;
+        for (int v = 0; v < nover; v++)
+            if (sptSet[v] == false && dist[v] <= min)
+                min = dist[v], min_index = v;
+        return min_index;
+    }
+public:
+    void dijkstra(int src) {
+        int dist[nover];
+        bool sptSet[nover];
+        for (int i = 0; i < nover; i++)
+            dist[i] = INT_MAX, sptSet[i] = false;
+        dist[src] = 0;
+        for (int count = 0; count < /*Code1*/; count++) {
+            int u = minDistance(dist, sptSet);
+            /*Code2*/ = true;
+            for (int v = 0; v < nover; v++)
+                if (!sptSet[v] && dist[u] != INT_MAX && /*Code3*/)
+                    dist[v] = /*Code4*/;
+        }
+        // printSolution(dist);
+    }
+};`,
+      "ask": "Please fill in the missing logic for /*Code2*/ to mark the newly selected vertex `u` as processed in the shortest path tree set:"
+    },
+    "options": {
+      "A": "sptSet[u]",
+      "B": "sptSet[src]",
+      "C": "sptSet[count]",
+      "D": "sptSet[nover]"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 22,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 5 questions (implementing Dijkstra's Algorithm using an adjacency matrix):",
+      "context": `class Graph {
+private:
+    int nover; // number of vertices in the graph
+    int **wm;  // adjacency matrix representing weights
+    int minDistance(int dist[], bool sptSet[]) {
+        int min = INT_MAX, min_index;
+        for (int v = 0; v < nover; v++)
+            if (sptSet[v] == false && dist[v] <= min)
+                min = dist[v], min_index = v;
+        return min_index;
+    }
+public:
+    void dijkstra(int src) {
+        int dist[nover];
+        bool sptSet[nover];
+        for (int i = 0; i < nover; i++)
+            dist[i] = INT_MAX, sptSet[i] = false;
+        dist[src] = 0;
+        for (int count = 0; count < /*Code1*/; count++) {
+            int u = minDistance(dist, sptSet);
+            /*Code2*/ = true;
+            for (int v = 0; v < nover; v++)
+                if (!sptSet[v] && dist[u] != INT_MAX && /*Code3*/)
+                    dist[v] = /*Code4*/;
+        }
+        // printSolution(dist);
+    }
+};`,
+      "ask": "Please fill in the missing logic for /*Code3*/ to check if the path through vertex `u` to vertex `v` is shorter than the currently recorded distance to vertex `v`:"
+    },
+    "options": {
+      "A": "wm[u][v] < dist[v]",
+      "B": "dist[v] + wm[u][v] < dist[u]",
+      "C": "wm[u][v] < dist[u]",
+      "D": "dist[u] + wm[u][v] < dist[v]"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 23,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 5 questions (implementing Dijkstra's Algorithm using an adjacency matrix):",
+      "context": `class Graph {
+private:
+    int nover; // number of vertices in the graph
+    int **wm;  // adjacency matrix representing weights
+    int minDistance(int dist[], bool sptSet[]) {
+        int min = INT_MAX, min_index;
+        for (int v = 0; v < nover; v++)
+            if (sptSet[v] == false && dist[v] <= min)
+                min = dist[v], min_index = v;
+        return min_index;
+    }
+public:
+    void dijkstra(int src) {
+        int dist[nover];
+        bool sptSet[nover];
+        for (int i = 0; i < nover; i++)
+            dist[i] = INT_MAX, sptSet[i] = false;
+        dist[src] = 0;
+        for (int count = 0; count < /*Code1*/; count++) {
+            int u = minDistance(dist, sptSet);
+            /*Code2*/ = true;
+            for (int v = 0; v < nover; v++)
+                if (!sptSet[v] && dist[u] != INT_MAX && /*Code3*/)
+                    dist[v] = /*Code4*/;
+        }
+        // printSolution(dist);
+    }
+};`,
+      "ask": "Please fill in the missing logic for /*Code4*/ to correctly update the shortest distance value to vertex `v`:"
+    },
+    "options": {
+      "A": "dist[u]",
+      "B": "wm[u][v]",
+      "C": "dist[u] + wm[u][v]",
+      "D": "dist[v] + wm[u][v]"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 24,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 5 questions (implementing Dijkstra's Algorithm using an adjacency matrix):",
+      "context": `class Graph {
+private:
+    int nover; // number of vertices in the graph
+    int **wm;  // adjacency matrix representing weights
+    int minDistance(int dist[], bool sptSet[]) {
+        int min = INT_MAX, min_index;
+        for (int v = 0; v < nover; v++)
+            if (sptSet[v] == false && dist[v] <= min)
+                min = dist[v], min_index = v;
+        return min_index;
+    }
+public:
+    void dijkstra(int src) {
+        int dist[nover];
+        bool sptSet[nover];
+        for (int i = 0; i < nover; i++)
+            dist[i] = INT_MAX, sptSet[i] = false;
+        dist[src] = 0;
+        for (int count = 0; count < /*Code1*/; count++) {
+            int u = minDistance(dist, sptSet);
+            /*Code2*/ = true;
+            for (int v = 0; v < nover; v++)
+                if (!sptSet[v] && dist[u] != INT_MAX && /*Code3*/)
+                    dist[v] = /*Code4*/;
+        }
+        // printSolution(dist);
+    }
+};`,
+      "ask": "To optimize the execution time of the `minDistance` function (which returns the vertex with the minimum weight and removes it from the list during each iteration), which data structure would be most appropriate to reduce the overall time complexity of the algorithm?"
+    },
+    "options": {
+      "A": "Heap (Priority Queue)",
+      "B": "Stack",
+      "C": "Singly Linked List",
+      "D": "AVL Tree"
+    },
+    "answer": "A"
+  },
+  
 ]
 export default graph;
