@@ -2,7 +2,7 @@
 
 Ứng dụng web trắc nghiệm ôn tập, hỗ trợ nhiều môn học với giao diện đơn giản, dễ dùng. 
 
-Khả năng web sẽ đóng hoạt động vào ngày 1/6, sẽ có update thêm môn Hệ điều hành kì sau, như lời hứa của mình với cậu. Mình đã thật sự cố gắng để hoàn thành tất cả. Mình cũng không muốn đưa web ra xa ngoài phạm vi của hai đứa. Hãy để tất cả mọi thứ được gói lại thành những phần kỉ niệm đẹp nhất.
+Khả năng web sẽ dừng update vào ngày 1/6, nhưng sau này sẽ có update thêm môn Hệ điều hành kì sau, như lời hứa của mình với cậu. Mình đã thật sự cố gắng để hoàn thành tất cả. Mình cũng không muốn đưa web ra xa ngoài phạm vi của hai đứa. Hãy để tất cả mọi thứ được gói lại thành những phần kỉ niệm đẹp nhất.
 
 Hiện tại mình đang thật sự hạnh phúc, mong rằng cậu cũng như vậy nhé.
 
