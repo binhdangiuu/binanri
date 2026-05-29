@@ -8,6 +8,7 @@ import tree from "./data/tree"
 import heap from "./data/heap"
 import ktmtmach from "./data/ktmtmach"
 import hash from "./data/hash"
+import graph from "./data/graph"
 const subjects = [
 
   {
@@ -105,18 +106,12 @@ const subjects = [
       },
 
       {
-        id: "dsa-harm2",
-        title: "DSA Harmony 2",
-        questionsCount: 40,
-        comingSoon: true
+        id: "dsa-graph",
+        title: "DSA Graph",
+        questionsCount: graph.length,
+        comingSoon: false,
+        questions: graph
       },
-
-      {
-        id: "dsa-harm3",
-        title: "DSA Harmony 3",
-        questionsCount: 40,
-        comingSoon: true
-      }
 
     ]
   }
@@ -437,6 +432,23 @@ export default function App() {
               <div className="mb-6 bg-purple-100 border border-purple-300 p-5 rounded-2xl">
                 <p className="font-bold text-purple-700 mb-2">Tree</p>
                 <code className="text-lg">{q.tree}</code>
+              </div>
+            )}
+
+            {q?.matrix && (
+              <div className="mb-6 overflow-x-auto bg-blue-50 border border-blue-200 p-5 rounded-2xl">
+                <p className="font-bold text-blue-700 mb-3">Adjacency Matrix</p>
+                <table className="min-w-full border-collapse">
+                  <tbody>
+                    {q.matrix.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, colIndex) => (
+                          <td key={colIndex} className="border px-3 py-2 text-center">{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
