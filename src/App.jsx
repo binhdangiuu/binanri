@@ -452,6 +452,49 @@ export default function App() {
               </div>
             )}
 
+            {q?.graphData && (
+              <div className="mb-6 bg-teal-50 border border-teal-300 p-5 rounded-2xl">
+                <p className="font-bold text-teal-700 mb-4">Graph Data</p>
+                <div className="space-y-4">
+                  {q.graphData.vertices && (
+                    <div>
+                      <p className="font-semibold text-teal-700 mb-2">Vertices:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {q.graphData.vertices.map((vertex, index) => (
+                          <span key={index} className="bg-teal-200 px-3 py-1 rounded-lg text-sm">{vertex}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {q.graphData.edges && (
+                    <div>
+                      <p className="font-semibold text-teal-700 mb-2">Edges:</p>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse text-sm">
+                          <thead>
+                            <tr className="bg-teal-100">
+                              <th className="border px-3 py-2">From</th>
+                              <th className="border px-3 py-2">To</th>
+                              {q.graphData.edges[0]?.weight !== undefined && <th className="border px-3 py-2">Weight</th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {q.graphData.edges.map((edge, index) => (
+                              <tr key={index} className="hover:bg-teal-50">
+                                <td className="border px-3 py-2 text-center">{edge.from}</td>
+                                <td className="border px-3 py-2 text-center">{edge.to}</td>
+                                {edge.weight !== undefined && <td className="border px-3 py-2 text-center">{edge.weight}</td>}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {q?.sequence && (
               <div className="mb-6 bg-blue-100 border border-blue-300 p-5 rounded-2xl">
                 <p className="font-bold text-blue-700 mb-2">Sequence</p>

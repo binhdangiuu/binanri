@@ -1,3 +1,4 @@
+import graph1 from "../assets/graph1.png"
 const graph = [
     {
     "id": 1,
@@ -205,7 +206,7 @@ const graph = [
     "id": 13,
     "chapter": "Graph Algorithms",
     "question": {
-      "main": "The following code block is used for the next 2 questions:",
+      "main": "The following code block is used for this question:",
       "context": `void DFS(int u) {
     visited[u] = true;
     for (int v : adj[u]) {
@@ -228,7 +229,7 @@ const graph = [
     "id": 14,
     "chapter": "Graph Algorithms",
     "question": {
-      "main": "The following code block is used for the next 2 questions:",
+      "main": "The following code block is used for this question:",
       "context": `int cnt = 0;
 for (int u = 1; u <= n; ++u) {
     if (!visited[u]) {
@@ -660,6 +661,120 @@ public:
     },
     "answer": "A"
   },
-  
+  {
+    "id": 25,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Refer to the given graph diagram to answer the following question:",
+      "image": graph1,
+      "ask": "Given the graph starting from vertex 0 and executing the DFS algorithm (with priority given to smaller vertex indices), what is the traversal order of the vertices?"
+    },
+    "options": {
+      "A": "0 → 2 → 3 → 7 → 6 → 1 → 4 → 5 → 10 → 9",
+      "B": "0 → 2 → 3 → 10 → 7 → 4 → 5 → 1 → 6 → 9",
+      "C": "0 → 4 → 5 → 2 → 3 → 10 → 7 → 1 → 6 → 9",
+      "D": "0 → 5 → 4 → 2 → 3 → 9 → 10 → 7 → 1 → 6"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 26,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Refer to the given graph diagram to answer the following question:",
+      "image": graph1,
+      "ask": "What is the BFS traversal order starting from vertex 0, assuming smaller vertex indices have higher priority?"
+    },
+    "options": {
+      "A": "0 → 2 → 4 → 5 → 3 → 9 → 1 → 7 → 10 → 6",
+      "B": "0 → 4 → 5 → 2 → 3 → 10 → 9 → 7 → 1 → 6",
+      "C": "0 → 5 → 4 → 2 → 3 → 7 → 9 → 10 → 1 → 6",
+      "D": "0 → 2 → 5 → 4 → 3 → 10 → 7 → 9 → 1 → 6"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 27,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Refer to the given graph diagram to answer the following question:",
+      "image": graph1,
+      "ask": "When performing the DFS algorithm using a stack, at the exact moment the algorithm reaches vertex 7, which vertices are currently contained in the stack?"
+    },
+    "options": {
+      "A": "[0, 2, 3]",
+      "B": "[3, 9, 10, 4, 5]",
+      "C": "[4, 5, 1, 6, 2]",
+      "D": "[2, 3, 9, 10, 7]"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 28,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Refer to the given graph diagram to answer the following question:",
+      "image": graph1,
+      "ask": "When performing the BFS algorithm using a queue, at the exact moment vertex 7 is pushed into the queue, which vertices are still remaining inside the queue?"
+    },
+    "options": {
+      "A": "empty",
+      "B": "[9, 1]",
+      "C": "[10, 3]",
+      "D": "[9, 10, 7]"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 29,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Refer to the given graph diagram to answer the following question:",
+      "image": graph1,
+      "ask": "Using Dijkstra's algorithm to find the shortest path from vertex 0 to vertex 7, what is the minimum total weight of this path?"
+    },
+    "options": {
+      "A": "10",
+      "B": "6",
+      "C": "12",
+      "D": "9"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 30,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Given a Directed Acyclic Graph (DAG) with the following specifications:",
+      "graphData": {
+        "vertices": [0, 1, 2, 3, 4, 5, 6, 7, 9, 10],
+        "edges": [
+          {"from": 0, "to": 2, "weight": 1},
+          {"from": 0, "to": 4, "weight": 2},
+          {"from": 0, "to": 5, "weight": 3},
+          {"from": 1, "to": 4, "weight": 4},
+          {"from": 5, "to": 1, "weight": 2},
+          {"from": 2, "to": 3, "weight": 4},
+          {"from": 2, "to": 4, "weight": 5},
+          {"from": 4, "to": 7, "weight": 1},
+          {"from": 1, "to": 6, "weight": 2},
+          {"from": 6, "to": 7, "weight": 2},
+          {"from": 7, "to": 3, "weight": 2},
+          {"from": 3, "to": 9, "weight": 1},
+          {"from": 3, "to": 10, "weight": 4},
+          {"from": 2, "to": 9, "weight": 2}
+        ]
+      },
+      "ask": "What is a valid topological sort order of the vertices starting from vertex 0?"
+    },
+    "options": {
+      "A": "0 → 2 → 5 → 4 → 1 → 6 → 7 → 3 → 9 → 10",
+      "B": "0 → 5 → 1 → 2 → 4 → 6 → 7 → 10 → 3 → 9",
+      "C": "0 → 2 → 4 → 7 → 3 → 9 → 10 → 5 → 1 → 6",
+      "D": "0 → 2 → 5 → 1 → 6 → 4 → 7 → 3 → 9 → 10"
+    },
+    "answer": "A"
+}
+
 ]
 export default graph;
