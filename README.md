@@ -1,16 +1,39 @@
-# React + Vite
+# Binanri — Web Trắc Nghiệm
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ứng dụng web trắc nghiệm ôn tập, hỗ trợ nhiều môn học với giao diện đơn giản, dễ dùng. 
 
-Currently, two official plugins are available:
+Khả năng web sẽ đóng hoạt động vào ngày 1/6, sẽ có update thêm môn Hệ điều hành kì sau, như lời hứa của mình với cậu. Mình đã thật sự cố gắng để hoàn thành tất cả. Mình cũng không muốn đưa web ra xa ngoài phạm vi của hai đứa. Hãy để tất cả mọi thứ được gói lại thành những phần kỉ niệm đẹp nhất.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Hiện tại mình đang thật sự hạnh phúc, mong rằng cậu cũng như vậy nhé.
 
-## React Compiler
+## ✨ Tính năng
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Thi thử và ôn luyện theo từng môn, từng chương
+- Hiển thị kết quả ngay sau khi hoàn thành bài
+- Giao diện responsive, chạy tốt trên cả máy tính và điện thoại
 
-## Expanding the ESLint configuration
+## 📚 Ngân hàng câu hỏi
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Môn | Nội dung |
+|-----|---------|
+| **Kiến trúc máy tính (KTMT)** | Câu hỏi tổng hợp + Câu hỏi về Mạch |
+| **Kinh tế chính trị (KTCT)** | Chương 1, 2, 3 + Ngân hàng Quizizz Chương 2–6 |
+| **Cấu trúc dữ liệu & Giải thuật (DSA)** | Tree, Heap, Hash, Graph, HK251 |
+
+## 🛠 Công nghệ sử dụng
+
+- [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+
+## 🚀 Chạy dự án
+
+```bash
+# Cài dependencies
+npm install
+
+# Chạy môi trường dev
+npm run dev
+
+# Build production
+npm run build
+```
