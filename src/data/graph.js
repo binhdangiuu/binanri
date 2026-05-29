@@ -774,7 +774,256 @@ public:
       "D": "0 → 2 → 5 → 1 → 6 → 4 → 7 → 3 → 9 → 10"
     },
     "answer": "A"
-}
+    },
+    {
+    "id": 31,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Given a directed graph with 4 vertices (indexed from 1 to 4) represented by the following adjacency matrix:\n[0, 1, 1, 0]\n[0, 0, 1, 1]\n[0, 0, 0, 1]\n[1, 1, 0, 0]",
+      "ask": "What are the in-degree and out-degree of vertex 2 respectively?"
+    },
+    "options": {
+      "A": "In-degree = 1, Out-degree = 2",
+      "B": "In-degree = 2, Out-degree = 2",
+      "C": "In-degree = 2, Out-degree = 1",
+      "D": "In-degree = 1, Out-degree = 1"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 32,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Given an undirected weighted graph with the following edge list specification:",
+      "graphData": {
+        "vertices": ["A", "B", "C", "D", "E", "F"],
+        "edges": [
+          {"from": "A", "to": "B", "weight": 4},
+          {"from": "A", "to": "C", "weight": 2},
+          {"from": "B", "to": "D", "weight": 5},
+          {"from": "C", "to": "E", "weight": 1},
+          {"from": "E", "to": "D", "weight": 3},
+          {"from": "E", "to": "F", "weight": 7},
+          {"from": "D", "to": "F", "weight": 6},
+          {"from": "B", "to": "E", "weight": 8}
+        ]
+      },
+      "ask": "Using Kruskal's algorithm, what is the total weight of the Minimum Spanning Tree (MST)?"
+    },
+    "options": {
+      "A": "13",
+      "B": "15",
+      "C": "16",
+      "D": "17"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 33,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "What is the worst-case time complexity of the Breadth-First Search (BFS) and Depth-First Search (DFS) algorithms when using an adjacency list representation for a graph with V vertices and E edges?",
+      "ask": "Select the correct complexity pair:"
+    },
+    "options": {
+      "A": "O(V^2) for both DFS and BFS",
+      "B": "O(V + E) for both DFS and BFS",
+      "C": "O(E log V) for DFS, O(V log V) for BFS",
+      "D": "O(V) for DFS, O(E) for BFS"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 34,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Given an undirected graph with vertices A, B, C, D, E, F and the following edge connections: (A, B), (A, C), (B, D), (E, F). Suppose we perform a DFS traversal starting from vertex A, and when a vertex has multiple neighbors, we always visit them in alphabetical order.",
+      "ask": "What is the correct order of the visited vertices?"
+    },
+    "options": {
+      "A": "A, B, D, C, E, F",
+      "B": "A, C, B, D, E, F",
+      "C": "A, B, C, D",
+      "D": "A, D, B, C"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 35,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `void BFS(int start, vector<int> adj[], vector<bool>& visited) {
+    queue<int> q;
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                /*Code1*/
+                /*Code2*/
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to correctly mark vertex \`v\` as visited before pushing it into the queue:"
+    },
+    "options": {
+      "A": "visited[u] = true;",
+      "B": "visited[v] = true;",
+      "C": "visited[v] = false;",
+      "D": "visited[u] = false;"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 36,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `void BFS(int start, vector<int> adj[], vector<bool>& visited) {
+    queue<int> q;
+    visited[start] = true;
+    q.push(start);
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                /*Code1*/
+                /*Code2*/
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code2*/ to push the neighbor vertex into the queue:"
+    },
+    "options": {
+      "A": "q.push(u);",
+      "B": "q.push(adj[u]);",
+      "C": "q.push(v);",
+      "D": "q.push(start);"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 37,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Given a Directed Acyclic Graph (DAG) with the following adjacency matrix representation (vertices are indexed from 0 to 4):\n[0, 1, 1, 0, 0]\n[0, 0, 0, 1, 1]\n[0, 0, 0, 1, 0]\n[0, 0, 0, 0, 1]\n[0, 0, 0, 0, 0]",
+      "ask": "Which of the following sequences represents a valid topological sort order of this graph?"
+    },
+    "options": {
+      "A": "0 → 1 → 2 → 3 → 4",
+      "B": "0 → 2 → 1 → 3 → 4",
+      "C": "1 → 0 → 2 → 3 → 4",
+      "D": "Both A and B are correct"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 38,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "When implementing Dijkstra's algorithm to find the shortest path from a single source vertex to all other vertices in a graph with V vertices and E edges:",
+      "ask": "What is the time complexity of the algorithm if we optimize the minimum distance selection step by using a binary heap (priority queue) with an adjacency list?"
+    },
+    "options": {
+      "A": "O(V^2)",
+      "B": "O(V + E)",
+      "C": "O((V + E) log V)",
+      "D": "O(V * E)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 39,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `void primMST(int V, vector<pair<int, int>> adj[]) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    int src = 0;
+    vector<int> key(V, INT_MAX);
+    vector<bool> inMST(V, false);
+
+    pq.push({0, src});
+    key[src] = 0;
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+
+        /*Code1*/
+
+        for (auto x : adj[u]) {
+            int v = x.first;
+            int weight = x.second;
+
+            if (inMST[v] == false && key[v] > weight) {
+                key[v] = weight;
+                /*Code2*/
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code1*/ to ensure we mark the extracted vertex \`u\` as included in the Minimum Spanning Tree (MST):"
+    },
+    "options": {
+      "A": "inMST[u] = true;",
+      "B": "inMST[src] = true;",
+      "C": "inMST[u] = false;",
+      "D": "continue;"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 40,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "The following code block is used for the next 2 questions:",
+      "context": `void primMST(int V, vector<pair<int, int>> adj[]) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    int src = 0;
+    vector<int> key(V, INT_MAX);
+    vector<bool> inMST(V, false);
+
+    pq.push({0, src});
+    key[src] = 0;
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+
+        /*Code1*/
+
+        for (auto x : adj[u]) {
+            int v = x.first;
+            int weight = x.second;
+
+            if (inMST[v] == false && key[v] > weight) {
+                key[v] = weight;
+                /*Code2*/
+            }
+        }
+    }
+}`,
+      "ask": "Please fill in the missing logic for /*Code2*/ to correctly push the updated key value and vertex into the min-priority queue \`pq\`:"
+    },
+    "options": {
+      "A": "pq.push({v, key[v]});",
+      "B": "pq.push({key[v], v});",
+      "C": "pq.push({u, v});",
+      "D": "pq.push({key[u], u});"
+    },
+    "answer": "B"
+  }
 
 ]
 export default graph;
