@@ -83,7 +83,7 @@ const subjects = [
 
       {
         id: "dsa-tree",
-        title: "DSA Tree",
+        title: "DSA Tree (50 compulsory + 20 optional)",
         questionsCount: tree.length,
         comingSoon: false,
         questions: tree
@@ -91,7 +91,7 @@ const subjects = [
 
       {
         id: "dsa-heap",
-        title: "DSA Heap",
+        title: "DSA Heap (37 compulsory + 23 optional)",
         questionsCount: heap.length,
         comingSoon: false,
         questions: heap
@@ -99,7 +99,7 @@ const subjects = [
 
       {
         id: "dsa-hash",
-        title: "DSA Hash",
+        title: "DSA Hash (22 compulsory + 18 optional)",
         questionsCount: hash.length,
         comingSoon: false,
         questions: hash
@@ -107,7 +107,7 @@ const subjects = [
 
       {
         id: "dsa-graph",
-        title: "DSA Graph",
+        title: "DSA Graph (30 compulsory + 10 optional)",
         questionsCount: graph.length,
         comingSoon: false,
         questions: graph
@@ -291,7 +291,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 29/05/2026 • 16:05:13 (DSA Graph added, HK251 is in progress)
+          Last Updated: 29/05/2026 • 16:08:26 (DSA Graph added, HK251 is in progress)
         </p>
       </div>
 
