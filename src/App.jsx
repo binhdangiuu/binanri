@@ -9,6 +9,7 @@ import heap from "./data/heap"
 import ktmtmach from "./data/ktmtmach"
 import hash from "./data/hash"
 import graph from "./data/graph"
+import hk251DSA from "./data/hk251dsa"
 const subjects = [
 
   {
@@ -112,6 +113,14 @@ const subjects = [
         comingSoon: false,
         questions: graph
       },
+
+      {
+        id: "dsa-hk251dsa",
+        title: "DSA HK251 DSA (OFFICIAL))",
+        questionsCount: hk251DSA.length,
+        comingSoon: false,
+        questions: hk251DSA
+      }
 
     ]
   }
