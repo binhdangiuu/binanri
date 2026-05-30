@@ -337,6 +337,272 @@ void heapSort(vector<int>& arr) {
     },
     "answer": "B"
   },
+  {
+    "id": 19,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Given a binary heap stored in a 0-indexed array.",
+      "ask": "Which of the following formulas is used to find the parent node index of a node located at index i?"
+    },
+    "options": {
+      "A": "2i + 1",
+      "B": "2i + 2",
+      "C": "⌊i / 2⌋",
+      "D": "⌊(i - 1) / 2⌋"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 20,
+    "chapter": "Sorting Algorithms",
+    "question": {
+      "main": "What is the worst-case time complexity of the Heap Sort algorithm?",
+      "ask": "Select the correct complexity notation:"
+    },
+    "options": {
+      "A": "O(log n)",
+      "B": "O(n)",
+      "C": "O(n log n)",
+      "D": "O(n^2)"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 21,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Consider checking whether an edge exists between two specific vertices u and v in a graph.",
+      "ask": "What is the time complexity of this operation for both Adjacency Matrix and Adjacency List representations respectively?"
+    },
+    "options": {
+      "A": "Adjacency Matrix: O(1) ; Adjacency List: O(deg(u))",
+      "B": "Adjacency Matrix: O(n) ; Adjacency List: O(1)",
+      "C": "Adjacency Matrix: O(log n) ; Adjacency List: O(n)",
+      "D": "Adjacency Matrix: O(deg(u)) ; Adjacency List: O(1)"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 22,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Assume a graph can be represented by either an adjacency matrix or an adjacency list named \`adj\`.",
+      "ask": "Select the correct statement/code block that accurately checks if there is a directed edge from vertex u to vertex v:"
+    },
+    "options": {
+      "A": "return adj[u][v] == 1; (When using adjacency matrix)",
+      "B": "for (int x : adj[u]) if (x == v) return true; return false; (When using adjacency list)",
+      "C": "return adj[v][u] == 1; (When using adjacency matrix)",
+      "D": "Both A and B are correct"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 23,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Which of the following statements correctly describes the primary functionality and practical application of a B-Tree?",
+      "ask": "Select the correct statement:"
+    },
+    "options": {
+      "A": "It is used to store elements that have a high probability of being accessed frequently in the near future.",
+      "B": "It is used to organize large data structures stored on external storage (disk) to minimize the number of disk I/O operations.",
+      "C": "It is used to sort data collections within RAM significantly faster than QuickSort.",
+      "D": "It is used for performing linear searches inside linked lists."
+    },
+    "answer": "B"
+  },
+  {
+    "id": 24,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Given an initially empty Splay Tree. We sequentially perform the following operations:\n• Insert keys: 10, 5, 15, 8, 3, 13, 14, 1\n• Search keys: 13, 10\n• Delete keys: 15, 10, 1",
+      "ask": "What is the total number of remaining leaf nodes in the tree after executing all the above steps?"
+    },
+    "options": {
+      "A": "18",
+      "B": "19",
+      "C": "4",
+      "D": "5"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 25,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "The following code block is used to complete the \`countNodes\` function, which counts the total number of nodes inside a binary tree structure:",
+      "context": `struct Node {
+    int data;
+    Node* left;
+    Node* right;
+};
+
+int countNodes(Node* root) {
+    if (/* Code1 */)
+        return 0;
+    return 1 + /* Code2 */ + /* Code3 */;
+}`,
+      "ask": "Please select the correct logical statements to fill in /* Code1 */, /* Code2 */, and /* Code3 */ respectively:"
+    },
+    "options": {
+      "A": "Code1: root == NULL ; Code2: countNodes(root->left) ; Code3: countNodes(root->right)",
+      "B": "Code1: root != NULL ; Code2: countNodes(root->left) ; Code3: countNodes(root->right)",
+      "C": "Code1: root == NULL ; Code2: root->left ; Code3: root->right",
+      "D": "Code1: root == NULL ; Code2: countNodes(root) ; Code3: countNodes(root)"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 26,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Given a graph with n vertices and m edges represented by an adjacency matrix structure.",
+      "ask": "What is the worst-case time complexity required to search and find all adjacent neighbor vertices of a single specific vertex u?"
+    },
+    "options": {
+      "A": "O(1)",
+      "B": "O(n)",
+      "C": "O(m)",
+      "D": "O(n + m)"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 27,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Suppose we perform a Breadth-First Search (BFS) traversal on a graph. During this traversal process, keys/vertices are sequentially pushed into a queue structure according to a pre-defined order.",
+      "ask": "What is the maximum possible number of elements that can reside simultaneously in the queue at any single point in time?"
+    },
+    "options": {
+      "A": "1",
+      "B": "n + 1",
+      "C": "n",
+      "D": "n - 1"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 28,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Keys are sequentially inserted into an initially empty AVL tree structure in the following order: 50, 23, 70, 19, 29, 65, 83, 25, 35, 53.",
+      "ask": "After completing the AVL tree construction, which path of nodes must be traversed from the root to locate element 25?"
+    },
+    "options": {
+      "A": "50 → 23 → 29 → 25",
+      "B": "50 → 23 → 19 → 25",
+      "C": "50 → 70 → 65 → 25",
+      "D": "50 → 23 → 25"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 29,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Keys are sequentially inserted into an initially empty Binary Search Tree (BST) structure in the following order: 50, 23, 70, 19, 29, 65, 83, 25, 35, 53.",
+      "ask": "After completing the BST tree construction, which path of nodes must be traversed from the root to locate element 25?"
+    },
+    "options": {
+      "A": "50 → 23 → 29 → 25",
+      "B": "50 → 23 → 19 → 25",
+      "C": "50 → 70 → 65 → 25",
+      "D": "50 → 23 → 25"
+    },
+    "answer": "A"
+  },
+  {
+    "id": 30,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Consider the following analytical statements regarding Heap structures:\n(a) A Heap is a complete binary tree.\n(b) A Heap is a binary search tree (BST).\n(c) In a max-heap, every parent node has a value greater than or equal to the values of its child nodes.\n(d) A Heap is always a balanced binary tree.",
+      "ask": "How many of the above statements are CORRECT?"
+    },
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "4"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 31,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Under which of the following graph scenario characteristics can the Breadth-First Search (BFS) algorithm guarantee finding the absolute shortest path (in terms of edge count / minimum total weight) from a source node?",
+      "ask": "Select the correct scenario condition:"
+    },
+    "options": {
+      "A": "Any arbitrary weighted graph structure",
+      "B": "A directed graph with strictly positive edge weights",
+      "C": "An undirected graph with any arbitrary edge weights",
+      "D": "An unweighted graph (or a graph where all edge weights are exactly equal)"
+    },
+    "answer": "D"
+  },
+  {
+    "id": 32,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "Consider the following analytical statements regarding an acyclic graph (a graph containing no cycles):\n(a) A Directed Acyclic Graph (DAG) always possesses at least one valid topological sort order.\n(b) An unrooted undirected acyclic graph is a tree if it is completely connected.\n(c) If a graph has a valid topological sort order, then it is guaranteed to be acyclic.\n(d) Every single arbitrary acyclic graph structure is always connected.",
+      "ask": "How many of the above statements are CORRECT?"
+    },
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "3",
+      "D": "4"
+    },
+    "answer": "C"
+  },
+  {
+    "id": 33,
+    "chapter": "Graph Algorithms",
+    "question": {
+      "main": "During the execution of a Depth-First Search (DFS) traversal on a graph structure, at what exact condition can a cycle (loop) be successfully detected?",
+      "ask": "Select the correct detection state logic:"
+    },
+    "options": {
+      "A": "Whenever the traversal encounters any previously visited vertex",
+      "B": "Whenever the traversal encounters a previously visited vertex that is not the immediate parent node of the current vertex",
+      "C": "When encountering a vertex whose vertex degree is strictly greater than 2",
+      "D": "When the total number of edges in the component strictly exceeds the total number of vertices"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 34,
+    "chapter": "Advanced Data Structures",
+    "question": {
+      "main": "Which of the following array internal sorting patterns will ALWAYS satisfy the strict structural definition of a min-heap?",
+      "ask": "Select the correct pattern choice:"
+    },
+    "options": {
+      "A": "An array sorted in strictly descending order",
+      "B": "An array sorted in strictly ascending order",
+      "C": "An array whose first element holds the smallest value",
+      "D": "An array whose first element holds the largest value"
+    },
+    "answer": "B"
+  },
+  {
+    "id": 35,
+    "chapter": "Hashing",
+    "question": {
+      "main": "To optimize and enhance the search efficiency within a hash table structure, which of the following implementation methodologies can be actively applied?\n(a) Design an efficient hash function to minimize initial collisions.\n(b) Ensure clustering phenomena are completely avoided during collision resolution processes.\n(c) Intentionally increase the overall load factor (α) value.",
+      "ask": "Which of the above optimization declarations are completely CORRECT?"
+    },
+    "options": {
+      "A": "Only statement (a) is correct",
+      "B": "Only statement (b) is correct",
+      "C": "Both statements (a) and (b) are correct",
+      "D": "Both statements (b) and (c) are correct"
+    },
+    "answer": "C"
+  }
 ];
 
 export default hk251DSA;
