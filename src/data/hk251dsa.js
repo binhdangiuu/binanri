@@ -513,11 +513,17 @@ int countNodes(Node* root) {
     },
     "answer": "A"
   },
-  {
+{
     "id": 30,
     "chapter": "Advanced Data Structures",
     "question": {
-      "main": "Consider the following analytical statements regarding Heap structures:\n(a) A Heap is a complete binary tree.\n(b) A Heap is a binary search tree (BST).\n(c) In a max-heap, every parent node has a value greater than or equal to the values of its child nodes.\n(d) A Heap is always a balanced binary tree.",
+      "main": "Consider the following analytical statements regarding Heap structures:",
+      "statements": [
+        "A Heap is a complete binary tree.",
+        "A Heap is a binary search tree (BST).",
+        "In a max-heap, every parent node has a value greater than or equal to the values of its child nodes.",
+        "A Heap is always a balanced binary tree."
+      ],
       "ask": "How many of the above statements are CORRECT?"
     },
     "options": {
@@ -543,11 +549,17 @@ int countNodes(Node* root) {
     },
     "answer": "D"
   },
-  {
+{
     "id": 32,
     "chapter": "Graph Algorithms",
     "question": {
-      "main": "Consider the following analytical statements regarding an acyclic graph (a graph containing no cycles):\n(a) A Directed Acyclic Graph (DAG) always possesses at least one valid topological sort order.\n(b) An unrooted undirected acyclic graph is a tree if it is completely connected.\n(c) If a graph has a valid topological sort order, then it is guaranteed to be acyclic.\n(d) Every single arbitrary acyclic graph structure is always connected.",
+      "main": "Consider the following analytical statements regarding an acyclic graph (a graph containing no cycles):",
+      "statements": [
+        "A Directed Acyclic Graph (DAG) always possesses at least one valid topological sort order.",
+        "An unrooted undirected acyclic graph is a tree if it is completely connected.",
+        "If a graph has a valid topological sort order, then it is guaranteed to be acyclic.",
+        "Every single arbitrary acyclic graph structure is always connected."
+      ],
       "ask": "How many of the above statements are CORRECT?"
     },
     "options": {
@@ -588,11 +600,16 @@ int countNodes(Node* root) {
     },
     "answer": "B"
   },
-  {
+{
     "id": 35,
     "chapter": "Hashing",
     "question": {
-      "main": "To optimize and enhance the search efficiency within a hash table structure, which of the following implementation methodologies can be actively applied?\n(a) Design an efficient hash function to minimize initial collisions.\n(b) Ensure clustering phenomena are completely avoided during collision resolution processes.\n(c) Intentionally increase the overall load factor (α) value.",
+      "main": "To optimize and enhance the search efficiency within a hash table structure, which of the following implementation methodologies can be actively applied?",
+      "statements": [
+        "Design an efficient hash function to minimize initial collisions.",
+        "Ensure clustering phenomena are completely avoided during collision resolution processes.",
+        "Intentionally increase the overall load factor (α) value."
+      ],
       "ask": "Which of the above optimization declarations are completely CORRECT?"
     },
     "options": {
