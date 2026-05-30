@@ -532,7 +532,7 @@ int countNodes(Node* root) {
       "C": "3",
       "D": "4"
     },
-    "answer": "C"
+    "answer": "B"
   },
   {
     "id": 31,

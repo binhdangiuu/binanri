@@ -116,7 +116,7 @@ const subjects = [
 
       {
         id: "dsa-hk251dsa",
-        title: "DSA HK251 DSA (OFFICIAL)",
+        title: "DSA HK251 (OFFICIAL)",
         questionsCount: hk251DSA.length,
         comingSoon: false,
         questions: hk251DSA
@@ -300,7 +300,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 29/05/2026 • 16:08:26 (DSA Graph added, HK251 is in progress)
+          Last Updated: 30/05/2026 • 18:42:31 (DSA HK251 added)
         </p>
       </div>
 
