@@ -116,7 +116,7 @@ const subjects = [
 
       {
         id: "dsa-hk251dsa",
-        title: "DSA HK251 DSA (OFFICIAL))",
+        title: "DSA HK251 DSA (OFFICIAL)",
         questionsCount: hk251DSA.length,
         comingSoon: false,
         questions: hk251DSA
@@ -458,6 +458,37 @@ export default function App() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {q?.adjacencyMatrix && (
+              <div className="mb-6 overflow-x-auto bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+                <p className="font-bold text-slate-700 mb-3">Adjacency Matrix</p>
+                <table className="min-w-full border-collapse">
+                  <tbody>
+                    {q.adjacencyMatrix.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, colIndex) => (
+                          <td key={colIndex} className="border px-3 py-2 text-center">{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {q?.adjacencyList && (
+              <div className="mb-6 bg-slate-50 border border-slate-200 p-5 rounded-2xl">
+                <p className="font-bold text-slate-700 mb-3">Adjacency List</p>
+                <div className="space-y-3">
+                  {Object.entries(q.adjacencyList).map(([vertex, neighbors]) => (
+                    <div key={vertex} className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold">{vertex}:</span>
+                      <span>{Array.isArray(neighbors) ? neighbors.join(", ") : String(neighbors)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
