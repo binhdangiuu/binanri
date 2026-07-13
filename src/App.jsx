@@ -387,7 +387,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 30/05/2026 • 18:42:31 (DSA HK251 added)
+          Last Updated: 13/07/2026 • 08:02:35 (Hệ điều hành added)
         </p>
       </div>
 
