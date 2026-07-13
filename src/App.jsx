@@ -135,7 +135,6 @@ const subjects = [
         title: "Lab 1 - Thầy Nguyễn Phương Duy",
         questionsCount: 5,
         comingSoon: true,
-        questions: lab1
       },
 
       {
@@ -143,7 +142,6 @@ const subjects = [
         title: "Lab 2 - Thầy Nguyễn Phương Duy",
         questionsCount: 5,
         comingSoon: true,
-        questions: lab2
       },
 
       {
@@ -151,7 +149,6 @@ const subjects = [
         title: "Lab 3 - Thầy Nguyễn Phương Duy",
         questionsCount: 5,
         comingSoon: true,
-        questions: lab3
       },
 
       {
@@ -159,7 +156,6 @@ const subjects = [
         title: "Lab 4 - Thầy Nguyễn Phương Duy",
         questionsCount: 5,
         comingSoon: true,
-        questions: lab4
       },
 
       {
@@ -167,7 +163,6 @@ const subjects = [
         title: "Bài tập lớn HK252",
         questionsCount: 4,
         comingSoon: true,
-        questions: btl252
       },
 
       {
@@ -175,7 +170,6 @@ const subjects = [
         title: "Tóm tăt kiến thức OS",
         questionsCount: 11,
         comingSoon: true,
-        questions: tomtat
       },
 
       {
@@ -183,7 +177,6 @@ const subjects = [
         title: "Cheatsheet",
         questionsCount: 1,
         comingSoon: true,
-        questions: cheatsheet
       },
 
       {
@@ -191,7 +184,6 @@ const subjects = [
         title: "Introduction to Operating Systems (ôn thi Chapter 1 - Chapter 2)",
         questionsCount: 52,
         comingSoon: true,
-        questions: introduction
       },
 
       {
@@ -199,7 +191,6 @@ const subjects = [
         title: "CPU (ôn thi Chapter 3 - Chapter 7)",
         questionsCount: 158,
         comingSoon: true,
-        questions: cpu
       },
 
       {
@@ -207,7 +198,6 @@ const subjects = [
         title: "Storage (ôn thi Chapter 8 - Chapter 10B)",
         questionsCount: 158,
         comingSoon: true,
-        questions: storage
       },
 
       {
@@ -215,7 +205,6 @@ const subjects = [
         title: "Đề thi HK252 - Những câu chưa có trong đề thi trước",
         questionsCount: 15,
         comingSoon: true,
-        questions: dethihk252
       },
 
 
