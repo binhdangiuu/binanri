@@ -167,7 +167,7 @@ const subjects = [
 
       {
         id: "tomtat",
-        title: "Tóm tăt kiến thức OS",
+        title: "Tóm tắt kiến thức OS",
         questionsCount: 11,
         comingSoon: true,
       },
