@@ -123,7 +123,105 @@ const subjects = [
       }
 
     ]
-  }
+  },
+    {
+
+    id: "Hệ điều hành",
+
+    quizzes: [
+
+      {
+        id: "lab-1",
+        title: "Lab 1 - Thầy Nguyễn Phương Duy",
+        questionsCount: 5,
+        comingSoon: true,
+        questions: lab1
+      },
+
+      {
+        id: "lab-2",
+        title: "Lab 2 - Thầy Nguyễn Phương Duy",
+        questionsCount: 5,
+        comingSoon: true,
+        questions: lab2
+      },
+
+      {
+        id: "lab-3",
+        title: "Lab 3 - Thầy Nguyễn Phương Duy",
+        questionsCount: 5,
+        comingSoon: true,
+        questions: lab3
+      },
+
+      {
+        id: "lab-4",
+        title: "Lab 4 - Thầy Nguyễn Phương Duy",
+        questionsCount: 5,
+        comingSoon: true,
+        questions: lab4
+      },
+
+      {
+        id: "btl252",
+        title: "Bài tập lớn HK252",
+        questionsCount: 4,
+        comingSoon: true,
+        questions: btl252
+      },
+
+      {
+        id: "tomtat",
+        title: "Tóm tăt kiến thức OS",
+        questionsCount: 11,
+        comingSoon: true,
+        questions: tomtat
+      },
+
+      {
+        id: "cheatsheet",
+        title: "Cheatsheet",
+        questionsCount: 1,
+        comingSoon: true,
+        questions: cheatsheet
+      },
+
+      {
+        id: "introduction",
+        title: "Introduction to Operating Systems (ôn thi Chapter 1 - Chapter 2)",
+        questionsCount: 52,
+        comingSoon: true,
+        questions: introduction
+      },
+
+      {
+        id: "cpu",
+        title: "CPU (ôn thi Chapter 3 - Chapter 7)",
+        questionsCount: 158,
+        comingSoon: true,
+        questions: cpu
+      },
+
+      {
+        id: "storage",
+        title: "Storage (ôn thi Chapter 8 - Chapter 10B)",
+        questionsCount: 158,
+        comingSoon: true,
+        questions: storage
+      },
+
+      {
+        id: "dethihk252",
+        title: "Đề thi HK252 - Những câu chưa có trong đề thi trước",
+        questionsCount: 15,
+        comingSoon: true,
+        questions: dethihk252
+      },
+
+
+    ]
+  },
+
 
 ]
 
@@ -312,7 +410,7 @@ export default function App() {
           THUI
         </h1>
         <div className="text-3xl font-bold text-blue-600">
-          Hạnh phúc rồi sẽ đến, cho cậu, cho tôi, cho chúng ta.
+          Mong cho mỗi ngày của Anri đều là mỗi ngày hạnh phúc.
         </div>
       </div>
 
