@@ -144,7 +144,7 @@ const subjects = [
   { title: "Chapter 7 - Synchronization 2", file: "/pdfs/lecture/ch7_EN_BK_sync2.pdf" },
   { title: "Chapter 8 - Main Memory", file: "/pdfs/lecture/ch8_mainMem.pdf" },
   { title: "Chapter 9 - Virtual Memory", file: "/pdfs/lecture/ch9_virMem.pdf" },
-  { title: "Chapter 10A - File System Interface", file: "/pdfs/lecture/ch10A_File_System_Interface.pdf" },
+  { title: "Chapter 10A - File System Interface", file: "/pdfs/lecture/ch10A-File_System_Interface.pdf" },
   { title: "Chapter 10B - File System Implementation", file: "/pdfs/lecture/ch10B_File_System_Implementation.pdf" },
   { title: "Chapter 11 - Mass Storage & Disk Scheduling", file: "/pdfs/lecture/ch11_MassStorage_DiskScheduling.pdf" },
 ],
