@@ -193,7 +193,7 @@ const subjects = [
 
       {
         id: "cheatsheet",
-        title: "Cheatsheet",
+        title: "Cheatsheet (Toàn bộ là chữ viết tay của tui, nếu mà khó đọc quá thì tui sẽ chuẩn bị lại bản đánh máy cho anri nhen)",
         questionsCount: 1,
         comingSoon: true,
       },
@@ -413,7 +413,7 @@ export default function App() {
       {/* LAST UPDATED */}
       <div className="text-center mb-4">
         <p className="text-gray-700 text-lg">
-          Last Updated: 31/07/2026 • 18:21:12 (Lecture Slides added)
+          Last Updated: 31/07/2026 • 23:25:24 (Lecture Slides added)
         </p>
       </div>
 
