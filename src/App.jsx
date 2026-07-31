@@ -131,6 +131,25 @@ const subjects = [
     quizzes: [
 
       {
+        id: "lecture",
+        title: "Lecture Slides",
+        type: "pdf",
+        documents: [
+  { title: "Chapter 1", file: "/pdfs/lecture/ch1_EN_BK.pdf" },
+  { title: "Chapter 2", file: "/pdfs/lecture/ch2_EN_BK.pdf" },
+  { title: "Chapter 3 - Process", file: "/pdfs/lecture/ch3_EN_BK_Process_DTD.pdf" },
+  { title: "Chapter 4 - Threads", file: "/pdfs/lecture/ch4_EN_BK_Threads_DTD.pdf" },
+  { title: "Chapter 5 - CPU Scheduling", file: "/pdfs/lecture/ch5_EN_CPUSched_2022_DTD.pdf" },
+  { title: "Chapter 6 - Synchronization 1", file: "/pdfs/lecture/ch6_EN_BK_syn1_DTD.pdf" },
+  { title: "Chapter 7 - Synchronization 2", file: "/pdfs/lecture/ch7_EN_BK_sync2.pdf" },
+  { title: "Chapter 8 - Main Memory", file: "/pdfs/lecture/ch8_mainMem.pdf" },
+  { title: "Chapter 9 - Virtual Memory", file: "/pdfs/lecture/ch9_virMem.pdf" },
+  { title: "Chapter 10A - File System Interface", file: "/pdfs/lecture/ch10A_File_System_Interface.pdf" },
+  { title: "Chapter 10B - File System Implementation", file: "/pdfs/lecture/ch10B_File_System_Implementation.pdf" },
+  { title: "Chapter 11 - Mass Storage & Disk Scheduling", file: "/pdfs/lecture/ch11_MassStorage_DiskScheduling.pdf" },
+],
+      },
+      {
         id: "lab-1",
         title: "Lab 1 - Thầy Nguyễn Phương Duy",
         questionsCount: 5,
@@ -224,6 +243,7 @@ export default function App() {
   const [score, setScore] = useState(0)
   const [activeSubject, setActiveSubject] = useState(null)
   const [selectedQuiz, setSelectedQuiz] = useState(null)
+  const [selectedDocument, setSelectedDocument] = useState(null)
 
   useEffect(() => {
     const savedData = localStorage.getItem("quiz-progress")
@@ -269,6 +289,12 @@ export default function App() {
     )
   }, [screen, currentQuestion, score, activeSubject, selectedQuiz, answers])
 
+  const isQuizComingSoon = (quiz)=> { //hàm check coming soon cho pdf
+    if (quiz.type === "pdf"){
+      return !quiz.documents || quiz.documents.length === 0
+    }
+    return quiz.comingSoon
+  }
   const optionLetters = ["A", "B", "C", "D", "E", "F"]
 
   const normalizeOptions = (options) => {
@@ -430,27 +456,38 @@ export default function App() {
       {/* SUBJECT SCREEN */}
       {screen === "subject" && activeSubject && (
         <div className="grid md:grid-cols-2 gap-6">
-          {subjects.find(subject => subject.id === activeSubject)?.quizzes.map((quiz) => (
-            <div
-              key={quiz.id}
-              onClick={() => {
-                if (!quiz.comingSoon) {
-                  setSelectedQuiz(quiz)
-                  setCurrentQuestion(0)
-                  setSelectedAnswer(null)
-                  setAnswers([])
-                  setScore(0)
-                  setScreen("quiz")
-                }
-              }}
-              className="bg-white/50 border rounded-[30px] p-10 transition hover:border-blue-500"
-            >
-              <h1 className="text-5xl font-black mb-5">{quiz.title}</h1>
-              <p className="text-2xl text-gray-600">
-                {quiz.comingSoon ? "Coming Soon" : `${quiz.questionsCount} questions`}
-              </p>
-            </div>
-          ))}
+          {subjects.find(subject => subject.id === activeSubject)?.quizzes.map((quiz) => {
+  const comingSoon = isQuizComingSoon(quiz)
+  return (
+    <div
+      key={quiz.id}
+      onClick={() => {
+        if (comingSoon) return
+        if (quiz.type === "pdf") {
+          setSelectedQuiz(quiz)
+          setScreen("pdf-list")
+        } else {
+          setSelectedQuiz(quiz)
+          setCurrentQuestion(0)
+          setSelectedAnswer(null)
+          setAnswers([])
+          setScore(0)
+          setScreen("quiz")
+        }
+      }}
+      className="bg-white/50 border rounded-[30px] p-10 transition hover:border-blue-500"
+    >
+      <h1 className="text-5xl font-black mb-5">{quiz.title}</h1>
+      <p className="text-2xl text-gray-600">
+        {comingSoon
+          ? "Coming Soon"
+          : quiz.type === "pdf"
+            ? `${quiz.documents.length} file${quiz.documents.length > 1 ? "s" : ""}`
+            : `${quiz.questionsCount} questions`}
+      </p>
+    </div>
+  )
+})}
         </div>
       )}
 
@@ -462,7 +499,74 @@ export default function App() {
           <button onClick={restartQuiz} className="bg-blue-600 text-white px-8 py-4 rounded-2xl hover:bg-blue-700 transition">Restart Quiz</button>
         </div>
       )}
+      {/* PDF LIST SCREEN */}
+{screen === "pdf-list" && selectedQuiz && (
+  <div>
+    <button
+      onClick={() => { setScreen("subject"); setSelectedQuiz(null) }}
+      className="mb-6 bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition"
+    >
+      ← Back
+    </button>
 
+    <div className="bg-white/50 border rounded-[30px] p-6 md:p-10">
+      <h1 className="text-4xl font-black mb-6">{selectedQuiz.title}</h1>
+
+      {selectedQuiz.documents.length === 0 && (
+        <p className="text-xl text-gray-600">Chưa có tài liệu nào được đăng.</p>
+      )}
+
+      <div className="divide-y">
+        {selectedQuiz.documents.map((doc, index) => (
+          <div
+            key={index}
+            onClick={() => {
+              setSelectedDocument(doc)
+              setScreen("pdf-view")
+            }}
+            className="flex items-center gap-4 py-5 cursor-pointer group"
+          >
+            <div className="w-10 h-10 flex items-center justify-center rounded-lg border border-teal-500 text-teal-600 font-bold text-[10px] shrink-0">
+              PDF
+            </div>
+            <span className="text-xl text-blue-600 group-hover:underline">{doc.title}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+      {/* PDF VIEW SCREEN */}
+{screen === "pdf-view" && selectedDocument && (
+  <div>
+    <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+      <button
+        onClick={() => { setScreen("pdf-list"); setSelectedDocument(null) }}
+        className="bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition"
+      >
+        ← Back
+      </button>
+      <a
+        href={selectedDocument.file}
+        download
+        className="bg-blue-600 text-white px-5 py-3 rounded-2xl hover:bg-blue-700 transition"
+      >
+        ⬇ Download PDF
+      </a>
+    </div>
+
+    <div className="bg-white/50 border rounded-[30px] p-4 md:p-6">
+      <h2 className="text-2xl font-bold mb-4 px-2">{selectedDocument.title}</h2>
+      <div className="w-full rounded-2xl overflow-hidden border" style={{ height: "80vh" }}>
+        <iframe
+          src={selectedDocument.file}
+          title={selectedDocument.title}
+          className="w-full h-full"
+        />
+      </div>
+    </div>
+  </div>
+)}
       {/* QUIZ SCREEN */}
       {screen === "quiz" && selectedQuiz && question && (
         <>
