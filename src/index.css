@@ -1,1 +1,62 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Baloo 2", "Quicksand", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  --color-blush: #fde6ef;
+  --color-blush-deep: #f8c9dd;
+  --color-cream: #fffbf6;
+  --color-sunflower: #ffb627;
+  --color-sunflower-deep: #f2960b;
+  --color-sky: #5b8def;
+  --color-sky-deep: #3e6fe0;
+  --color-plum: #3a2e39;
+  --color-plum-soft: #6b5a68;
+  --color-mint: #6fcf97;
+  --color-mint-deep: #2f9e63;
+  --color-coral: #f2775a;
+  --color-coral-deep: #dd5236;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-plum);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pop-in {
+    animation: none;
+  }
+}
