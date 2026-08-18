@@ -421,9 +421,27 @@ export default function App() {
     <div className="min-h-screen bg-blush relative overflow-x-hidden">
 
       {/* AMBIENT BACKGROUND BLOBS */}
-      <div className="pointer-events-none fixed -top-24 -left-24 w-80 h-80 rounded-full bg-sunflower/25 blur-3xl" />
-      <div className="pointer-events-none fixed top-1/3 -right-24 w-96 h-96 rounded-full bg-sky/20 blur-3xl" />
-      <div className="pointer-events-none fixed bottom-0 left-1/4 w-72 h-72 rounded-full bg-mint/20 blur-3xl" />
+      <div className="pointer-events-none fixed -top-24 -left-24 w-80 h-80 rounded-full bg-sunflower/20 blur-3xl" />
+      <div className="pointer-events-none fixed top-1/3 -right-24 w-96 h-96 rounded-full bg-sky/25 blur-3xl" />
+      <div className="pointer-events-none fixed bottom-0 left-1/4 w-72 h-72 rounded-full bg-mint/15 blur-3xl" />
+
+      {/* FLOATING DECORATIVE PARTICLES */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <span className="floaty text-2xl" style={{ left: "10%", animationDuration: "18s", animationDelay: "1s" }}>💗</span>
+        <span className="floaty text-xl" style={{ left: "30%", animationDuration: "22s", animationDelay: "6s" }}>🎀</span>
+        <span className="floaty text-xl" style={{ left: "68%", animationDuration: "20s", animationDelay: "4s" }}>💗</span>
+        <span className="floaty text-lg" style={{ left: "86%", animationDuration: "24s", animationDelay: "10s" }}>🎀</span>
+
+        <span className="bubble" style={{ left: "4%", width: "14px", height: "14px", animationDuration: "14s", animationDelay: "0s" }} />
+        <span className="bubble" style={{ left: "16%", width: "26px", height: "26px", animationDuration: "19s", animationDelay: "3s" }} />
+        <span className="bubble" style={{ left: "24%", width: "10px", height: "10px", animationDuration: "12s", animationDelay: "8s" }} />
+        <span className="bubble" style={{ left: "40%", width: "34px", height: "34px", animationDuration: "23s", animationDelay: "2s" }} />
+        <span className="bubble" style={{ left: "55%", width: "18px", height: "18px", animationDuration: "16s", animationDelay: "7s" }} />
+        <span className="bubble" style={{ left: "63%", width: "44px", height: "44px", animationDuration: "26s", animationDelay: "5s" }} />
+        <span className="bubble" style={{ left: "79%", width: "16px", height: "16px", animationDuration: "15s", animationDelay: "11s" }} />
+        <span className="bubble" style={{ left: "91%", width: "28px", height: "28px", animationDuration: "20s", animationDelay: "1.5s" }} />
+        <span className="bubble" style={{ left: "97%", width: "12px", height: "12px", animationDuration: "13s", animationDelay: "9s" }} />
+      </div>
 
       <div className="relative max-w-5xl mx-auto px-5 py-8">
 
@@ -516,7 +534,8 @@ export default function App() {
                       Tài liệu
                     </span>
                   )}
-                  <h1 className="font-[var(--font-display)] text-3xl sm:text-4xl font-bold mb-3 pr-20 leading-snug text-plum">
+                  <h1 className="font-[var(--font-display)] text-3xl sm:text-4xl font-bold mb-3 leading-snug text-plum">
+                    <span className="float-right w-16 h-10 sm:w-24 sm:h-11"></span>
                     {quiz.title}
                   </h1>
                   <p className="text-lg text-plum-soft">

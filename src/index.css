@@ -4,19 +4,93 @@
   --font-display: "Baloo 2", "Quicksand", sans-serif;
   --font-body: "Inter", sans-serif;
 
-  --color-blush: #fde6ef;
-  --color-blush-deep: #f8c9dd;
-  --color-cream: #fffbf6;
-  --color-sunflower: #ffb627;
-  --color-sunflower-deep: #f2960b;
-  --color-sky: #5b8def;
-  --color-sky-deep: #3e6fe0;
-  --color-plum: #3a2e39;
-  --color-plum-soft: #6b5a68;
+  --color-blush: #ffedf5;
+  --color-blush-deep: #ffbedd;
+  --color-cream: #fff6fb;
+  --color-sunflower: #ff6fa5;
+  --color-sunflower-deep: #e8407f;
+  --color-sky: #7fc4f0;
+  --color-sky-deep: #4fa4dd;
+  --color-plum: #4a2e40;
+  --color-plum-soft: #8a5f78;
   --color-mint: #6fcf97;
   --color-mint-deep: #2f9e63;
   --color-coral: #f2775a;
   --color-coral-deep: #dd5236;
+}
+
+@keyframes float-drift {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateY(-55vh) translateX(20px) rotate(12deg);
+  }
+  90% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateY(-110vh) translateX(-15px) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+.floaty {
+  position: absolute;
+  bottom: -60px;
+  animation-name: float-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.9);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.55;
+  }
+  25% {
+    transform: translateY(-25vh) translateX(14px) scale(1);
+  }
+  50% {
+    transform: translateY(-50vh) translateX(-16px) scale(1.05);
+  }
+  75% {
+    transform: translateY(-75vh) translateX(12px) scale(0.97);
+  }
+  92% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translateY(-105vh) translateX(-8px) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.bubble {
+  position: absolute;
+  bottom: -80px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 28%,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(127, 196, 240, 0.12) 75%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.4), 0 0 6px rgba(127, 196, 240, 0.1);
+  animation-name: bubble-rise;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  pointer-events: none;
 }
 
 body {
@@ -56,7 +130,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
-  .animate-pop-in {
+  .animate-pop-in,
+  .floaty,
+  .bubble {
     animation: none;
   }
 }
