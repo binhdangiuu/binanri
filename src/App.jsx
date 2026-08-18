@@ -412,10 +412,10 @@ export default function App() {
     : 0
 
   const resultMessage =
-    scorePercent >= 90 ? "Xuất sắc luôn! 🌟" :
-    scorePercent >= 70 ? "Ngon rồi đó! 🎉" :
-    scorePercent >= 50 ? "Ổn áp, cố thêm chút nữa! 💪" :
-    "Không sao, ôn lại rồi vào lại nhé 🌱"
+    scorePercent >= 90 ? "Xuất sắc luôn! A-C-E-D!" :
+    scorePercent >= 70 ? "Tui biết bạn sẽ làm được mà, one step closer!" :
+    scorePercent >= 50 ? "Ổn rồi đó, cố thêm chút nữa thui!" :
+    "Không sao, ôn lại rồi tụi mình làm lại nha!"
 
   return (
     <div className="min-h-screen bg-blush relative overflow-x-hidden">
@@ -427,20 +427,59 @@ export default function App() {
 
       {/* FLOATING DECORATIVE PARTICLES */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <span className="floaty text-2xl" style={{ left: "10%", animationDuration: "18s", animationDelay: "1s" }}>💗</span>
-        <span className="floaty text-xl" style={{ left: "30%", animationDuration: "22s", animationDelay: "6s" }}>🎀</span>
-        <span className="floaty text-xl" style={{ left: "68%", animationDuration: "20s", animationDelay: "4s" }}>💗</span>
-        <span className="floaty text-lg" style={{ left: "86%", animationDuration: "24s", animationDelay: "10s" }}>🎀</span>
+        <span className="floaty text-2xl" style={{ left: "29%", animationDuration: "17s", animationDelay: "12.6s" }}>👑</span>
+        <span className="floaty text-4xl" style={{ left: "2%", animationDuration: "18s", animationDelay: "16.3s" }}>💗</span>
+        <span className="floaty text-2xl" style={{ left: "73%", animationDuration: "23s", animationDelay: "5.3s" }}>🎀</span>
+        <span className="floaty text-4xl" style={{ left: "79%", animationDuration: "19s", animationDelay: "7.0s" }}>✨</span>
+        <span className="floaty text-3xl" style={{ left: "95%", animationDuration: "27s", animationDelay: "5.1s" }}>💎</span>
+        <span className="floaty text-2xl" style={{ left: "16%", animationDuration: "26s", animationDelay: "12.1s" }}>🦋</span>
+        <span className="floaty text-3xl" style={{ left: "84%", animationDuration: "19s", animationDelay: "8.8s" }}>🌸</span>
+        <span className="floaty text-4xl" style={{ left: "89%", animationDuration: "27s", animationDelay: "13.1s" }}>💫</span>
+        <span className="floaty text-3xl" style={{ left: "77%", animationDuration: "27s", animationDelay: "6.2s" }}>🌷</span>
+        <span className="floaty text-2xl" style={{ left: "55%", animationDuration: "20s", animationDelay: "15.6s" }}>⭐</span>
+        <span className="floaty text-4xl" style={{ left: "88%", animationDuration: "23s", animationDelay: "5.1s" }}>🩰</span>
+        <span className="floaty text-3xl" style={{ left: "56%", animationDuration: "26s", animationDelay: "16.7s" }}>🪄</span>
+        <span className="floaty text-4xl" style={{ left: "59%", animationDuration: "20s", animationDelay: "12.5s" }}>👑</span>
+        <span className="floaty text-5xl" style={{ left: "22%", animationDuration: "27s", animationDelay: "8.7s" }}>💗</span>
+        <span className="floaty text-4xl" style={{ left: "66%", animationDuration: "19s", animationDelay: "4.7s" }}>🎀</span>
+        <span className="floaty text-4xl" style={{ left: "5%", animationDuration: "28s", animationDelay: "11.1s" }}>✨</span>
+        <span className="floaty text-5xl" style={{ left: "90%", animationDuration: "22s", animationDelay: "4.2s" }}>💎</span>
+        <span className="floaty text-3xl" style={{ left: "71%", animationDuration: "25s", animationDelay: "9.4s" }}>🦋</span>
+        <span className="floaty text-2xl" style={{ left: "31%", animationDuration: "30s", animationDelay: "2.1s" }}>🌸</span>
+        <span className="floaty text-3xl" style={{ left: "96%", animationDuration: "29s", animationDelay: "12.9s" }}>💫</span>
+        <span className="floaty text-2xl" style={{ left: "33%", animationDuration: "23s", animationDelay: "7.3s" }}>🌷</span>
+        <span className="floaty text-5xl" style={{ left: "6%", animationDuration: "25s", animationDelay: "4.8s" }}>⭐</span>
+        <span className="floaty text-2xl" style={{ left: "13%", animationDuration: "27s", animationDelay: "13.7s" }}>🩰</span>
+        <span className="floaty text-4xl" style={{ left: "93%", animationDuration: "29s", animationDelay: "12.2s" }}>🪄</span>
+        <span className="floaty text-2xl" style={{ left: "19%", animationDuration: "21s", animationDelay: "8.3s" }}>👑</span>
+        <span className="floaty text-5xl" style={{ left: "15%", animationDuration: "17s", animationDelay: "18.1s" }}>💗</span>
+        <span className="floaty text-4xl" style={{ left: "27%", animationDuration: "25s", animationDelay: "14.5s" }}>🎀</span>
+        <span className="floaty text-2xl" style={{ left: "30%", animationDuration: "30s", animationDelay: "11.9s" }}>✨</span>
+        <span className="floaty text-3xl" style={{ left: "37%", animationDuration: "19s", animationDelay: "7.1s" }}>💎</span>
+        <span className="floaty text-3xl" style={{ left: "83%", animationDuration: "25s", animationDelay: "18.1s" }}>🦋</span>
 
-        <span className="bubble" style={{ left: "4%", width: "14px", height: "14px", animationDuration: "14s", animationDelay: "0s" }} />
-        <span className="bubble" style={{ left: "16%", width: "26px", height: "26px", animationDuration: "19s", animationDelay: "3s" }} />
-        <span className="bubble" style={{ left: "24%", width: "10px", height: "10px", animationDuration: "12s", animationDelay: "8s" }} />
-        <span className="bubble" style={{ left: "40%", width: "34px", height: "34px", animationDuration: "23s", animationDelay: "2s" }} />
-        <span className="bubble" style={{ left: "55%", width: "18px", height: "18px", animationDuration: "16s", animationDelay: "7s" }} />
-        <span className="bubble" style={{ left: "63%", width: "44px", height: "44px", animationDuration: "26s", animationDelay: "5s" }} />
-        <span className="bubble" style={{ left: "79%", width: "16px", height: "16px", animationDuration: "15s", animationDelay: "11s" }} />
-        <span className="bubble" style={{ left: "91%", width: "28px", height: "28px", animationDuration: "20s", animationDelay: "1.5s" }} />
-        <span className="bubble" style={{ left: "97%", width: "12px", height: "12px", animationDuration: "13s", animationDelay: "9s" }} />
+        <span className="bubble" style={{ left: "55%", width: "31px", height: "31px", animationDuration: "14s", animationDelay: "7.7s" }} />
+        <span className="bubble" style={{ left: "12%", width: "12px", height: "12px", animationDuration: "12s", animationDelay: "8.7s" }} />
+        <span className="bubble" style={{ left: "54%", width: "39px", height: "39px", animationDuration: "24s", animationDelay: "10.9s" }} />
+        <span className="bubble" style={{ left: "84%", width: "37px", height: "37px", animationDuration: "25s", animationDelay: "5.1s" }} />
+        <span className="bubble" style={{ left: "31%", width: "23px", height: "23px", animationDuration: "16s", animationDelay: "9.8s" }} />
+        <span className="bubble" style={{ left: "65%", width: "23px", height: "23px", animationDuration: "13s", animationDelay: "8.0s" }} />
+        <span className="bubble" style={{ left: "42%", width: "41px", height: "41px", animationDuration: "26s", animationDelay: "12.3s" }} />
+        <span className="bubble" style={{ left: "56%", width: "36px", height: "36px", animationDuration: "20s", animationDelay: "8.5s" }} />
+        <span className="bubble" style={{ left: "47%", width: "12px", height: "12px", animationDuration: "14s", animationDelay: "7.2s" }} />
+        <span className="bubble" style={{ left: "13%", width: "18px", height: "18px", animationDuration: "21s", animationDelay: "2.1s" }} />
+        <span className="bubble" style={{ left: "10%", width: "39px", height: "39px", animationDuration: "24s", animationDelay: "0.5s" }} />
+        <span className="bubble" style={{ left: "8%", width: "12px", height: "12px", animationDuration: "21s", animationDelay: "4.8s" }} />
+        <span className="bubble" style={{ left: "28%", width: "30px", height: "30px", animationDuration: "26s", animationDelay: "8.1s" }} />
+        <span className="bubble" style={{ left: "5%", width: "37px", height: "37px", animationDuration: "13s", animationDelay: "11.8s" }} />
+        <span className="bubble" style={{ left: "75%", width: "25px", height: "25px", animationDuration: "26s", animationDelay: "9.8s" }} />
+        <span className="bubble" style={{ left: "69%", width: "12px", height: "12px", animationDuration: "12s", animationDelay: "10.2s" }} />
+        <span className="bubble" style={{ left: "51%", width: "27px", height: "27px", animationDuration: "25s", animationDelay: "4.0s" }} />
+        <span className="bubble" style={{ left: "85%", width: "32px", height: "32px", animationDuration: "22s", animationDelay: "0.3s" }} />
+        <span className="bubble" style={{ left: "20%", width: "37px", height: "37px", animationDuration: "22s", animationDelay: "2.4s" }} />
+        <span className="bubble" style={{ left: "9%", width: "15px", height: "15px", animationDuration: "26s", animationDelay: "0.8s" }} />
+        <span className="bubble" style={{ left: "71%", width: "26px", height: "26px", animationDuration: "15s", animationDelay: "10.3s" }} />
+        <span className="bubble" style={{ left: "7%", width: "33px", height: "33px", animationDuration: "23s", animationDelay: "12.8s" }} />
       </div>
 
       <div className="relative max-w-5xl mx-auto px-5 py-8">
