@@ -758,28 +758,23 @@ export default function App() {
         </div>
       )}
 
-      {/* COURSE VIEW SCREEN (Lớp 4 — bài giảng full) */}
+      {/* COURSE VIEW SCREEN (Lớp 4 — bài giảng full, nhảy hẳn ra khỏi khung) */}
       {screen === "course-view" && selectedChapter && (
-        <div>
+        <div className="fixed inset-0 z-50 bg-white">
           <button
             onClick={() => { setScreen("course-list"); setSelectedChapter(null) }}
-            className="mb-6 bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition"
+            className="fixed top-4 left-4 z-[60] bg-cream/90 backdrop-blur px-5 py-3 rounded-2xl border border-blush-deep shadow-md font-medium hover:border-sky hover:-translate-y-0.5 transition"
           >
             ← Back
           </button>
 
-          <div className="bg-white/50 border rounded-[30px] p-4 md:p-6">
-            <div className="w-full rounded-2xl overflow-hidden border" style={{ height: "85vh" }}>
-              <iframe
-                src={selectedChapter.file}
-                title={selectedChapter.title}
-                className="w-full h-full"
-              />
-            </div>
-          </div>
+          <iframe
+            src={selectedChapter.file}
+            title={selectedChapter.title}
+            className="w-full h-full border-0"
+          />
         </div>
       )}
-
 
         {/* QUIZ SCREEN */}
         {screen === "quiz" && selectedQuiz && question && (
