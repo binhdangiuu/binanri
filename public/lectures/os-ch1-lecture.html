@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2017 · Chapter 1 — Introduction to Operating Systems</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#2E7FC1; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); display:flex; align-items:center; gap:6px; padding:12px 14px; flex-wrap:wrap; margin:20px 0 0; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper); color:#fff; border-color:var(--copper); }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:44px; font-weight:700; margin:0 0 18px; line-height:1.08; max-width:16ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:56ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:19px; margin:0 0 8px; }
+  .card p{ font-size:14.5px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:32px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:21px; margin:36px 0 10px; }
+
+  /* EN paragraph: plain serif reading text */
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  /* VI paragraph: visually distinct block — mono font, tinted background, colored left bar, VN badge */
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:420px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .ladder{ margin:6px 0 24px; }
+  .ladder .rung{ margin:0 auto 6px; padding:10px 16px; border-radius:8px; border:1px solid var(--grid); background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:13px; display:flex; justify-content:space-between; text-align:left; }
+  .ladder .rung span.sz{ color:var(--ink-soft); }
+  .ladder-axis{ display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.08em; margin-top:10px; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:22px 24px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 24px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:460px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:8px; padding:14px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+  .mem-bar{ margin:6px 0 24px; border:1px solid var(--grid); border-radius:8px; padding:12px; background:var(--copper-tint); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; color:var(--copper-deep); max-width:460px; }
+
+  .numa-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:360px; margin:6px 0 24px; }
+  .numa-cell{ border:1px solid var(--grid); border-radius:8px; padding:10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; text-align:center; }
+  .numa-cell .cpu{ font-weight:600; color:var(--teal-deep); }
+
+  .boot-timeline{ display:flex; gap:0; margin:6px 0 24px; overflow-x:auto; }
+  .boot-step{ flex:1; min-width:140px; text-align:center; padding:0 8px; position:relative; }
+  .boot-step .dot{ width:10px; height:10px; border-radius:50%; background:var(--teal); margin:0 auto 10px; }
+  .boot-step:not(:last-child)::after{ content:""; position:absolute; top:5px; left:55%; width:90%; height:1px; background:var(--grid); }
+  .boot-step .t{ font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink); font-weight:600; }
+  .boot-step .d{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+
+  .memlayout{ display:flex; flex-direction:column; gap:4px; max-width:280px; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .memlayout .addr{ display:flex; justify-content:space-between; color:var(--ink-soft); font-size:11.5px; }
+  .memlayout .mrow{ border:1px solid var(--grid); border-radius:6px; padding:10px; text-align:center; background:var(--paper-deep); }
+  .memlayout .mrow.osrow{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+
+  .vm-row{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; }
+  .vm-box{ flex:1; border:1px solid var(--grid); border-radius:8px; padding:12px; background:var(--copper-tint); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; color:var(--copper-deep); }
+  .vmm-bar, .hw-bar{ max-width:520px; margin-top:6px; border:1px solid var(--grid); border-radius:8px; padding:12px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .vmm-bar{ background:var(--teal-tint); color:var(--teal-deep); } .hw-bar{ background:var(--paper-deep); color:var(--ink); margin-bottom:24px; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .llist{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; flex-wrap:wrap; }
+  .llist .node{ border:1px solid var(--grid); border-radius:8px; padding:10px 14px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .llist .arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .hashrow{ display:flex; gap:4px; margin:6px 0 24px; max-width:420px; }
+  .hbucket{ flex:1; height:36px; border:1px solid var(--grid); border-radius:6px; background:var(--paper-deep); }
+  .hbucket.hit{ background:var(--copper-tint); border-color:var(--copper); }
+
+  .bus-row{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .bus-dev{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; text-align:center; }
+  .bus-bar{ max-width:520px; margin:6px 0; border:1px solid var(--grid); border-radius:8px; padding:10px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; font-weight:600; }
+  .bus-mem{ max-width:520px; margin-bottom:24px; border:1px solid var(--grid); border-radius:8px; padding:10px; background:var(--copper-tint); color:var(--copper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+
+  .flow-row{ display:flex; align-items:center; gap:10px; margin:6px 0 24px; max-width:520px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:120px; border:1px solid var(--grid); border-radius:10px; padding:16px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:13px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .uid-box{ border:1px solid var(--grid); border-radius:10px; padding:16px; background:var(--paper-deep); max-width:420px; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .uid-box .proc{ font-weight:600; margin-bottom:8px; }
+  .uid-chip{ display:inline-block; padding:4px 10px; border-radius:6px; margin-right:6px; font-size:12px; }
+  .uid-chip.uid{ background:var(--copper-tint); color:var(--copper-deep); border:1px solid var(--copper); }
+  .uid-chip.gid{ background:var(--teal-tint); color:var(--teal-deep); border:1px solid var(--teal); }
+
+  .itimeline{ margin:6px 0 24px; max-width:560px; }
+  .itl-row{ display:flex; align-items:center; gap:2px; margin-bottom:6px; }
+  .itl-label{ width:64px; flex-shrink:0; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-soft); }
+  .itl-seg{ height:26px; border-radius:4px; font-family:"IBM Plex Mono",monospace; font-size:10.5px; display:flex; align-items:center; justify-content:center; color:var(--ink); }
+  .itl-seg.run{ background:var(--paper-deep); border:1px solid var(--grid); }
+  .itl-seg.wait{ background:var(--paper); border:1px dashed var(--grid); color:var(--ink-soft); }
+  .itl-seg.hit{ background:var(--copper-tint); border:1px solid var(--copper); color:var(--copper-deep); }
+  .itl-seg.io{ background:var(--teal-tint); border:1px solid var(--teal); color:var(--teal-deep); }
+
+  .analogy-row{ display:flex; gap:8px; margin:6px 0 24px; flex-wrap:wrap; align-items:center; }
+  .analogy-box{ flex:1; min-width:140px; border:1px solid var(--grid); border-radius:10px; padding:14px; background:var(--paper-deep); text-align:center; }
+  .analogy-box .real{ font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:15px; }
+  .analogy-box .tech{ font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ink-soft); margin-top:4px; }
+  .analogy-arrow{ color:var(--ink-soft); flex-shrink:0; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:32px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 10px; }
+    .flow-row, .analogy-row{ flex-direction:column; }
+    .flow-arrow, .analogy-arrow{ transform:rotate(90deg); }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2017 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="whatisos">What Is an OS</button>
+    <button class="tab-btn" data-tab="structure">Structure &amp; Arch</button>
+    <button class="tab-btn" data-tab="operations">OS Operations</button>
+    <button class="tab-btn" data-tab="storage">Storage</button>
+    <button class="tab-btn" data-tab="dualmode">Dual-Mode &amp; Security</button>
+    <button class="tab-btn" data-tab="virtualization">Virtualization</button>
+    <button class="tab-btn" data-tab="environments">Environments</button>
+    <button class="tab-btn" data-tab="extras">Extras</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <section class="tab-panel" id="panel-overview">
+    <div class="hero">
+      <span class="eyebrow">CO2017 · Operating Systems · Chapter 1</span>
+      <h1>The operating system is the <em>referee</em>, not the player.</h1>
+      <p class="lede">Every process on your machine thinks it owns the CPU, the memory, and the disk. It doesn't — the OS just makes it feel that way.</p>
+      <span class="vi">Mỗi tiến trình trên máy bạn tưởng nó sở hữu riêng CPU, bộ nhớ, ổ đĩa — thật ra không phải vậy, OS chỉ đang tạo ra ảo giác đó thôi.</span>
+      <div class="tagrow">
+        <span class="tag user">user mode</span><span class="tag kernel">kernel mode</span>
+        <span class="tag user">interrupts</span><span class="tag kernel">storage hierarchy</span>
+        <span class="tag user">virtualization</span><span class="tag kernel">cloud &amp; distributed</span>
+      </div>
+    </div>
+    <div class="grid-cards">
+      <div class="card user" data-goto="whatisos"><div class="kicker">01</div><h3>What Is an OS</h3><p>Why an OS exists, and the two goals it constantly trades off.</p></div>
+      <div class="card kernel" data-goto="structure"><div class="kicker">02</div><h3>Structure &amp; Architecture</h3><p>Bus, interrupts, multiprocessor design, NUMA, clusters.</p></div>
+      <div class="card user" data-goto="operations"><div class="kicker">03</div><h3>OS Operations</h3><p>Boot sequence, processes, multiprogramming, resource management, spooling.</p></div>
+      <div class="card kernel" data-goto="storage"><div class="kicker">04</div><h3>Storage Hierarchy</h3><p>Registers to tape — units, tradeoffs, and a memory trick.</p></div>
+      <div class="card user" data-goto="dualmode"><div class="kicker">05</div><h3>Dual-Mode &amp; Security</h3><p>The mode bit, plus protection and security fundamentals.</p></div>
+      <div class="card kernel" data-goto="virtualization"><div class="kicker">06</div><h3>Virtualization</h3><p>Running one OS inside another, safely and (mostly) natively.</p></div>
+      <div class="card user" data-goto="environments"><div class="kicker">07</div><h3>Computing Environments</h3><p>Networks, client-server, P2P, cloud, embedded.</p></div>
+      <div class="card kernel" data-goto="extras"><div class="kicker">08</div><h3>Extras</h3><p>Kernel data structures + free &amp; open-source operating systems.</p></div>
+      <div class="card user" data-goto="quiz"><div class="kicker">Assessment</div><h3>MCQ Quiz</h3><p>12 questions to check whether the chapter actually stuck.</p></div>
+    </div>
+    <div class="outline">
+      <div class="label">Where this comes from</div>
+      <div class="outline-item"><div class="idx mono">§1.1–1.2</div><div><h4>Goals, the four components &amp; architecture</h4><p>OS as intermediary; hardware / OS / applications / users; single vs multiprocessor design.</p></div></div>
+      <div class="outline-item"><div class="idx mono">§1.3–1.4</div><div><h4>Operations, interrupts &amp; storage</h4><p>Boot, interrupt-driven kernels, DMA, multiprogramming/timesharing, storage tiers, resource management.</p></div></div>
+      <div class="outline-item"><div class="idx mono">§1.5–1.6</div><div><h4>Dual-mode, protection &amp; security</h4><p>The mode bit, privileged instructions, and defending the system from misuse.</p></div></div>
+      <div class="outline-item"><div class="idx mono">§1.7–1.10</div><div><h4>Virtualization, distributed &amp; embedded systems</h4><p>Guest OSes, computing environments, kernel data structures, open-source operating systems.</p></div></div>
+    </div>
+  </section>
+
+  <!-- WHAT IS AN OS -->
+  <section class="tab-panel" id="panel-whatisos" hidden>
+    <div class="panel-eyebrow">Section 01</div>
+    <h2>What Is an Operating System</h2>
+
+    <div class="hook"><b>Before we define it — take a guess:</b> a car, an airplane, a printer, a washing machine, a toaster, a compiler — which of these "has" an operating system? Almost all of them, just at very different levels of complexity.
+      <span class="vi">Trước khi định nghĩa — đoán thử xem: xe hơi, máy bay, máy in, máy giặt, lò nướng bánh, trình biên dịch — cái nào "có" một hệ điều hành? Gần như tất cả, chỉ khác nhau ở độ phức tạp mà thôi.</span>
+    </div>
+
+    <p class="en">Strip away everything else and an OS is just a program with an unusual job: it sits between every application you run and the physical machine underneath, and it never really stops running.</p>
+    <span class="vi">Bỏ hết mọi thứ phụ đi, OS chỉ là một chương trình có nhiệm vụ đặc biệt: nó đứng giữa mọi ứng dụng bạn chạy và phần cứng thật bên dưới, và gần như không bao giờ ngừng chạy.</span>
+    <div class="flow-row">
+      <div class="flow-box">User / Application<br/><small>"open this file"</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">Operating System<br/><small>translates &amp; guards</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">Hardware<br/><small>CPU, disk, memory</small></div>
+    </div>
+
+    <p class="en">Two goals pull the OS in different directions at once. One is <b>convenience</b> — a person shouldn't need to know which cylinder of the disk a file lives on to get work done. The other is <b>efficiency</b> — the actual silicon, memory, and I/O bandwidth need to be squeezed for as much useful work as possible, because none of it is free.</p>
+    <span class="vi">Hai mục tiêu này luôn kéo OS về hai hướng khác nhau. Convenience là sự tiện lợi — người dùng không cần biết file nằm ở cylinder nào trên đĩa. Efficiency là hiệu quả — phải tận dụng tối đa CPU, bộ nhớ, băng thông I/O vì không có gì miễn phí.</span>
+    <div class="illus"><div class="emo">⚖️</div><div class="cap"><b>Convenience ↔ Efficiency</b>gần như mọi quyết định thiết kế OS là sự đánh đổi giữa hai đầu cân này.</div></div>
+
+    <p class="en">The narrowest possible definition of "operating system" is the <b>kernel</b>: the one piece of code that's resident and running at all times. Everything shipped alongside it is a <span class="mono">system program</span> if it comes bundled with the OS, or an <span class="mono">application program</span> if it doesn't.</p>
+    <span class="vi">Định nghĩa hẹp nhất của "hệ điều hành" chính là kernel — phần lõi luôn chạy thường trực. Mọi thứ đi kèm nó là "system program" nếu được đóng gói sẵn cùng OS, hoặc "application program" nếu không.</span>
+    <div class="illus"><div class="emo">🧅</div><div class="cap"><b>Kernel ⊂ System programs ⊂ Applications</b>giống các lớp củ hành — kernel nằm trong cùng, luôn chạy; ngoài cùng là app do bạn tự cài.</div></div>
+
+    <p class="en">Modern general-purpose and mobile OSes also bundle <b>middleware</b>: shared software frameworks that sit above the kernel and give applications ready-made services — databases, graphics rendering, media playback — so every app doesn't have to reinvent them from scratch.</p>
+    <span class="vi">Các OS tổng quát và di động ngày nay còn đóng gói kèm "middleware" — những framework phần mềm dùng chung, nằm trên kernel, cung cấp sẵn dịch vụ cho ứng dụng (cơ sở dữ liệu, xử lý đồ họa, phát media) để mỗi app không phải tự viết lại từ đầu.</span>
+    <div class="illus"><div class="emo">🧰</div><div class="cap"><b>Middleware = hộp đồ nghề dùng chung</b>app nào cần database/đồ họa/media cứ lấy ra dùng, không cần tự chế lại.</div></div>
+
+    <p class="en">Not every device needs the same kind of OS. A shared mainframe needs to referee many users fairly; a smartphone needs to protect battery life; an embedded controller may run with no user interface at all.</p>
+    <span class="vi">Không phải thiết bị nào cũng cần cùng 1 kiểu OS. Máy chủ dùng chung phải phân xử công bằng cho nhiều người; điện thoại phải giữ pin; bộ điều khiển nhúng có thể chạy mà chẳng cần giao diện người dùng nào cả.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Shared / mainframe</div><p>Nhiều người dùng cùng lúc — phân bổ tài nguyên công bằng.</p></div>
+      <div class="res-card"><div class="rk">Dedicated / workstation</div><p>Tài nguyên riêng, nhưng vẫn hay gọi tới server.</p></div>
+      <div class="res-card"><div class="rk">Mobile devices</div><p>Ít tài nguyên hơn — tối ưu cho pin, cảm ứng.</p></div>
+      <div class="res-card"><div class="rk">Embedded computers</div><p>Gần như không có giao diện, tự chạy 1 mình.</p></div>
+    </div>
+
+    <div class="note"><b>Mẹo thi</b>Nếu đề hỏi "operating system is..." dạng điền khuyết — câu trả lời an toàn nhất luôn là: chương trình trung gian giữa user và hardware, mục tiêu là convenience + efficient resource use.</div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">OS</span><span class="rchip">kernel</span><span class="rchip">convenience</span><span class="rchip">efficiency</span><span class="rchip">middleware</span><span class="rchip">system program</span><span class="rchip">application program</span></div>
+      <p class="rline">OS = trung gian giữa user và hardware, luôn cân bằng giữa "dễ dùng" và "dùng hiệu quả phần cứng".</p>
+    </div>
+  </section>
+  <!-- STRUCTURE & ARCHITECTURE -->
+  <section class="tab-panel" id="panel-structure" hidden>
+    <div class="panel-eyebrow">Section 02</div>
+    <h2>System Structure, Architecture &amp; Interrupts</h2>
+
+    <p class="en">Zoom out and a computer is only four layers talking to each other in strict order — nothing skips a level.</p>
+    <span class="vi">Nhìn tổng quát, máy tính chỉ có 4 lớp nói chuyện với nhau theo đúng thứ tự — không lớp nào được nhảy cóc.</span>
+    <div class="stack">
+      <div class="layer users">Users <small>— people, other machines, other software</small></div>
+      <div class="arrow">↕</div>
+      <div class="layer apps">Application programs <small>— compilers, browsers, games</small></div>
+      <div class="arrow">↕</div>
+      <div class="layer os">Operating system <small>— allocates &amp; coordinates hardware</small></div>
+      <div class="arrow">↕</div>
+      <div class="layer hw">Hardware <small>— CPU, memory, I/O devices</small></div>
+    </div>
+
+    <p class="en">Every part of a machine — CPU, disk, keyboard, graphics card — plugs into a shared <b>system bus</b> that provides the only path to memory. Each device sits behind its own <b>controller</b>; a <b>device driver</b> installed inside the OS is what actually talks to that controller.</p>
+    <span class="vi">Mọi bộ phận của máy — CPU, ổ đĩa, bàn phím, card đồ họa — đều cắm vào 1 hệ thống bus chung, đường duy nhất tới bộ nhớ. Mỗi thiết bị đứng sau 1 bộ điều khiển riêng; "device driver" cài trong OS mới thực sự nói chuyện với bộ điều khiển đó.</span>
+    <div class="bus-row">
+      <div class="bus-dev">Disk controller</div>
+      <div class="bus-dev">USB controller<br/><small>(mouse, keyboard)</small></div>
+      <div class="bus-dev">Graphics adapter</div>
+    </div>
+    <div class="bus-bar">system bus</div>
+    <div class="bus-mem">memory</div>
+
+    <p class="en">Hardware doesn't wait around for the CPU to ask "is anything ready yet?" Instead, every device controller can raise an <b>interrupt</b>, looked up through an <span class="mono">interrupt vector</span>. Before jumping, hardware preserves the CPU's registers and <b>program counter</b>, so execution resumes exactly where it left off.</p>
+    <span class="vi">Phần cứng không ngồi chờ CPU hỏi "có gì sẵn sàng chưa" — thay vào đó, mỗi bộ điều khiển thiết bị có thể phát ra 1 "interrupt", được tra cứu qua "interrupt vector". Trước khi nhảy sang xử lý, phần cứng lưu lại thanh ghi và program counter của CPU, để sau đó chạy tiếp đúng chỗ đã dừng.</span>
+    <div class="itimeline">
+      <div class="itl-row"><div class="itl-label">CPU</div>
+        <div class="itl-seg run" style="flex:3">user program</div>
+        <div class="itl-seg hit" style="flex:1">handler</div>
+        <div class="itl-seg run" style="flex:3">user program</div>
+      </div>
+      <div class="itl-row"><div class="itl-label">I/O device</div>
+        <div class="itl-seg wait" style="flex:3">idle</div>
+        <div class="itl-seg io" style="flex:1">transferring</div>
+        <div class="itl-seg wait" style="flex:3">idle</div>
+      </div>
+    </div>
+
+    <p class="en">When I/O traffic is light, interrupts are efficient; once the rate climbs high enough, some drivers switch to <b>polling</b> instead — repeatedly checking device status directly.</p>
+    <span class="vi">Khi lưu lượng I/O thấp, dùng interrupt là hiệu quả; nhưng khi tốc độ tăng quá cao, 1 số driver chuyển sang "polling" — tự kiểm tra trạng thái thiết bị liên tục thay vì chờ interrupt.</span>
+    <div class="illus"><div class="emo">🔁</div><div class="cap"><b>Interrupt vs Polling</b>ít việc → interrupt (đỡ tốn công); nhiều việc dồn dập → polling (hỏi liên tục lại rẻ hơn).</div></div>
+
+    <p class="en">Interrupts don't only come from hardware. A <b>trap</b> (or exception) is a software-generated interrupt — an illegal instruction, or a deliberate <b>system call</b>, the only sanctioned doorway into the kernel.</p>
+    <span class="vi">Interrupt không chỉ đến từ phần cứng. "Trap" (hay exception) là interrupt do phần mềm tạo ra — có thể là lỗi (như chia cho 0), hoặc 1 "system call" cố ý gọi tới, và đây là cửa duy nhất được phép để vào kernel.</span>
+    <div class="illus"><div class="emo">🚪</div><div class="cap"><b>System call = cửa chính thức</b>duy nhất để chương trình người dùng "gõ cửa" xin kernel làm việc gì đó.</div></div>
+
+    <p class="en">For devices that move a lot of data, interrupting the CPU once per byte would be absurd. <b>DMA</b> lets the controller copy an entire block straight into main memory on its own, interrupting the CPU only once the whole block is done.</p>
+    <span class="vi">Với thiết bị truyền nhiều dữ liệu, cứ mỗi byte lại ngắt CPU 1 lần thì quá vô lý. "DMA" cho phép bộ điều khiển tự copy cả 1 khối dữ liệu thẳng vào bộ nhớ, chỉ ngắt CPU đúng 1 lần khi xong cả khối.</span>
+    <div class="illus"><div class="emo">📦</div><div class="cap"><b>DMA</b>1 lần ngắt cho cả khối dữ liệu, thay vì ngắt liên tục từng byte một.</div></div>
+
+    <h3 class="subhead">Architecture: one CPU isn't the whole story anymore</h3>
+    <p class="en">Most machines today carry more than one processing core. Grouping cores together — <b>multiprocessing</b> — buys higher throughput and graceful degradation if one core fails.</p>
+    <span class="vi">Hầu hết máy ngày nay có nhiều hơn 1 lõi xử lý. Gộp nhiều lõi lại — "multiprocessing" — giúp tăng thông lượng, và nếu 1 lõi hỏng thì máy vẫn chạy được (chỉ chậm hơn) thay vì chết hẳn.</span>
+    <div class="core-grid">
+      <div class="core-box"><div class="core-label">CPU 0</div>registers · cache</div>
+      <div class="core-box"><div class="core-label">CPU 1</div>registers · cache</div>
+    </div>
+    <div class="mem-bar">shared main memory</div>
+
+    <p class="en">In <b>asymmetric multiprocessing</b>, one processor is boss and hands specific tasks to the rest. In <b>symmetric multiprocessing (SMP)</b> — the common case today — every core is an equal.</p>
+    <span class="vi">Trong "asymmetric multiprocessing", 1 CPU làm sếp, giao việc cho các CPU còn lại. Trong "symmetric multiprocessing (SMP)" — kiểu phổ biến hiện nay — mọi lõi đều bình đẳng như nhau.</span>
+    <div class="illus"><div class="emo">👔</div><div class="cap"><b>Asymmetric = có sếp · Symmetric = bình đẳng</b>SMP là kiểu chip đa lõi trên laptop/điện thoại bạn đang dùng.</div></div>
+
+    <p class="en">Multiple cores can be packaged three ways: several cores on <b>one chip (multicore)</b>, several separate chips inside <b>one socket (multi-chip)</b>, or a whole chassis housing multiple independent systems side by side. Multicore designs usually give each core its own small <b>L1 cache</b>, then share a larger <b>L2 cache</b> between them.</p>
+    <span class="vi">Nhiều lõi có thể đóng gói theo 3 kiểu: nhiều lõi trên 1 chip ("multicore"), nhiều chip riêng trong cùng 1 socket ("multi-chip"), hoặc cả 1 khung máy chứa nhiều hệ thống độc lập cạnh nhau. Thiết kế multicore thường cho mỗi lõi 1 cache L1 nhỏ riêng, rồi dùng chung 1 cache L2 lớn hơn.</span>
+    <div class="illus"><div class="emo">🧩</div><div class="cap"><b>Multi-chip ≠ Multicore</b>multicore = nhiều lõi trong 1 chip; multi-chip = nhiều chip riêng trong 1 socket.</div></div>
+
+    <p class="en">As core counts grow, memory access stops being equally fast for everyone: in a <b>Non-Uniform Memory Access (NUMA)</b> design, each CPU has its own local memory bank reached quickly, and reaches other CPUs' memory more slowly.</p>
+    <span class="vi">Khi số lõi tăng lên, tốc độ truy cập bộ nhớ không còn đều nhau nữa: trong thiết kế "NUMA", mỗi CPU có 1 vùng nhớ riêng truy cập nhanh, còn truy cập vùng nhớ của CPU khác thì chậm hơn.</span>
+    <div class="numa-grid">
+      <div class="numa-cell"><span class="cpu">CPU 0</span><br/>+ memory 0</div>
+      <div class="numa-cell"><span class="cpu">CPU 1</span><br/>+ memory 1</div>
+      <div class="numa-cell"><span class="cpu">CPU 2</span><br/>+ memory 2</div>
+      <div class="numa-cell"><span class="cpu">CPU 3</span><br/>+ memory 3</div>
+    </div>
+
+    <p class="en">Scale further and you leave a single box entirely: <b>clustered systems</b> wire separate machines together, sharing storage through a <b>SAN</b>. <b>Asymmetric clustering</b> keeps one machine on hot standby; <b>symmetric clustering</b> runs on every node at once. Clusters built purely for raw computation are called <b>High-Performance Computing (HPC)</b> — their applications must be explicitly written to be parallelized to take advantage of every node. A <b>Distributed Lock Manager (DLM)</b> stops two nodes touching the same resource together.</p>
+    <span class="vi">Mở rộng hơn nữa thì ra khỏi 1 chiếc máy hẳn: "clustered systems" nối nhiều máy riêng biệt lại, chia sẻ ổ lưu trữ qua "SAN". "Asymmetric clustering" giữ 1 máy dự phòng chờ sẵn; "symmetric clustering" cho mọi máy cùng chạy. Cluster dựng riêng để tính toán nặng gọi là "High-Performance Computing (HPC)" — ứng dụng phải được viết riêng để chia nhỏ (parallelize) mới tận dụng hết các node. "DLM" ngăn 2 máy đụng vào cùng 1 tài nguyên cùng lúc.</span>
+    <div class="illus"><div class="emo">🔗</div><div class="cap"><b>Cluster</b>nhiều máy vật lý riêng biệt, nối mạng, chia sẻ storage — khác hẳn multiprocessor (vẫn là 1 máy).</div></div>
+    <div class="note teal"><b>Mẹo thi</b>NUMA ≠ cluster: NUMA vẫn là 1 máy vật lý, nhiều CPU truy cập không đều vào các vùng nhớ. Cluster là nhiều máy riêng biệt, nối qua mạng, chia sẻ storage.</div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">system bus</span><span class="rchip">device driver</span><span class="rchip">interrupt vector</span><span class="rchip">trap</span><span class="rchip">DMA</span><span class="rchip">SMP</span><span class="rchip">multicore/multi-chip</span><span class="rchip">NUMA</span><span class="rchip">SAN</span><span class="rchip">HPC</span><span class="rchip">DLM</span></div>
+      <p class="rline">Kernel sống nhờ interrupt; đa lõi có thể chia đều (SMP) hoặc chia vùng nhớ riêng (NUMA); nhiều máy ghép cluster qua mạng chia sẻ storage.</p>
+    </div>
+  </section>
+
+  <!-- OS OPERATIONS & RESOURCE MANAGEMENT -->
+  <section class="tab-panel" id="panel-operations" hidden>
+    <div class="panel-eyebrow">Section 03</div>
+    <h2>OS Operations &amp; Resource Management</h2>
+
+    <p class="en">From the instant a machine powers on, a fixed sequence kicks in before any user program ever runs.</p>
+    <span class="vi">Ngay từ lúc bật nguồn, 1 trình tự cố định bắt đầu chạy trước khi bất kỳ chương trình người dùng nào được chạy.</span>
+    <div class="boot-timeline">
+      <div class="boot-step"><div class="dot"></div><div class="t">Bootstrap</div><div class="d">Firmware in ROM initializes the system</div></div>
+      <div class="boot-step"><div class="dot"></div><div class="t">Kernel loads</div><div class="d">Control passes to the OS kernel</div></div>
+      <div class="boot-step"><div class="dot"></div><div class="t">Daemons start</div><div class="d">Background services outside the kernel</div></div>
+      <div class="boot-step"><div class="dot"></div><div class="t">Interrupt-driven</div><div class="d">Kernel waits, reacts to events</div></div>
+    </div>
+
+    <p class="en">Once running, the kernel spends its life reacting: a hardware interrupt, or a software one — an illegal instruction, a system call, or messier problems like an infinite loop. A <b>timer</b> forces control back to the kernel before things freeze.</p>
+    <span class="vi">Một khi đã chạy, kernel sống bằng cách phản ứng: interrupt phần cứng, hoặc phần mềm — lệnh sai, system call, hay rắc rối hơn như 1 vòng lặp vô hạn. "Timer" ép trả quyền điều khiển về kernel trước khi máy bị treo.</span>
+
+    <h3 class="subhead">What exactly is a "process"?</h3>
+    <p class="en">A <b>program</b> sitting on disk is a <b>passive entity</b> — just bytes. The instant it starts running, it becomes a <b>process</b>: an <b>active entity</b> with its own program counter and resources.</p>
+    <span class="vi">Một "chương trình" nằm trên đĩa chỉ là dữ liệu thụ động — toàn byte. Ngay khi nó bắt đầu chạy, nó trở thành "process" — 1 thực thể chủ động, có program counter và tài nguyên riêng của nó.</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Program</div><p>Passive. A file on disk. No state, no progress.</p></div>
+      <div class="compare-box"><div class="ck">Process</div><p>Active. Has a program counter, owns resources, makes progress.</p></div>
+    </div>
+
+    <p class="en">A classic single-threaded process runs one instruction at a time; a <b>multi-threaded process</b> keeps one program counter per thread, letting several lines of execution share the same process's resources at once.</p>
+    <span class="vi">Process đơn luồng chạy từng lệnh một; "multi-threaded process" giữ 1 program counter riêng cho mỗi luồng, cho phép nhiều dòng chạy chia sẻ chung tài nguyên của cùng 1 process.</span>
+    <div class="illus"><div class="emo">🧵</div><div class="cap"><b>Single-thread vs Multi-thread</b>1 luồng = 1 program counter; nhiều luồng = nhiều program counter cùng chung tài nguyên process.</div></div>
+
+    <h3 class="subhead">Multiprogramming → timesharing</h3>
+    <p class="en">A single user rarely keeps the CPU and every I/O device busy at once. <b>Multiprogramming</b> keeps several jobs in memory so the CPU always has something to execute.</p>
+    <span class="vi">Một người dùng hiếm khi khiến CPU và mọi thiết bị I/O bận rộn cùng lúc. "Multiprogramming" giữ nhiều job trong bộ nhớ để CPU luôn có việc để làm.</span>
+    <div class="memlayout">
+      <div class="addr"><span>max</span></div>
+      <div class="mrow osrow">operating system</div>
+      <div class="mrow">process 1</div>
+      <div class="mrow">process 2</div>
+      <div class="mrow">process 3</div>
+      <div class="mrow">process 4</div>
+      <div class="addr"><span>0</span></div>
+    </div>
+
+    <p class="en">Push that switching fast enough for real-time interaction and you get <b>timesharing (multitasking)</b>, with a response-time target well under a second. When jobs don't fit in memory, <b>swapping</b> and <b>virtual memory</b> let them run anyway.</p>
+    <span class="vi">Đẩy tốc độ chuyển đổi đó lên đủ nhanh để tương tác thời gian thực, ta có "timesharing (multitasking)", với mục tiêu phản hồi dưới 1 giây. Khi job không vừa bộ nhớ, "swapping" và "virtual memory" vẫn cho nó chạy được.</span>
+    <div class="note"><b>Mẹo thi</b>Phân biệt: Multiprogramming = có nhiều job trong memory để CPU không rảnh. Multitasking/Timesharing = multiprogramming + phản hồi đủ nhanh để user tương tác trực tiếp.</div>
+
+    <h3 class="subhead">What the OS is actually keeping track of</h3>
+    <p class="en">The OS constantly manages four kinds of resources at once — processes, memory, files, and mass storage.</p>
+    <span class="vi">OS liên tục quản lý 4 loại tài nguyên cùng lúc — process, bộ nhớ, tệp tin, và bộ lưu trữ.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Process management</div><p>Create/delete processes, suspend/resume, synchronization, communication, deadlock handling.</p></div>
+      <div class="res-card"><div class="rk">Memory management</div><p>Track what's used and by whom, decide what moves in/out, allocate and free space.</p></div>
+      <div class="res-card"><div class="rk">Filesystem management</div><p>Create/delete files &amp; directories, control access, map files onto secondary storage.</p></div>
+      <div class="res-card"><div class="rk">Mass-storage management</div><p>Mount/unmount, free-space tracking, disk scheduling, partitioning, protection.</p></div>
+    </div>
+
+    <h3 class="subhead">The I/O subsystem hides the mess</h3>
+    <p class="en">The I/O subsystem leans on three tricks: <b>buffering</b> (holding data temporarily mid-transfer), <b>caching</b>, and <b>spooling</b> — letting one job's output overlap with another's input, like a print queue.</p>
+    <span class="vi">Hệ thống I/O dựa vào 3 mẹo: "buffering" (giữ tạm dữ liệu khi đang truyền), "caching", và "spooling" — cho phép output của job này chồng lấp với input của job khác, ví dụ như hàng đợi in.</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Buffering</div><p>Vùng giữ tạm khi dữ liệu di chuyển giữa 2 tốc độ khác nhau.</p></div>
+      <div class="compare-box"><div class="ck">Caching</div><p>Bản sao nhanh hơn, giữ lại vì có thể dùng lại sớm.</p></div>
+      <div class="compare-box"><div class="ck">Spooling</div><p>Xếp hàng để 1 thiết bị chậm (như máy in) không chặn mọi người khác.</p></div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">bootstrap</span><span class="rchip">process vs program</span><span class="rchip">program counter</span><span class="rchip">multi-threaded</span><span class="rchip">multiprogramming</span><span class="rchip">timesharing</span><span class="rchip">swapping</span><span class="rchip">buffering</span><span class="rchip">spooling</span></div>
+      <p class="rline">Program = thụ động, Process = chủ động. Multiprogramming giữ CPU luôn bận; timesharing thêm tốc độ để user tương tác trực tiếp.</p>
+    </div>
+  </section>
+  <!-- STORAGE HIERARCHY -->
+  <section class="tab-panel" id="panel-storage" hidden>
+    <div class="panel-eyebrow">Section 04</div>
+    <h2>Storage Hierarchy</h2>
+
+    <p class="en">Every tier of storage is a compromise: the faster it is, the smaller and pricier it gets per byte.</p>
+    <span class="vi">Mỗi tầng lưu trữ đều là 1 sự đánh đổi: càng nhanh thì càng nhỏ và càng đắt mỗi byte.</span>
+    <div class="ladder">
+      <div class="rung" style="width:60%"><span>Registers</span><span class="sz">&lt; 1 KB · fastest</span></div>
+      <div class="rung" style="width:68%"><span>Cache (on/off-chip)</span><span class="sz">&lt; 16 MB</span></div>
+      <div class="rung" style="width:78%"><span>Main memory (DRAM)</span><span class="sz">&lt; 64 GB · volatile</span></div>
+      <div class="rung" style="width:88%"><span>Solid-state / NVM</span><span class="sz">&lt; 1 TB · non-volatile</span></div>
+      <div class="rung" style="width:100%"><span>Magnetic disk</span><span class="sz">&lt; 10 TB · slowest, cheapest</span></div>
+      <div class="ladder-axis"><span>← faster / smaller / pricier</span><span>slower / larger / cheaper →</span></div>
+    </div>
+
+    <p class="en">Only the top of that ladder is something the CPU can touch directly; everything below is <b>secondary storage</b>, reached only through the OS.</p>
+    <span class="vi">Chỉ có đỉnh của bậc thang này là CPU chạm trực tiếp được; mọi thứ bên dưới là "secondary storage", chỉ tiếp cận được thông qua OS.</span>
+    <div class="note"><b>Mẹo thi</b>Trật tự gần như luôn xuất hiện trong đề: registers → cache → main memory → NVM/SSD → HDD → optical → tape.</div>
+
+    <h3 class="subhead">Ghi nhớ bằng ví dụ đời thường</h3>
+    <p class="en">The textbook uses an easy analogy: imagine you're working at a desk.</p>
+    <span class="vi">Sách giáo trình có 1 ví von rất dễ nhớ: hãy tưởng tượng bạn đang làm việc ở bàn.</span>
+    <div class="analogy-row">
+      <div class="analogy-box"><div class="real">🖥️ Cái bàn</div><div class="tech">= main memory</div></div>
+      <div class="analogy-arrow">↔</div>
+      <div class="analogy-box"><div class="real">📚 Kệ sách</div><div class="tech">= hard disk</div></div>
+      <div class="analogy-arrow">↔</div>
+      <div class="analogy-box"><div class="real">📦 Tầng hầm</div><div class="tech">= tape</div></div>
+    </div>
+    <p class="en">Whatever you need right now sits on the desk (fastest to grab, but small); less-used stuff sits on the shelf; anything you almost never touch goes down to the basement.</p>
+    <span class="vi">Cái gì đang cần dùng ngay thì để trên bàn (nhanh lấy nhất, nhưng bàn nhỏ); cái ít dùng hơn thì để trên kệ; cái gần như không bao giờ đụng tới thì cất dưới tầng hầm.</span>
+
+    <h3 class="subhead">Đơn vị đo lường — nhắc lại cho chắc</h3>
+    <p class="en">The smallest unit is a <b>bit</b>. Eight bits make a <b>byte</b> — the smallest unit a computer typically moves directly. A <b>word</b> is a given architecture's native chunk of data.</p>
+    <span class="vi">Đơn vị nhỏ nhất là "bit". Gom 8 bit thành 1 "byte" — đơn vị nhỏ nhất máy tính thường thao tác trực tiếp. "Word" là đơn vị dữ liệu gốc của 1 kiến trúc máy cụ thể.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">KB</div><p>1,024 bytes</p></div>
+      <div class="res-card"><div class="rk">MB</div><p>1,024² bytes</p></div>
+      <div class="res-card"><div class="rk">GB</div><p>1,024³ bytes</p></div>
+      <div class="res-card"><div class="rk">TB / PB</div><p>1,024⁴ / 1,024⁵ bytes</p></div>
+    </div>
+
+    <h3 class="subhead">Khi có nhiều bản sao — ai mới là bản "thật"?</h3>
+    <p class="en">In a multitasking system, several copies of the same value can exist across this hierarchy — the OS has to guarantee whoever reads it gets the most recent write.</p>
+    <span class="vi">Trong hệ thống đa nhiệm, nhiều bản sao của cùng 1 giá trị có thể tồn tại xuyên suốt các tầng lưu trữ này — OS phải đảm bảo ai đọc giá trị đó cũng nhận được bản ghi mới nhất.</span>
+
+    <p class="en">In a <b>multiprocessor</b> machine, this gets harder: each core keeps its own cache, so hardware must enforce <b>cache coherency</b> — making sure every core sees the latest value, not a stale copy sitting in a neighbor's cache. Push the same idea across a <b>distributed system</b> and it's harder still, since several physical machines can each hold their own copy of the same data at once.</p>
+    <span class="vi">Trong máy đa xử lý, việc này khó hơn: mỗi lõi giữ cache riêng, nên phần cứng phải đảm bảo "cache coherency" — mọi lõi đều thấy đúng giá trị mới nhất, không phải bản cũ còn sót trong cache của lõi khác. Đẩy ý tưởng này ra hệ phân tán thì còn khó hơn nữa, vì nhiều máy vật lý khác nhau có thể mỗi máy giữ 1 bản sao riêng của cùng 1 dữ liệu.</span>
+    <div class="illus"><div class="emo">🔄</div><div class="cap"><b>Cache coherency</b>nhiều lõi/nhiều máy, nhiều bản sao — phần cứng (hoặc hệ phân tán) phải đồng bộ để không ai đọc nhầm bản cũ.</div></div>
+
+    <h3 class="subhead">So sánh tốc độ &amp; băng thông từng tầng</h3>
+    <p class="en">Numbers make the tradeoff concrete: access time grows by roughly five orders of magnitude from registers down to disk, while bandwidth drops by a similar margin.</p>
+    <span class="vi">Con số cụ thể hóa sự đánh đổi này rõ hơn: thời gian truy cập tăng gần 5 bậc (10 lần liên tiếp) từ registers xuống tới disk, trong khi băng thông giảm với mức tương tự.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Registers</div><p>~0.25–0.5 ns · 20,000–100,000 MB/s</p></div>
+      <div class="res-card"><div class="rk">Cache</div><p>~0.5–25 ns · 5,000–10,000 MB/s</p></div>
+      <div class="res-card"><div class="rk">Main memory</div><p>~80–250 ns · 1,000–5,000 MB/s</p></div>
+      <div class="res-card"><div class="rk">SSD / NVM</div><p>~25,000–50,000 ns · ~500 MB/s</p></div>
+      <div class="res-card"><div class="rk">Magnetic disk</div><p>~5,000,000 ns · 20–150 MB/s</p></div>
+    </div>
+    <div class="note teal"><b>Mẹo thi</b>Không cần thuộc lòng số chính xác — chỉ cần nhớ xu hướng: càng xuống tầng dưới, access time tăng vọt (chậm hẳn), bandwidth giảm mạnh.</div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">registers</span><span class="rchip">cache</span><span class="rchip">main memory</span><span class="rchip">NVM/SSD</span><span class="rchip">HDD</span><span class="rchip">bit/byte/word</span><span class="rchip">caching</span><span class="rchip">cache coherency</span></div>
+      <p class="rline">Càng nhanh càng nhỏ càng đắt — nhớ theo bàn làm việc / kệ sách / tầng hầm.</p>
+    </div>
+  </section>
+
+  <!-- DUAL MODE + SECURITY -->
+  <section class="tab-panel" id="panel-dualmode" hidden>
+    <div class="panel-eyebrow">Section 05</div>
+    <h2>Dual-Mode Operation &amp; Security</h2>
+
+    <p class="en">The entire notion of "protection" in an OS collapses to one hardware bit. The CPU tracks a single <b>mode bit</b>: <span class="mono">user</span> or <span class="mono">kernel</span>. <b>Privileged</b> instructions won't run unless the mode bit already says kernel.</p>
+    <span class="vi">Toàn bộ khái niệm "bảo vệ" trong OS thu gọn lại thành 1 bit phần cứng. CPU theo dõi 1 "mode bit" duy nhất: user hoặc kernel. Lệnh "privileged" sẽ không chạy trừ khi mode bit đang là kernel.</span>
+    <div class="boundary-box">
+      <div class="boundary-half user"><div class="role">User mode — mode bit = 1</div><p style="margin:0 0 6px;">Your process runs normally, then needs something only the kernel can do.</p><span class="flowchip">user process executing</span><span class="flowchip">→ calls system call</span></div>
+      <div class="boundary-line"><span class="rule"></span> trap · mode bit → 0 <span class="rule"></span></div>
+      <div class="boundary-half kernel"><div class="role">Kernel mode — mode bit = 0</div><p style="margin:0 0 6px;">The trap hands control to a fixed entry point — the <em>only</em> way in.</p><span class="flowchip">execute system call</span></div>
+      <div class="boundary-line"><span class="rule"></span> return · mode bit → 1 <span class="rule"></span></div>
+      <div class="boundary-half user"><div class="role">Back to user mode</div><p style="margin:0;">Control returns exactly where the process left off.</p></div>
+    </div>
+
+    <p class="en">A closely related safeguard is the <b>timer</b>: when its countdown hits zero, hardware forces an interrupt back to the kernel — the reason one infinite loop can't hold the whole system hostage.</p>
+    <span class="vi">Một cơ chế bảo vệ liên quan là "timer": khi đồng hồ đếm ngược về 0, phần cứng buộc phải ngắt trả về kernel — đây là lý do 1 vòng lặp vô hạn không thể giữ cả hệ thống làm con tin.</span>
+
+    <h3 class="subhead">Two ways an I/O call can behave</h3>
+    <p class="en"><b>Synchronous (blocking) I/O</b> parks the process until the transfer's done. <b>Asynchronous (non-blocking) I/O</b> hands control straight back, and the OS tracks every device's state in a <b>device-status table</b>.</p>
+    <span class="vi">"Synchronous (blocking) I/O" bắt process đứng chờ tới khi truyền xong. "Asynchronous (non-blocking) I/O" trả quyền điều khiển ngay lập tức, và OS theo dõi trạng thái mọi thiết bị qua 1 "device-status table".</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Blocking I/O</div><p>Đơn giản, nhưng CPU ngồi chờ không làm gì — chỉ 1 request tại 1 thời điểm.</p></div>
+      <div class="compare-box"><div class="ck">Non-blocking I/O</div><p>Process tiếp tục chạy; OS theo dõi tiến độ qua bảng trạng thái.</p></div>
+    </div>
+
+    <h3 class="subhead">Protection vs. security</h3>
+    <p class="en"><b>Protection</b> is any mechanism controlling which processes or users can touch which resources. <b>Security</b> is the broader defense against internal and external attacks.</p>
+    <span class="vi">"Protection" là bất kỳ cơ chế nào kiểm soát process hay user nào được đụng vào tài nguyên nào. "Security" là mục tiêu tổng thể rộng hơn — chống lại tấn công cả bên trong lẫn bên ngoài.</span>
+    <p class="en">Systems distinguish users through a <b>user identity (UID)</b>. A <b>group identifier (GID)</b> lets a whole set of users share permissions. <b>Privilege escalation</b> lets a process temporarily gain more rights.</p>
+    <span class="vi">Hệ thống phân biệt người dùng qua "UID". "GID" cho phép cả 1 nhóm người dùng chia sẻ quyền. "Privilege escalation" cho phép 1 process tạm thời có nhiều quyền hơn.</span>
+    <div class="uid-box">
+      <div class="proc">process: report.pdf</div>
+      <span class="uid-chip uid">UID: binh</span><span class="uid-chip gid">GID: students</span>
+    </div>
+    <div class="note teal"><b>Mẹo thi</b>Protection = cơ chế (làm sao kiểm soát quyền truy cập). Security = mục tiêu tổng thể (chống lại tấn công). Đề hay bẫy 2 khái niệm này với nhau.</div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">mode bit</span><span class="rchip">privileged instruction</span><span class="rchip">trap</span><span class="rchip">timer</span><span class="rchip">blocking I/O</span><span class="rchip">non-blocking I/O</span><span class="rchip">device-status table</span><span class="rchip">UID/GID</span></div>
+      <p class="rline">1 bit mode quyết định ai được làm gì; protection = cơ chế, security = mục tiêu tổng thể.</p>
+    </div>
+  </section>
+
+  <!-- VIRTUALIZATION -->
+  <section class="tab-panel" id="panel-virtualization" hidden>
+    <div class="panel-eyebrow">Section 06</div>
+    <h2>Virtualization</h2>
+
+    <p class="en">Virtualization is the trick of making one physical machine convincingly pretend to be several separate ones, each running its own full guest operating system.</p>
+    <span class="vi">Virtualization là "chiêu" khiến 1 máy vật lý giả vờ là nhiều máy riêng biệt, mỗi máy chạy trọn vẹn 1 hệ điều hành khách (guest OS) của riêng nó.</span>
+
+    <p class="en"><b>Emulation</b> is needed when the guest's CPU architecture doesn't match the host's — slow, since every instruction is translated. True <b>virtualization</b> assumes the same architecture, so it runs at near-native speed.</p>
+    <span class="vi">"Emulation" cần dùng khi kiến trúc CPU của máy khách khác với máy chủ — chậm, vì mọi lệnh đều phải dịch lại. "Virtualization" thật sự giả định cùng kiến trúc, nên chạy gần như tốc độ gốc.</span>
+    <div class="vm-row">
+      <div class="vm-box">Guest OS 1<br/><small>processes</small></div>
+      <div class="vm-box">Guest OS 2<br/><small>processes</small></div>
+      <div class="vm-box">Guest OS 3<br/><small>processes</small></div>
+    </div>
+    <div class="vmm-bar">Virtual Machine Manager (VMM / hypervisor)</div>
+    <div class="hw-bar">Hardware</div>
+
+    <p class="en">The <b>VMM</b> hands out slices of real CPU, memory, and I/O to each guest while keeping them isolated. Some VMMs sit atop a host OS; others run directly on bare metal, the approach data centers favor.</p>
+    <span class="vi">"VMM" chia sẻ CPU, bộ nhớ, I/O thật cho từng máy khách trong khi vẫn cách ly chúng với nhau. Có VMM chạy trên 1 OS chủ; có loại chạy thẳng trên phần cứng trần, đây là cách các trung tâm dữ liệu hay dùng.</span>
+    <div class="note"><b>Mẹo thi</b>Emulation dùng khi khác kiến trúc CPU (chậm hơn). Virtualization dùng khi cùng kiến trúc CPU (gần như tốc độ native).</div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">emulation</span><span class="rchip">virtualization</span><span class="rchip">VMM</span><span class="rchip">hypervisor</span><span class="rchip">guest OS</span></div>
+      <p class="rline">Khác kiến trúc CPU → emulation (chậm). Cùng kiến trúc → virtualization (gần native).</p>
+    </div>
+  </section>
+
+  <!-- COMPUTING ENVIRONMENTS -->
+  <section class="tab-panel" id="panel-environments" hidden>
+    <div class="panel-eyebrow">Section 07</div>
+    <h2>Computing Environments</h2>
+
+    <h3 class="subhead">Distributed systems: it's all about the network</h3>
+    <p class="en">A <b>distributed system</b> is a collection of separate machines wired together by a network. That network can be a <b>LAN</b> inside one building, or stretched into a <b>WAN</b> across cities; <b>MAN</b> and <b>PAN</b> sit in between.</p>
+    <span class="vi">"Distributed system" là 1 tập hợp các máy riêng biệt được nối lại bằng mạng. Mạng đó có thể là "LAN" trong 1 tòa nhà, hoặc kéo dài thành "WAN" xuyên thành phố; "MAN" và "PAN" nằm ở giữa 2 quy mô đó.</span>
+    <div class="illus"><div class="emo">📡</div><div class="cap"><b>PAN → LAN → MAN → WAN</b>quy mô mạng tăng dần từ cá nhân (Bluetooth) tới cả thành phố/quốc gia.</div></div>
+
+    <p class="en">A <b>Network Operating System (NOS)</b> doesn't merge machines into one computer, but gives them a shared way to exchange messages — so the boundary between "my machine" and "the network" mostly disappears.</p>
+    <span class="vi">"Network Operating System (NOS)" không biến nhiều máy thành 1 máy, nhưng cho chúng 1 cách chung để trao đổi thông điệp — nên ranh giới giữa "máy của tôi" và "mạng" gần như biến mất.</span>
+    <div class="note teal"><b>Mẹo thi</b>Thứ tự phạm vi mạng từ nhỏ đến lớn: PAN → LAN → MAN → WAN. NOS không biến nhiều máy thành 1 máy, chỉ tạo cảm giác như vậy.</div>
+
+    <p class="en">The same OS ideas show up in very different shapes depending on what's plugged into what.</p>
+    <span class="vi">Những nguyên lý OS giống nhau vẫn xuất hiện dưới nhiều hình dạng khác nhau, tùy vào thứ gì đang kết nối với thứ gì.</span>
+    <div class="env-grid">
+      <div class="env-card"><div class="env-badge">TR</div><h4>Traditional</h4><p>Stand-alone machines, now almost always networked and sitting behind a firewall.</p></div>
+      <div class="env-card"><div class="env-badge">MB</div><h4>Mobile</h4><p>Smartphones &amp; tablets — extra sensors like GPS, optimized for battery and touch.</p></div>
+      <div class="env-card"><div class="env-badge">CS</div><h4>Client-Server</h4><p>A server answers requests from many clients — compute-server or file-server style.</p></div>
+      <div class="env-card"><div class="env-badge">P2</div><h4>Peer-to-Peer</h4><p>No fixed client/server role — every node can act as either, or both at once.</p></div>
+      <div class="env-card"><div class="env-badge">CL</div><h4>Cloud Computing</h4><p>Compute, storage, and apps rented as a service — SaaS, PaaS, or IaaS.</p></div>
+      <div class="env-card"><div class="env-badge">RT</div><h4>Real-Time &amp; Embedded</h4><p>Fixed timing deadlines that must be met for the result to even count as correct.</p></div>
+    </div>
+
+    <p class="en">Cloud environments layer traditional OSes and VMMs together with cloud-management tooling — a firewall and load balancer sit in front, spreading requests across a pool of virtual machines.</p>
+    <span class="vi">Môi trường cloud xếp chồng OS truyền thống và VMM cùng công cụ quản lý cloud — firewall và load balancer đứng trước, phân tán request ra khắp 1 nhóm máy ảo.</span>
+
+    <h3 class="subhead">Đào sâu thêm vài môi trường</h3>
+    <p class="en">Even "traditional" stand-alone machines rarely stay isolated: a <b>portal</b> gives web-based access into internal systems, while a <b>thin client (network computer)</b> acts like little more than a web terminal, doing almost no processing locally.</p>
+    <span class="vi">Ngay cả máy "truyền thống" đứng riêng cũng hiếm khi thật sự cô lập: "portal" cho phép truy cập hệ thống nội bộ qua web, còn "thin client (network computer)" gần như chỉ là 1 màn hình cuối kết nối web, gần như không xử lý gì ở máy cục bộ.</span>
+    <div class="illus"><div class="emo">🌐</div><div class="cap"><b>Portal &amp; Thin Client</b>portal = cổng web vào hệ thống nội bộ; thin client = màn hình gần như rỗng, mọi xử lý dồn về server.</div></div>
+
+    <p class="en">Mobile OSes earn their keep with extra hardware features — GPS, gyroscope — that unlock entirely new app categories like <b>Augmented Reality (AR)</b>, and they connect over <b>IEEE 802.11</b> wireless or cellular data. <b>Apple iOS</b> and <b>Google Android</b> lead this space.</p>
+    <span class="vi">OS di động phát huy giá trị nhờ các phần cứng phụ thêm — GPS, con quay hồi chuyển — mở ra hẳn 1 loại ứng dụng mới như "Augmented Reality (AR)", và kết nối qua sóng không dây "IEEE 802.11" hoặc mạng dữ liệu di động. "Apple iOS" và "Google Android" dẫn đầu mảng này.</span>
+    <div class="illus"><div class="emo">📱</div><div class="cap"><b>GPS + gyroscope → AR</b>chính 2 cảm biến này là thứ laptop truyền thống không có, mở khóa được app kiểu thực tế tăng cường.</div></div>
+
+    <p class="en">Peer-to-peer isn't just theory — <b>Napster</b> and <b>Gnutella</b> popularized file-sharing this way, and <b>Skype</b>'s early architecture used P2P for voice calls (<b>VoIP</b>) instead of routing everything through a central server.</p>
+    <span class="vi">Peer-to-peer không chỉ là lý thuyết suông — "Napster" và "Gnutella" từng nổi tiếng nhờ chia sẻ file kiểu này, còn kiến trúc ban đầu của "Skype" dùng P2P cho cuộc gọi thoại (VoIP) thay vì dồn hết qua 1 server trung tâm.</span>
+    <div class="illus"><div class="emo">🎧</div><div class="cap"><b>Napster · Gnutella · Skype</b>3 ví dụ kinh điển của P2P — không ai giữ vai "server" cố định.</div></div>
+
+    <p class="en">Cloud structures come in three flavors: a <b>public cloud</b> is open to anyone willing to pay; a <b>private cloud</b> is run by one company purely for its own use; a <b>hybrid cloud</b> mixes both — public capacity on demand, private for sensitive workloads.</p>
+    <span class="vi">Cấu trúc cloud có 3 kiểu: "public cloud" mở cho bất kỳ ai trả tiền; "private cloud" do 1 công ty tự vận hành riêng cho mình; "hybrid cloud" trộn cả 2 — dùng public khi cần mở rộng, giữ private cho phần dữ liệu nhạy cảm.</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Public cloud</div><p>Mở cho ai cũng thuê được — trả tiền là dùng.</p></div>
+      <div class="compare-box"><div class="ck">Private cloud</div><p>1 công ty tự dựng, chỉ dùng nội bộ.</p></div>
+      <div class="compare-box"><div class="ck">Hybrid cloud</div><p>Kết hợp cả 2 — linh hoạt theo nhu cầu.</p></div>
+    </div>
+    <div class="note"><b>Mẹo thi</b>Đừng nhầm Public/Private/Hybrid (nói về AI SỞ HỮU hạ tầng cloud) với SaaS/PaaS/IaaS (nói về CẤP ĐỘ dịch vụ được thuê) — đây là 2 trục phân loại khác nhau, đề hay hỏi riêng từng trục.</div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">LAN/WAN/MAN/PAN</span><span class="rchip">NOS</span><span class="rchip">portal/thin client</span><span class="rchip">AR · 802.11</span><span class="rchip">Napster/Gnutella/Skype</span><span class="rchip">public/private/hybrid cloud</span><span class="rchip">SaaS/PaaS/IaaS</span><span class="rchip">embedded &amp; real-time</span></div>
+      <p class="rline">Từ máy đơn tới cloud — vẫn cùng 1 bộ nguyên lý OS, chỉ khác quy mô mạng và ai giữ vai trò chủ/khách.</p>
+    </div>
+  </section>
+
+  <!-- EXTRAS -->
+  <section class="tab-panel" id="panel-extras" hidden>
+    <div class="panel-eyebrow">Section 08</div>
+    <h2>Kernel Data Structures &amp; Open-Source OSes</h2>
+
+    <p class="en">A kernel leans on the same building blocks any program does. A <b>singly linked list</b> chains objects in one direction; a <b>doubly linked list</b> adds a pointer back to the previous node; a <b>circular linked list</b> loops the last node back to the first.</p>
+    <span class="vi">Kernel dựa vào những khối xây dựng quen thuộc như bất kỳ chương trình nào. "Singly linked list" nối các phần tử theo 1 chiều; "doubly linked list" thêm con trỏ quay lại phần tử trước; "circular linked list" nối phần tử cuối vòng lại phần tử đầu.</span>
+    <div class="llist"><div class="node">data</div><div class="arrow">→</div><div class="node">data</div><div class="arrow">→</div><div class="node">data</div><div class="arrow">→</div><div class="node">null</div></div>
+
+    <p class="en"><b>Binary search trees</b> keep things ordered for O(n) lookups worst case — or O(log n) once balanced. <b>Hash maps</b> trade a little memory for near-constant-time lookup by key.</p>
+    <span class="vi">"Binary search trees" giữ dữ liệu có thứ tự, tra cứu O(n) trong tình huống xấu nhất — hoặc O(log n) khi cây đã cân bằng. "Hash map" đổi 1 chút bộ nhớ lấy tốc độ tra cứu gần như hằng số theo khóa.</span>
+    <div class="hashrow"><div class="hbucket"></div><div class="hbucket hit"></div><div class="hbucket"></div><div class="hbucket"></div><div class="hbucket"></div></div>
+
+    <p class="en">And a <b>bitmap</b> — a string of n binary digits — is a compact way to track the status of n identical items at once, like which blocks of a disk are free.</p>
+    <span class="vi">Và "bitmap" — một chuỗi n chữ số nhị phân — là cách gọn nhẹ để theo dõi trạng thái của n mục giống hệt nhau cùng lúc, ví dụ khối nào trên đĩa đang trống.</span>
+    <div class="illus"><div class="emo">🗺️</div><div class="cap"><b>Bitmap</b>mỗi bit đại diện 1 khối nhớ: 1 = đang dùng, 0 = còn trống.</div></div>
+
+    <p class="en">Some OSes ship in source-code form, not just as a compiled binary. The movement traces back to the <b>Free Software Foundation</b>'s "copyleft" licenses (GPL / LGPL). <b>GNU/Linux</b> and the <b>BSD</b> lineage are the best-known examples.</p>
+    <span class="vi">Một số OS được phát hành kèm mã nguồn, chứ không chỉ file đã biên dịch sẵn. Phong trào này bắt nguồn từ giấy phép "copyleft" (GPL / LGPL) của "Free Software Foundation". "GNU/Linux" và dòng "BSD" là ví dụ nổi tiếng nhất.</span>
+    <div class="illus"><div class="emo">🔓</div><div class="cap"><b>Open-source OS</b>mã nguồn công khai → sinh viên học được OS từ bên trong, không chỉ đọc tài liệu.</div></div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips"><span class="rchip">singly/doubly/circular list</span><span class="rchip">balanced BST</span><span class="rchip">hash map</span><span class="rchip">bitmap</span><span class="rchip">GPL/LGPL</span><span class="rchip">GNU/Linux</span><span class="rchip">BSD</span></div>
+      <p class="rline">Cấu trúc dữ liệu kernel = công cụ lập trình quen thuộc; mã nguồn mở giúp học OS từ bên trong thay vì chỉ đọc tài liệu.</p>
+    </div>
+  </section>
+  <!-- QUIZ -->
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Assessment</div>
+    <h2>MCQ Quiz</h2>
+    <p class="intro">Seventeen original questions built for this chapter — pick an answer to see if you're right.</p>
+    <div class="quiz-score mono" id="quizScore">Score: 0 / 17</div>
+    <div id="quizRoot"></div>
+  </section>
+
+  <footer>Demo preview — chưa gắn vào web chính. Style dựng theo tinh thần các ảnh mẫu bạn gửi, nội dung viết lại theo cách hiểu riêng chứ không copy nguyên slide gốc.</footer>
+</div>
+
+<script>
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panelIds = ['overview','whatisos','structure','operations','storage','dualmode','virtualization','environments','extras','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    window.scrollTo({top: 0, behavior: 'instant'});
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+
+  const questions = [
+    { q: "Which of these is the strictest, narrowest definition of \"operating system\"?", opts: ["Everything a vendor ships in the box", "The kernel — the one program always running", "Every application installed on the machine", "The BIOS/firmware alone"], correct: 1, why: "Everything else (system programs, applications) ships alongside the OS but isn't the OS itself in the strict sense." },
+    { q: "What is the only sanctioned way for a user process to enter kernel mode?", opts: ["Directly setting the mode bit", "A system call (trap)", "Waiting for the timer to expire", "Writing to a privileged register"], correct: 1, why: "The mode bit can only flip to kernel via the trap mechanism triggered by a system call — never set directly by user code." },
+    { q: "Why does DMA exist for high-speed I/O devices?", opts: ["To avoid needing a device driver", "To skip main memory entirely", "To generate one interrupt per block instead of per byte", "To replace the interrupt vector table"], correct: 2, why: "DMA lets the controller move a whole block into memory on its own, interrupting the CPU only once the transfer finishes." },
+    { q: "In the storage hierarchy, which tier is fastest but smallest?", opts: ["Magnetic disk", "Main memory (DRAM)", "Registers", "Optical disk"], correct: 2, why: "Registers sit at the very top: sub-nanosecond access, but only a handful of bytes." },
+    { q: "What stops one process's infinite loop from freezing the whole system?", opts: ["The interrupt vector", "The timer, forcing a return to the kernel", "DMA", "Middleware"], correct: 1, why: "The OS arms a countdown timer before scheduling a process; when it hits zero, hardware interrupts back to the kernel." },
+    { q: "What's the key difference between a program and a process?", opts: ["No difference — same thing", "A program is active, a process is passive", "A program is passive (on disk); a process is an active entity with a program counter and resources", "Only processes can be multi-threaded"], correct: 2, why: "The moment a program starts executing, it becomes a process — an active entity making progress, unlike the passive file it started as." },
+    { q: "Multiprogramming and timesharing (multitasking) differ mainly in what?", opts: ["Timesharing needs no memory management at all", "Timesharing adds fast enough switching for real-time user interaction", "Multiprogramming only runs one job at a time", "They are exactly the same thing"], correct: 1, why: "Timesharing is multiprogramming pushed further, switching jobs quickly enough that users perceive direct interaction." },
+    { q: "What does \"spooling\" actually solve?", opts: ["It speeds up the CPU clock", "It lets the output of one job overlap with the input of another (e.g. a print queue)", "It replaces the need for buffering", "It only applies to network cards"], correct: 1, why: "Spooling queues work for a slow device like a printer so other jobs aren't blocked waiting for it to finish." },
+    { q: "What's the key practical difference between emulation and virtualization?", opts: ["Emulation is used when host and guest share the same CPU architecture", "Virtualization requires translating every instruction", "Emulation is needed when the guest's CPU architecture differs from the host's, and is typically slower", "They both require identical hardware"], correct: 2, why: "Virtualization assumes a matching native architecture (fast); emulation bridges different architectures (slow)." },
+    { q: "In a NUMA system, why does memory access speed vary by CPU?", opts: ["Because each CPU has its own local memory bank, reached faster than another CPU's memory", "Because NUMA machines have no shared memory at all", "Because it's actually a type of clustered system", "Because only one CPU is allowed to access memory"], correct: 0, why: "NUMA still shares one address space, but each CPU's own local memory is faster to reach than memory attached to a different CPU." },
+    { q: "What is the core difference between protection and security in an OS?", opts: ["They mean exactly the same thing", "Protection is the mechanism controlling access; security is the broader defense against attacks", "Security only concerns hardware, protection only concerns software", "Protection is optional; security is not"], correct: 1, why: "Protection is a mechanism (e.g. the mode bit, file permissions); security is the overall goal of resisting internal and external threats." },
+    { q: "\"Software available as a ready-to-use application over the internet\" best describes which cloud service model?", opts: ["IaaS", "PaaS", "SaaS", "DRM"], correct: 2, why: "SaaS (Software as a Service) delivers finished applications; PaaS gives a software stack, IaaS gives raw servers/storage." },
+    { q: "What role does middleware play in a modern OS?", opts: ["It replaces the kernel entirely", "It's shared frameworks (databases, graphics, media) that sit above the kernel for apps to reuse", "It's another name for a device driver", "It only exists in embedded systems"], correct: 1, why: "Middleware bundles common services so every application doesn't have to reimplement things like database access or media playback from scratch." },
+    { q: "Why does a multiprocessor system need \"cache coherency\"?", opts: ["Because each core has its own cache, and all of them must see the most recent value, not a stale copy", "Because caches are shared and never duplicated", "It only matters for distributed systems, never multiprocessors", "Because registers are slower than cache"], correct: 0, why: "With one cache per core, hardware must guarantee no core is left reading an outdated copy of a value another core just changed." },
+    { q: "What distinguishes High-Performance Computing (HPC) clusters from ordinary clusters?", opts: ["They never share storage", "Their applications must be explicitly written to be parallelized across nodes", "They only run asymmetric clustering", "They cannot use a DLM"], correct: 1, why: "HPC clusters exist specifically for raw computation, which only pays off if the software is written to split work across many nodes at once." },
+    { q: "How do public, private, and hybrid cloud differ from SaaS/PaaS/IaaS?", opts: ["They're just other names for the same three categories", "Public/private/hybrid describes who owns the infrastructure; SaaS/PaaS/IaaS describes the service level rented", "Private cloud is always a subtype of SaaS", "Hybrid cloud is a type of virtualization, unrelated to the other two"], correct: 1, why: "Public/private/hybrid is about ownership and access (who can use the infrastructure); SaaS/PaaS/IaaS is a completely separate axis describing how much of the stack you're renting." },
+    { q: "Which of these is a classic real-world example of peer-to-peer (P2P) computing?", opts: ["A company's internal file server", "Napster / Gnutella file-sharing", "A public cloud SaaS product", "A thin client connecting to a mainframe"], correct: 1, why: "Napster and Gnutella popularized P2P file-sharing, where every node could act as both client and server instead of relying on one central server." }
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const scoreEl = document.getElementById('quizScore');
+  let score = 0;
+  questions.forEach((item, qi) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q';
+    qDiv.innerHTML = '<div class="qnum">Question ' + (qi+1) + ' of ' + questions.length + '</div><h4>' + item.q + '</h4>';
+    item.opts.forEach((optText, oi) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt'; btn.type = 'button'; btn.textContent = optText;
+      btn.addEventListener('click', () => {
+        const allOpts = qDiv.querySelectorAll('.opt');
+        if (allOpts[0].disabled) return;
+        allOpts.forEach((o, idx) => { o.disabled = true; if (idx === item.correct) o.classList.add('correct'); });
+        if (oi !== item.correct) btn.classList.add('wrong');
+        else { score++; scoreEl.textContent = 'Score: ' + score + ' / ' + questions.length; }
+        qDiv.querySelector('.explain').classList.add('show');
+      });
+      qDiv.appendChild(btn);
+    });
+    const explain = document.createElement('div');
+    explain.className = 'explain'; explain.textContent = item.why;
+    qDiv.appendChild(explain);
+    quizRoot.appendChild(qDiv);
+  });
+</script>
+</body>
+</html>

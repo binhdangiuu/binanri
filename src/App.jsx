@@ -150,6 +150,26 @@ const subjects = [
 ],
       },
       {
+        id: "notes",
+        title: "Lecture Notes",
+        type: "course",
+        documents: [
+  { id: "ch1", title: "Chapter 1 - Introduction", file: "/lectures/os-ch1-lecture.html" },
+  { id: "ch2", title: "Chapter 2 - Operating System Structures", file: null },
+  { id: "ch3", title: "Chapter 3 - Process", file: null },
+  { id: "ch4", title: "Chapter 4 - Threads", file: null },
+  { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: null },
+  { id: "ch6", title: "Chapter 6 - Synchronization 1", file: null },
+  { id: "ch7", title: "Chapter 7 - Synchronization 2", file: null },
+  { id: "ch8", title: "Chapter 8 - Main Memory", file: null },
+  { id: "ch9", title: "Chapter 9 - Virtual Memory", file: null },
+  { id: "ch10A", title: "Chapter 10A - File System Interface", file: null },
+  { id: "ch10B", title: "Chapter 10B - File System Implementation", file: null },
+  { id: "ch11", title: "Chapter 11 - Mass Storage & Disk Scheduling", file: null },
+],
+      },
+
+      {
         id: "lab-1",
         title: "Lab 1 - Thầy Nguyễn Phương Duy",
         questionsCount: 5,
@@ -244,6 +264,7 @@ export default function App() {
   const [activeSubject, setActiveSubject] = useState(null)
   const [selectedQuiz, setSelectedQuiz] = useState(null)
   const [selectedDocument, setSelectedDocument] = useState(null)
+  const [selectedChapter, setSelectedChapter] = useState(null)
 
   useEffect(() => {
     const savedData = localStorage.getItem("quiz-progress")
@@ -289,9 +310,12 @@ export default function App() {
     )
   }, [screen, currentQuestion, score, activeSubject, selectedQuiz, answers])
 
-  const isQuizComingSoon = (quiz) => { //hàm check coming soon cho pdf
+  const isQuizComingSoon = (quiz) => { //hàm check coming soon cho pdf và course
     if (quiz.type === "pdf") {
       return !quiz.documents || quiz.documents.length === 0
+    }
+    if (quiz.type === "course") {
+      return false
     }
     return quiz.comingSoon
   }
@@ -547,13 +571,16 @@ export default function App() {
                     if (quiz.type === "pdf") {
                       setSelectedQuiz(quiz)
                       setScreen("pdf-list")
-                    } else {
+                    } else if (quiz.type === "course") {
                       setSelectedQuiz(quiz)
-                      setCurrentQuestion(0)
-                      setSelectedAnswer(null)
-                      setAnswers([])
-                      setScore(0)
-                      setScreen("quiz")
+                      setScreen("course-list")
+                    } else {
+                        setSelectedQuiz(quiz)
+                        setCurrentQuestion(0)
+                        setSelectedAnswer(null)
+                        setAnswers([])
+                        setScore(0)
+                        setScreen("quiz")
                     }
                   }}
                   className={`
@@ -582,7 +609,9 @@ export default function App() {
                       ? "Đang chuẩn bị, quay lại sau nhé"
                       : quiz.type === "pdf"
                         ? `${quiz.documents.length} file${quiz.documents.length > 1 ? "s" : ""}`
-                        : `${quiz.questionsCount} câu hỏi`}
+                            : quiz.type === "course"
+                              ? "12 chương"
+                              : `${quiz.questionsCount} câu hỏi`}
                   </p>
                 </div>
               )
@@ -685,6 +714,72 @@ export default function App() {
             </div>
           </div>
         )}
+
+              {/* COURSE LIST SCREEN (Lớp 3 — danh sách 12 chương) */}
+      {screen === "course-list" && selectedQuiz && (
+        <div>
+          <button
+            onClick={() => { setScreen("subject"); setSelectedQuiz(null) }}
+            className="mb-6 bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition"
+          >
+            ← Back
+          </button>
+
+          <div className="bg-white/50 border rounded-[30px] p-6 md:p-10">
+            <h1 className="text-4xl font-black mb-6">{selectedQuiz.title}</h1>
+
+            <div className="divide-y">
+              {selectedQuiz.chapters.map((chapter) => {
+                const locked = !chapter.file
+                return (
+                  <div
+                    key={chapter.id}
+                    onClick={() => {
+                      if (locked) return
+                      setSelectedChapter(chapter)
+                      setScreen("course-view")
+                    }}
+                    className={`flex items-center gap-4 py-5 group ${
+                      locked ? "opacity-50 cursor-default" : "cursor-pointer"
+                    }`}
+                  >
+                    <div className="w-10 h-10 flex items-center justify-center rounded-lg border border-teal-500 text-teal-600 font-bold text-[10px] shrink-0">
+                      PDF
+                    </div>
+                    <span className={`text-xl ${locked ? "text-gray-500" : "text-blue-600 group-hover:underline"}`}>
+                      {chapter.title}
+                    </span>
+                    {locked && <span className="ml-auto text-sm text-gray-400">Sắp có</span>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COURSE VIEW SCREEN (Lớp 4 — bài giảng full) */}
+      {screen === "course-view" && selectedChapter && (
+        <div>
+          <button
+            onClick={() => { setScreen("course-list"); setSelectedChapter(null) }}
+            className="mb-6 bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition"
+          >
+            ← Back
+          </button>
+
+          <div className="bg-white/50 border rounded-[30px] p-4 md:p-6">
+            <div className="w-full rounded-2xl overflow-hidden border" style={{ height: "85vh" }}>
+              <iframe
+                src={selectedChapter.file}
+                title={selectedChapter.title}
+                className="w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
 
         {/* QUIZ SCREEN */}
         {screen === "quiz" && selectedQuiz && question && (
