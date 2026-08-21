@@ -729,7 +729,7 @@ export default function App() {
             <h1 className="text-4xl font-black mb-6">{selectedQuiz.title}</h1>
 
             <div className="divide-y">
-              {selectedQuiz.chapters.map((chapter) => {
+              {selectedQuiz.documents.map((chapter) => {
                 const locked = !chapter.file
                 return (
                   <div
