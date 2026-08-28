@@ -207,6 +207,35 @@
   .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
   .explain.show{ display:block; }
 
+  /* ---- VI toggle switch (hide/show Vietnamese for EN reading practice) ---- */
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  /* Vietnamese content that hides when the toggle is off */
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  /* ---- Glossary term highlighting + hover/tap tooltip ---- */
+  p.en .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  p.en .term:hover, p.en .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  p.en .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
   footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
 
   @media (max-width:640px){
@@ -235,6 +264,11 @@
     <button class="tab-btn" data-tab="environments">Environments</button>
     <button class="tab-btn" data-tab="extras">Extras</button>
     <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
   </nav>
 
   <!-- OVERVIEW -->
@@ -729,11 +763,204 @@
     panelIds.forEach(key => { panels[key].hidden = key !== name; });
     tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
     window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
   }
   tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
   document.querySelectorAll('[data-goto]').forEach(card => {
     card.addEventListener('click', () => showTab(card.dataset.goto));
   });
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch1-vi-hidden';
+
+    // First: wrap the Vietnamese tail of mixed-language illustration
+    // captions (e.g. <div class="cap"><b>Term</b>đoạn tiếng Việt...</div>)
+    // into their own <span class="vi-inline"> so the toggle can hide them too.
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "active entity": ["A process is active — it executes and changes state, unlike a program.", "Tiến trình là thực thể \u201csống\u201d, đang thực thi và thay đổi trạng thái."],
+      "Apple iOS": ["Apple's mobile OS for iPhone/iPad.", "Hệ điều hành di động của Apple cho iPhone/iPad."],
+      "application program": ["Any program not part of the OS itself — installed by the user.", "Chương trình không thuộc về OS — do người dùng tự cài."],
+      "Asymmetric clustering": ["One cluster node sits idle in hot-standby, ready to take over on failure.", "Một máy trong cluster đứng chờ sẵn (hot-standby), thay thế ngay khi máy kia lỗi."],
+      "asymmetric multiprocessing": ["One processor is the boss; it assigns tasks to the others.", "Một CPU làm \u201csếp\u201d, giao việc cho các CPU còn lại."],
+      "Asynchronous (non-blocking) I/O": ["Control returns to the program immediately, without waiting for the I/O to finish.", "Chương trình được trả quyền điều khiển ngay, không cần đợi I/O xong."],
+      "Augmented Reality (AR)": ["Overlaying digital content on the real world using sensors like GPS/gyroscope.", "Chèn nội dung số lên thế giới thực, dùng cảm biến như GPS/con quay hồi chuyển."],
+      "Binary search trees": ["A tree where every left child \u2264 parent \u2264 every right child.", "Cây mà mọi nút con trái \u2264 cha \u2264 mọi nút con phải."],
+      "bit": ["The smallest unit of storage: a 0 or a 1.", "Đơn vị lưu trữ nhỏ nhất: giá trị 0 hoặc 1."],
+      "bitmap": ["A string of n bits, each representing the status of one item.", "Chuỗi n bit, mỗi bit thể hiện trạng thái của một mục."],
+      "BSD": ["A free, open-source Unix variant — its core underlies Apple's Darwin/macOS.", "Một biến thể Unix mã nguồn mở miễn phí — là nhân của Darwin/macOS."],
+      "buffering": ["Temporarily storing data in memory while it's being transferred.", "Lưu tạm dữ liệu trong bộ nhớ trong lúc đang truyền."],
+      "byte": ["8 bits — the smallest convenient chunk most computers move at once.", "8 bit — đơn vị nhỏ gọn nhất mà máy tính thường xử lý cùng lúc."],
+      "cache coherency": ["Guaranteeing every core's cache sees the same, most recent value.", "Đảm bảo cache của mọi lõi đều thấy cùng một giá trị mới nhất."],
+      "caching": ["Copying frequently-used data into faster storage, temporarily.", "Sao chép dữ liệu hay dùng vào bộ nhớ nhanh hơn, tạm thời."],
+      "circular linked list": ["A linked list where the last node points back to the first.", "Danh sách liên kết mà nút cuối trỏ ngược lại nút đầu."],
+      "clustered systems": ["Multiple separate machines wired together, usually sharing storage.", "Nhiều máy riêng biệt nối lại với nhau, thường chia sẻ ổ lưu trữ."],
+      "controller": ["Hardware on a device that manages its logical interaction with the computer.", "Phần cứng trên thiết bị, quản lý cách nó tương tác với máy tính."],
+      "convenience": ["Making the system easy to use, without the user needing low-level details.", "Giúp hệ thống dễ dùng — người dùng không cần biết chi tiết kỹ thuật thấp."],
+      "device driver": ["OS-side software giving a uniform interface to a specific controller type.", "Phần mềm phía OS, cung cấp giao diện thống nhất cho một loại controller cụ thể."],
+      "device-status table": ["A table tracking each I/O device's type, address, and current state.", "Bảng theo dõi loại, địa chỉ và trạng thái hiện tại của từng thiết bị I/O."],
+      "Distributed Lock Manager (DLM)": ["Stops two cluster nodes from touching the same resource at once.", "Ngăn hai máy trong cluster đụng vào cùng một tài nguyên cùng lúc."],
+      "distributed system": ["Separate systems networked together, communicating via messages.", "Các hệ thống riêng biệt được nối mạng, giao tiếp qua tin nhắn."],
+      "DMA": ["Direct Memory Access — the device copies a whole block into memory itself, one interrupt per block instead of per byte.", "Truy cập bộ nhớ trực tiếp — thiết bị tự copy cả khối vào bộ nhớ, chỉ ngắt CPU một lần cho cả khối."],
+      "doubly linked list": ["Each node points to both its next and previous neighbor.", "Mỗi nút trỏ tới cả nút kế tiếp lẫn nút trước đó."],
+      "efficiency": ["Squeezing the most useful work out of limited hardware resources.", "Tận dụng tối đa phần cứng có giới hạn để làm được nhiều việc nhất."],
+      "Emulation": ["Running software built for a different CPU architecture — generally slow.", "Chạy phần mềm viết cho một kiến trúc CPU khác — thường chậm."],
+      "Free Software Foundation": ["Organization behind the GPL license and the free-software movement.", "Tổ chức đứng sau giấy phép GPL và phong trào phần mềm tự do."],
+      "GNU/Linux": ["A free, open-source OS combining the Linux kernel with GNU tools.", "Hệ điều hành mã nguồn mở, kết hợp nhân Linux với các công cụ GNU."],
+      "Gnutella": ["An early peer-to-peer file-sharing network.", "Một mạng chia sẻ file ngang hàng (P2P) đời đầu."],
+      "Google Android": ["Google's mobile OS, built on the Linux kernel.", "Hệ điều hành di động của Google, xây trên nhân Linux."],
+      "group identifier (GID)": ["An ID for a set of users, used to control shared access.", "Mã định danh cho một nhóm người dùng, dùng để kiểm soát quyền truy cập chung."],
+      "Hash maps": ["A structure using a hash function to map keys directly to storage slots.", "Cấu trúc dùng hàm băm để ánh xạ khóa thẳng tới vị trí lưu trữ."],
+      "High-Performance Computing (HPC)": ["Clusters built purely for raw computation — apps must be written to parallelize across nodes.", "Cluster dựng riêng để tính toán nặng — ứng dụng phải viết để chia nhỏ chạy song song trên các node."],
+      "hybrid cloud": ["A mix of public and private cloud components.", "Kết hợp cả thành phần cloud công cộng và cloud riêng."],
+      "IEEE 802.11": ["The technical standard behind Wi-Fi.", "Chuẩn kỹ thuật đứng sau công nghệ Wi-Fi."],
+      "interrupt": ["A signal that stops the CPU's current work to handle something urgent.", "Tín hiệu khiến CPU dừng việc đang làm để xử lý việc khẩn cấp hơn."],
+      "interrupt vector": ["A table of addresses pointing to each interrupt's service routine.", "Bảng địa chỉ trỏ tới hàm xử lý tương ứng của từng loại interrupt."],
+      "kernel": ["The one program that's always resident and running — the strictest definition of \u201cOS.\u201d", "Chương trình duy nhất luôn thường trực và đang chạy — định nghĩa hẹp nhất của \u201cOS\u201d."],
+      "L1 cache": ["A small, very fast cache private to a single CPU core.", "Cache nhỏ, cực nhanh, riêng cho một lõi CPU."],
+      "L2 cache": ["A larger cache, usually shared between multiple cores.", "Cache lớn hơn, thường dùng chung giữa nhiều lõi."],
+      "LAN": ["Local Area Network — covers a small area like one building.", "Mạng cục bộ — phủ một khu vực nhỏ như một tòa nhà."],
+      "MAN": ["Metropolitan Area Network — spans a city-sized area.", "Mạng đô thị — phủ phạm vi cỡ một thành phố."],
+      "middleware": ["Shared frameworks above the kernel giving apps ready-made services (DB, media, etc.).", "Framework dùng chung, nằm trên kernel, cho app mượn sẵn dịch vụ (CSDL, media,...)."],
+      "mode bit": ["A hardware flag showing whether the CPU is in user or kernel mode.", "Cờ phần cứng cho biết CPU đang ở chế độ user hay kernel."],
+      "multi-threaded process": ["A process with more than one program counter — one per thread.", "Tiến trình có nhiều hơn một program counter — mỗi thread một cái."],
+      "multiprocessing": ["Grouping multiple processing cores/CPUs together in one system.", "Gộp nhiều lõi/CPU xử lý lại trong một hệ thống."],
+      "multiprocessor": ["A system with more than one CPU — also called parallel/tightly-coupled.", "Hệ thống có nhiều hơn một CPU, còn gọi là hệ song song/ghép chặt."],
+      "Multiprogramming": ["Keeping several jobs in memory so the CPU always has one ready to run.", "Giữ nhiều job trong bộ nhớ để CPU luôn có việc để chạy."],
+      "Napster": ["The pioneering P2P music file-sharing service.", "Dịch vụ chia sẻ nhạc ngang hàng (P2P) tiên phong."],
+      "Network Operating System (NOS)": ["Provides communication features between systems across a network.", "Cung cấp tính năng giao tiếp giữa các hệ thống qua mạng."],
+      "Non-Uniform Memory Access (NUMA)": ["Each CPU has its own local memory, reached faster than another CPU's memory.", "Mỗi CPU có vùng nhớ riêng, truy cập nhanh hơn vùng nhớ của CPU khác."],
+      "one chip (multicore)": ["Multiple cores fabricated on a single physical chip.", "Nhiều lõi được chế tạo trên cùng một chip vật lý."],
+      "one socket (multi-chip)": ["Multiple separate chips sharing one processor socket.", "Nhiều chip riêng biệt dùng chung một socket xử lý."],
+      "PAN": ["Personal Area Network — very short range, like Bluetooth.", "Mạng cá nhân — phạm vi rất ngắn, kiểu Bluetooth."],
+      "passive entity": ["A program on disk — just data, until it's executed.", "Một chương trình nằm trên đĩa — chỉ là dữ liệu, cho tới khi được thực thi."],
+      "polling": ["Repeatedly checking a device's status directly, instead of waiting for an interrupt.", "Liên tục tự kiểm tra trạng thái thiết bị, thay vì chờ interrupt."],
+      "portal": ["A web interface giving remote access to internal systems.", "Giao diện web cho phép truy cập từ xa vào hệ thống nội bộ."],
+      "private cloud": ["Cloud infrastructure run by a company purely for its own use.", "Hạ tầng cloud do một công ty vận hành, chỉ dùng riêng nội bộ."],
+      "Privilege escalation": ["Letting a user temporarily switch to an ID with more rights.", "Cho phép người dùng tạm chuyển sang ID có quyền hạn cao hơn."],
+      "Privileged": ["An instruction that can only run while the CPU is in kernel mode.", "Lệnh chỉ được phép chạy khi CPU đang ở chế độ kernel."],
+      "process": ["A program in execution — an active entity with its own resources.", "Một chương trình đang được thực thi — thực thể chủ động, có tài nguyên riêng."],
+      "program": ["Passive code sitting on disk, not yet running.", "Đoạn mã thụ động nằm trên đĩa, chưa được chạy."],
+      "program counter": ["A register holding the address of the next instruction to execute.", "Thanh ghi lưu địa chỉ của lệnh kế tiếp cần thực thi."],
+      "Protection": ["Any mechanism controlling which processes/users can access which resources.", "Cơ chế kiểm soát tiến trình/người dùng nào được truy cập tài nguyên nào."],
+      "public cloud": ["Cloud infrastructure available over the internet to anyone willing to pay.", "Hạ tầng cloud công cộng, ai trả tiền cũng dùng được qua internet."],
+      "SAN": ["Storage-Area Network — lets multiple machines share the same storage.", "Mạng lưu trữ chuyên dụng — cho nhiều máy chia sẻ chung một kho lưu trữ."],
+      "secondary storage": ["Non-volatile storage extending main memory, e.g. disks.", "Bộ nhớ không mất dữ liệu, mở rộng cho bộ nhớ chính, ví dụ ổ đĩa."],
+      "Security": ["Defending the whole system against internal and external attacks.", "Bảo vệ toàn bộ hệ thống khỏi các cuộc tấn công trong và ngoài."],
+      "singly linked list": ["Each node points only forward, to the next node.", "Mỗi nút chỉ trỏ tới nút kế tiếp phía sau."],
+      "Skype": ["A well-known Voice-over-IP (VoIP) peer-to-peer application.", "Ứng dụng gọi thoại qua internet (VoIP) nổi tiếng, dạng P2P."],
+      "spooling": ["Queuing output/input so slow devices don't block other jobs (e.g. a print queue).", "Xếp hàng đầu ra/vào để thiết bị chậm không chặn các job khác (vd: hàng đợi in)."],
+      "swapping": ["Moving whole processes in and out of memory when they don't all fit.", "Đưa cả tiến trình ra vào bộ nhớ khi không đủ chỗ chứa hết."],
+      "symmetric clustering": ["Every node in the cluster runs applications at the same time.", "Mọi máy trong cluster đều chạy ứng dụng cùng lúc."],
+      "symmetric multiprocessing (SMP)": ["Every CPU core is equal and can do any task — the common design today.", "Mọi lõi CPU đều bình đẳng, làm được mọi việc — kiểu phổ biến hiện nay."],
+      "Synchronous (blocking) I/O": ["Control only returns to the program once the I/O finishes.", "Chương trình chỉ được trả quyền điều khiển sau khi I/O hoàn tất."],
+      "system bus": ["The shared communication path connecting CPU, memory, and controllers.", "Đường truyền chung kết nối CPU, bộ nhớ, và các controller."],
+      "system call": ["The only sanctioned doorway for a user program to request kernel service.", "Cửa duy nhất được phép để chương trình người dùng yêu cầu kernel làm việc."],
+      "system program": ["Ships with the OS but isn't part of the kernel itself.", "Đi kèm theo OS nhưng không thuộc phần kernel."],
+      "thin client (network computer)": ["A lightweight terminal that relies on a server for most processing.", "Máy trạm nhẹ, dựa vào server để xử lý phần lớn công việc."],
+      "timer": ["A hardware countdown that forces control back to the kernel — stops infinite loops.", "Bộ đếm phần cứng buộc trả quyền lại cho kernel — ngăn vòng lặp vô hạn."],
+      "timesharing (multitasking)": ["Switching jobs fast enough that users feel they're interacting directly.", "Chuyển đổi job đủ nhanh để người dùng cảm thấy như đang tương tác trực tiếp."],
+      "trap": ["A software-generated interrupt — an error, or a deliberate system call.", "Interrupt do phần mềm tạo ra — có thể là lỗi, hoặc một system call cố ý."],
+      "user": ["Whoever — person, process, or machine — is identified to control access rights.", "Đối tượng (người, tiến trình, hay máy) được định danh để kiểm soát quyền truy cập."],
+      "user identity (UID)": ["A unique ID + name tied to a user's files and processes, for access control.", "Mã định danh + tên riêng gắn với file/tiến trình của một người dùng, để kiểm soát truy cập."],
+      "virtual memory": ["Lets a process run even when it isn't entirely loaded into physical memory.", "Cho phép tiến trình chạy dù chưa được nạp hết vào bộ nhớ vật lý."],
+      "virtualization": ["Running one natively-compiled OS as a guest inside another (the host).", "Chạy một OS biên dịch sẵn cho phần cứng, làm \u201cguest\u201d bên trong một OS khác (\u201chost\u201d)."],
+      "VMM": ["Virtual Machine Manager — the software layer providing virtualization services.", "Phần mềm quản lý máy ảo — cung cấp các dịch vụ ảo hóa."],
+      "VoIP": ["Voice over IP — carrying voice calls over an internet connection.", "Gọi thoại qua kết nối internet, thay vì qua mạng điện thoại truyền thống."],
+      "WAN": ["Wide Area Network — spans a large geographic area, like across countries.", "Mạng diện rộng — phủ khu vực địa lý lớn, ví dụ xuyên quốc gia."],
+      "word": ["A CPU architecture's native unit of data, made of one or more bytes.", "Đơn vị dữ liệu gốc của một kiến trúc CPU, gồm một hoặc nhiều byte."]
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    document.querySelectorAll('p.en b, p.en span.mono').forEach(el => {
+      const text = el.textContent.trim();
+      if (!G[text]) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = text;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
 
   const questions = [
     { q: "Which of these is the strictest, narrowest definition of \"operating system\"?", opts: ["Everything a vendor ships in the box", "The kernel — the one program always running", "Every application installed on the machine", "The BIOS/firmware alone"], correct: 1, why: "Everything else (system programs, applications) ships alongside the OS but isn't the OS itself in the strict sense." },

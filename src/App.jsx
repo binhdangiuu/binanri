@@ -511,7 +511,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 21/08/2026 • 17:01:28 (Lecture Notes 01 added)
+            Last Updated: 28/08/2026 • 17:44:17 (Lecture Notes 01 fixed)
           </p>
         </div>
 
@@ -722,7 +722,7 @@ export default function App() {
             onClick={() => { setScreen("subject"); setSelectedQuiz(null) }}
             className="mb-6 bg-white px-5 py-3 rounded-2xl border hover:border-blue-500 transition"
           >
-            ← Back
+            ← Quay lại
           </button>
 
           <div className="bg-white/50 border rounded-[30px] p-6 md:p-10">
@@ -765,7 +765,7 @@ export default function App() {
             onClick={() => { setScreen("course-list"); setSelectedChapter(null) }}
             className="fixed top-4 left-4 z-[60] bg-cream/90 backdrop-blur px-5 py-3 rounded-2xl border border-blush-deep shadow-md font-medium hover:border-sky hover:-translate-y-0.5 transition"
           >
-            ← Back
+            ← Quay lại
           </button>
 
           <iframe
