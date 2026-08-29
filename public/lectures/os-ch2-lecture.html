@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2017 · Chapter 2 — Operating-System Structures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#2E7FC1; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); display:flex; align-items:center; gap:6px; padding:12px 14px; flex-wrap:wrap; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper); color:#fff; border-color:var(--copper); }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:18ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:20px; margin:36px 0 10px; }
+
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:440px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; max-width:560px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:10px; padding:14px 10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:18px 20px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 20px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  p.en .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  p.en .term:hover, p.en .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  p.en .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  /* ---- NEW for Chapter 2: rings (layered OS), seqlist (numbered steps), ---- */
+  /* ---- term-mock (fake shell), phone-mock (touchscreen), cmp-table, labeled-box ---- */
+  .rings-wrap{ display:flex; align-items:center; gap:28px; margin:10px 0 24px; flex-wrap:wrap; }
+  .rings{ position:relative; width:210px; height:210px; flex-shrink:0; }
+  .rings .ring{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:1px solid var(--grid); display:flex; align-items:center; justify-content:center; }
+  .rings .r4{ width:210px; height:210px; background:var(--paper-deep); }
+  .rings .r3{ width:158px; height:158px; background:#FFE0EE; }
+  .rings .r2{ width:106px; height:106px; background:var(--teal-tint); }
+  .rings .r1{ width:54px; height:54px; background:var(--teal); }
+  .rings .r1 span{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:#fff; text-align:center; font-weight:600; line-height:1.2; }
+  .rings-legend{ display:flex; flex-direction:column; gap:9px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .rl-item{ display:flex; align-items:center; gap:8px; }
+  .rl-item .sw{ width:14px; height:14px; border-radius:50%; border:1px solid var(--grid); flex-shrink:0; }
+  .rl-item .sw.r4{ background:var(--paper-deep); } .rl-item .sw.r3{ background:#FFE0EE; } .rl-item .sw.r2{ background:var(--teal-tint); } .rl-item .sw.r1{ background:var(--teal); }
+
+  .seqlist{ margin:6px 0 24px; max-width:540px; counter-reset:seq; }
+  .seqlist .sitem{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px dashed var(--grid); }
+  .seqlist .sitem:first-child{ border-top:none; }
+  .seqlist .snum{ counter-increment:seq; flex-shrink:0; width:23px; height:23px; border-radius:50%; background:var(--copper); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:11.5px; display:flex; align-items:center; justify-content:center; font-weight:700; margin-top:1px; }
+  .seqlist .snum::before{ content: counter(seq); }
+  .seqlist .stext{ font-family:"IBM Plex Mono",monospace; font-size:12.8px; color:var(--ink); padding-top:2px; line-height:1.5; }
+
+  .term-mock{ max-width:440px; margin:6px 0 24px; border-radius:10px; overflow:hidden; box-shadow:0 12px 28px -16px rgba(74,46,64,.45); }
+  .term-mock .tm-bar{ background:#2b2530; padding:8px 12px; display:flex; gap:6px; }
+  .term-mock .tm-dot{ width:10px; height:10px; border-radius:50%; }
+  .term-mock .tm-dot.r{ background:#ff5f56; } .term-mock .tm-dot.y{ background:#ffbd2e; } .term-mock .tm-dot.g{ background:#27c93f; }
+  .term-mock .tm-body{ background:#241f29; color:#e8dce3; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:14px 16px; line-height:1.75; }
+  .term-mock .tm-prompt{ color:#7FC4F0; }
+  .term-mock .tm-out{ color:#c7a8bb; }
+
+  .phone-mock{ max-width:220px; margin:6px auto 24px; border:8px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--paper-deep); }
+  .phone-mock .pm-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .phone-mock .pm-icon{ aspect-ratio:1; border-radius:12px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .phone-mock .pm-icon:nth-child(3n+2){ background:var(--copper-tint); }
+
+  table.cmp-table{ width:100%; max-width:580px; border-collapse:collapse; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .rings-wrap{ justify-content:center; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2017 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="osservices">OS Services</button>
+    <button class="tab-btn" data-tab="interface">User Interface</button>
+    <button class="tab-btn" data-tab="syscalls">System Calls</button>
+    <button class="tab-btn" data-tab="synscall-types">Types &amp; Examples</button>
+    <button class="tab-btn" data-tab="sysprograms">System Programs</button>
+    <button class="tab-btn" data-tab="design">Design &amp; Implementation</button>
+    <button class="tab-btn" data-tab="structure">OS Structure</button>
+    <button class="tab-btn" data-tab="realworld">Real-World OSes</button>
+    <button class="tab-btn" data-tab="building">Build, Boot &amp; Debug</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 2 · System Structures</span>
+    <h1>How does the OS actually <em>talk</em> to everything above and below it?</h1>
+    <p class="lede">Chapter 1 said the OS sits between the user and the hardware. This chapter opens that black box: what services it promises, the one legal doorway (<b>system calls</b>) programs use to ask for them, and the handful of ways engineers have chosen to build the box itself.</p>
+    <span class="vi">Chương 1 nói OS nằm giữa người dùng và phần cứng. Chương này mở chiếc hộp đen đó ra: nó hứa hẹn những dịch vụ gì, cánh cửa hợp pháp duy nhất (<b>system call</b>) để chương trình xin các dịch vụ đó, và vài cách mà kỹ sư đã chọn để xây chính chiếc hộp này.</span>
+    <div class="tagrow">
+      <span class="tag user">User-facing: UI, program execution, I/O, files</span>
+      <span class="tag kernel">System-facing: resource sharing, protection, logging</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="osservices"><div class="kicker">01 · OS Services</div><h3>OS Services</h3><p>The 9 things every OS promises — split into "for the user" and "for itself."</p></div>
+    <div class="card user" data-goto="interface"><div class="kicker">02 · User Interface</div><h3>CLI, GUI &amp; Touch</h3><p>Three ways humans actually reach those services.</p></div>
+    <div class="card kernel" data-goto="syscalls"><div class="kicker">03 · System Calls</div><h3>System Calls</h3><p>The only legal doorway from user code into the kernel.</p></div>
+    <div class="card kernel" data-goto="synscall-types"><div class="kicker">04 · Types & Examples</div><h3>Types &amp; Examples</h3><p>Six categories of system call, plus real OSes using them.</p></div>
+    <div class="card user" data-goto="sysprograms"><div class="kicker">05 · System Programs</div><h3>System Programs</h3><p>What most users actually think "the OS" is — plus linkers &amp; loaders.</p></div>
+    <div class="card kernel" data-goto="design"><div class="kicker">06 · Design & Implementation</div><h3>Design &amp; Implementation</h3><p>User goals vs. system goals, and policy vs. mechanism.</p></div>
+    <div class="card kernel" data-goto="structure"><div class="kicker">07 · OS Structure</div><h3>OS Structure</h3><p>Monolithic, layered, microkernel, modular, hybrid.</p></div>
+    <div class="card user" data-goto="realworld"><div class="kicker">08 · Real-World OSes</div><h3>Real-World OSes</h3><p>macOS, Darwin, iOS and Android's actual structure.</p></div>
+    <div class="card kernel" data-goto="building"><div class="kicker">09 · Build, Boot & Debug</div><h3>Build, Boot &amp; Debug</h3><p>From source code to a running, tunable kernel.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.2</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Identify OS services</h4><p>What an operating system promises to programs and to users.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>System calls in action</h4><p>How system calls are used to actually deliver those services.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Compare OS designs</h4><p>Monolithic, layered, microkernel, modular and hybrid strategies.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 4</div><div><h4>The boot process</h4><p>How an operating system gets from power-on to fully running.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 5</div><div><h4>Performance monitoring</h4><p>Tools for tracing, profiling, and tuning a running OS.</p></div></div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OS SERVICES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-osservices" hidden>
+    <div class="panel-eyebrow">01 · Services</div>
+    <h2>What does an OS actually promise?</h2>
+    <p class="intro">Every service below exists to answer one of two questions: "does this make life easier for the person/program using the machine?" or "does this keep the machine itself running well for everyone sharing it?"</p>
+    <span class="vi">Mỗi dịch vụ dưới đây tồn tại để trả lời 1 trong 2 câu hỏi: "cái này có làm cuộc sống người dùng/chương trình dễ hơn không?" hay "cái này có giúp máy chạy tốt cho tất cả mọi người đang dùng chung không?"</span>
+
+    <div class="illus">
+      <div class="emo">🧭</div>
+      <div class="cap"><b>2 nhóm dịch vụ</b>Convenience cho người dùng, Efficiency cho chính hệ thống — mọi mục trong tab này thuộc 1 trong 2 nhóm đó.</div>
+    </div>
+
+    <div class="hook">
+      <b>Before the list — take a guess:</b> when you double-click a file to open it, how many separate "services" does the OS quietly perform before you see anything on screen?
+      <span class="vi">Trước khi xem danh sách — thử đoán: khi bạn nhấp đúp vào 1 file để mở, OS âm thầm thực hiện bao nhiêu "dịch vụ" riêng biệt trước khi bạn thấy gì đó hiện lên màn hình?</span>
+    </div>
+
+    <p class="en">Operating systems provide an environment for the <b>execution</b> of programs and offer services to both programs and users. One group of these services exists purely to make life easier for the person at the keyboard — Silberschatz calls this the <b>user interface (UI)</b> group.</p>
+    <span class="vi">Hệ điều hành tạo ra môi trường để chương trình chạy, và cung cấp dịch vụ cho cả chương trình lẫn người dùng. Một nhóm dịch vụ tồn tại chỉ để giúp cuộc sống của người ngồi trước bàn phím dễ dàng hơn — Silberschatz gọi nhóm này là <b>giao diện người dùng (UI)</b>.</span>
+
+    <div class="illus">
+      <div class="emo">🗺️</div>
+      <div class="cap"><b>The big picture</b>Users & other system programs sit on top; they reach "operating system services" through a user interface, and everything below that line is the OS itself, sitting on hardware.</div>
+    </div>
+
+    <p class="en">The UI itself can be a <b>Command-Line Interface (CLI)</b>, a <b>Graphical User Interface (GUI)</b>, or a touch-screen — the next tab digs into all three. Beyond just showing a prompt, the OS also handles <b>program execution</b>: loading a program into memory, running it, and ending it — either normally, or abnormally when an error occurs.</p>
+    <span class="vi"><b>UI</b> có thể là <b>giao diện dòng lệnh (CLI)</b>, <b>giao diện đồ họa (GUI)</b>, hoặc màn hình cảm ứng — tab kế tiếp sẽ đi sâu vào cả 3. Ngoài việc hiện dấu nhắc lệnh, OS còn lo <b>thực thi chương trình</b>: nạp chương trình vào bộ nhớ, chạy nó, rồi kết thúc — kết thúc bình thường, hoặc bất thường khi có lỗi.</span>
+
+    <div class="illus">
+      <div class="emo">🖥️</div>
+      <div class="cap"><b>Program execution, 3 trạng thái</b>load vào bộ nhớ → run → end (bình thường hoặc bất thường khi lỗi).</div>
+    </div>
+
+    <p class="en"><b>I/O operations</b> come next: a running program may need to read/write a file or talk to a device, and a user typically can't control I/O hardware directly for protection and efficiency reasons — so the OS must provide a way to do it. Closely related is <b>file-system manipulation</b>: programs need to read, write, create, delete, search files and directories, list information about them, and manage permissions.</p>
+    <span class="vi"><b>Các thao tác I/O</b> tiếp theo: chương trình đang chạy có thể cần đọc/ghi file hoặc nói chuyện với thiết bị, mà người dùng thường không được điều khiển trực tiếp phần cứng I/O vì lý do bảo vệ và hiệu năng — nên OS phải cung cấp cách làm việc đó. Liên quan chặt là <b>thao tác trên hệ thống file</b>: chương trình cần đọc, ghi, tạo, xóa, tìm kiếm file/thư mục, liệt kê thông tin, và quản lý quyền truy cập.</span>
+
+    <div class="illus">
+      <div class="emo">📁</div>
+      <div class="cap"><b>I/O &amp; file-system calls</b>read, write, open, close, delete, search — luôn đi qua OS, không bao giờ chạm trực tiếp phần cứng.</div>
+    </div>
+
+    <p class="en">Processes often need to exchange information — with each other on the same machine, or across a network — which is what <b>communications</b> services provide, via either <b>shared memory</b> or <b>message passing</b> (packets moved by the OS itself). And because things do go wrong, the OS needs constant <b>error detection</b> across CPU, memory, hardware, I/O devices, and user programs, taking the right corrective action each time.</p>
+    <span class="vi">Các tiến trình thường cần trao đổi thông tin — với nhau trên cùng máy, hoặc qua mạng — đó là việc của dịch vụ <b>giao tiếp (communications)</b>, qua <b>bộ nhớ dùng chung</b> hoặc <b>truyền thông điệp</b> (gói tin do chính OS di chuyển). Và vì sự cố luôn xảy ra, OS cần liên tục <b>phát hiện lỗi</b> ở CPU, bộ nhớ, phần cứng, thiết bị I/O, và cả chương trình người dùng, rồi có hành động sửa lỗi phù hợp mỗi lần.</span>
+
+    <div class="flow-row">
+      <div class="flow-box hi">shared memory<br><small>đọc/ghi chung 1 vùng nhớ</small></div>
+      <div class="flow-arrow">vs</div>
+      <div class="flow-box mid">message passing<br><small>gửi/nhận gói tin qua OS</small></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Đề hay hỏi "nhóm nào KHÔNG thuộc user-convenience": UI, program execution, I/O, file-system manipulation, communications, error detection → 6 dịch vụ TRÊN đều thuộc nhóm "cho người dùng". 3 dịch vụ dưới đây mới là nhóm "cho chính hệ thống".
+    </div>
+
+    <p class="en">A second group of services exists purely for the system's own efficient operation via resource sharing. <b>Resource allocation</b> assigns CPU cycles, memory, storage, and I/O devices fairly when multiple users or jobs run at once. <b>Logging</b> (also called <b>accounting</b>) tracks which users consume how much of which resource — useful for billing or usage statistics.</p>
+    <span class="vi">Nhóm thứ hai tồn tại chỉ để chính hệ thống vận hành hiệu quả, thông qua việc chia sẻ tài nguyên. <b>Cấp phát tài nguyên</b> phân chia chu kỳ CPU, bộ nhớ, lưu trữ, thiết bị I/O công bằng khi nhiều người dùng/job chạy cùng lúc. <b>Ghi log</b> (còn gọi <b>accounting</b>) theo dõi ai dùng bao nhiêu tài nguyên nào — hữu ích để tính phí hoặc thống kê sử dụng.</span>
+
+    <div class="illus">
+      <div class="emo">⚖️</div>
+      <div class="cap"><b>Resource allocation vs Logging</b>chia tài nguyên công bằng cho ai đang cần → rồi ghi lại ai đã dùng bao nhiêu.</div>
+    </div>
+
+    <p class="en">Finally, <b>Protection</b> ensures all access to system resources is controlled so concurrent processes don't interfere with each other, while <b>Security</b> defends the system from outsiders through user authentication, extending even to protecting external I/O devices from invalid access attempts.</p>
+    <span class="vi">Cuối cùng, <b>bảo vệ (Protection)</b> đảm bảo mọi quyền truy cập tài nguyên hệ thống đều được kiểm soát để các tiến trình chạy song song không đụng nhau, còn <b>an ninh (Security)</b> bảo vệ hệ thống khỏi người ngoài qua việc xác thực người dùng, và mở rộng ra cả việc bảo vệ thiết bị I/O bên ngoài khỏi những lần truy cập trái phép.</span>
+
+    <div class="illus">
+      <div class="emo">🔒</div>
+      <div class="cap"><b>Protection vs Security</b>Protection = chặn tiến trình này đụng tiến trình kia; Security = chặn kẻ ngoài đột nhập.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh — 2 nhóm dịch vụ OS</div>
+      <div class="rchips">
+        <span class="rchip">UI</span><span class="rchip">Program execution</span><span class="rchip">I/O operations</span>
+        <span class="rchip">File-system manipulation</span><span class="rchip">Communications</span><span class="rchip">Error detection</span>
+        <span class="rchip">Resource allocation</span><span class="rchip">Logging</span><span class="rchip">Protection &amp; Security</span>
+      </div>
+      <p class="rline">6 dịch vụ đầu là "vì người dùng"; 3 dịch vụ cuối là "vì chính hệ thống" — tách rõ hai nhóm này là chìa khóa để trả lời đúng câu trắc nghiệm dạng phân loại.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: USER INTERFACE -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-interface" hidden>
+    <div class="panel-eyebrow">02 · Interface</div>
+    <h2>Three doorways into the same services</h2>
+    <p class="intro">CLI, GUI, and touch are just different skins over the exact same underlying OS services from the last tab — none of them is "more powerful," they just fit different hands and different devices.</p>
+    <span class="vi">CLI, GUI, và cảm ứng chỉ là những lớp vỏ khác nhau phủ lên đúng những dịch vụ OS y hệt ở tab trước — không cái nào "mạnh hơn" cái nào, chúng chỉ hợp với những đôi tay và thiết bị khác nhau.</span>
+
+    <div class="illus">
+      <div class="emo">🖱️</div>
+      <div class="cap"><b>Cùng 1 dịch vụ, 3 lớp vỏ</b>CLI gõ lệnh, GUI nhấp chuột, cảm ứng chạm/vuốt — bên dưới vẫn gọi đúng các OS service như nhau.</div>
+    </div>
+
+    <p class="en">The <b>command interpreter</b> — often called a <b>shell</b> — is what actually implements the <b>Command-Line Interface (CLI)</b>. Sometimes it lives inside the kernel; more often it's just a regular system program, and a system may even ship several shells to choose from. Its whole job, over and over, is: fetch a command from the user, execute it.</p>
+    <span class="vi">Trình thông dịch lệnh — hay còn gọi là <b>shell</b> — chính là thứ hiện thực <b>giao diện dòng lệnh (CLI)</b>. Đôi khi nó nằm trong kernel; thường thì chỉ là 1 chương trình hệ thống bình thường, và 1 hệ thống còn có thể có sẵn nhiều shell để chọn. Việc của nó, lặp đi lặp lại, chỉ là: lấy 1 lệnh từ người dùng, rồi thực thi nó.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body">
+        <div><span class="tm-prompt">bash-4.4$</span> ls -l notes.txt</div>
+        <div class="tm-out">-rw-r--r-- 1 binh binh 214 Aug 20 notes.txt</div>
+        <div><span class="tm-prompt">bash-4.4$</span> cat notes.txt</div>
+        <div class="tm-out">ôn tập chương 2...</div>
+      </div>
+    </div>
+
+    <p class="en">Commands are sometimes built directly into the shell; other times a command is just the name of a separate program the shell finds and runs. That second design is nice because adding a whole new feature can be as simple as writing a new program — no need to touch the shell itself.</p>
+    <span class="vi">Có khi lệnh được cài sẵn ngay trong shell; có khi lệnh chỉ là tên của 1 chương trình riêng mà shell tìm rồi chạy. Cách thiết kế thứ hai hay ở chỗ: muốn thêm hẳn 1 tính năng mới chỉ cần viết thêm 1 chương trình mới — không cần đụng vào chính shell.</span>
+
+    <div class="illus">
+      <div class="emo">🧩</div>
+      <div class="cap"><b>Built-in vs. separate program</b>lệnh cài sẵn trong shell, hay chỉ là tên 1 chương trình rời mà shell tìm rồi chạy.</div>
+    </div>
+
+    <p class="en">The <b>Graphical User Interface (GUI)</b> gives a friendlier, mouse-driven desktop metaphor: icons represent files, programs, and actions, and various mouse clicks trigger information, run actions, or open directories. First invented at Xerox PARC in the 1970s, it's now the default on almost everything.</p>
+    <span class="vi"><b>Giao diện đồ họa (GUI)</b> mang lại ẩn dụ desktop thân thiện, điều khiển bằng chuột: icon đại diện cho file, chương trình, hành động, và các cú nhấp chuột khác nhau sẽ hiện thông tin, chạy hành động, hoặc mở thư mục. Được phát minh lần đầu tại Xerox PARC vào thập niên 1970, giờ đây nó là mặc định ở hầu hết mọi nơi.</span>
+
+    <div class="env-grid">
+      <div class="env-card"><span class="env-badge">CLI</span><h4>Command-Line</h4><p>Type exact commands, get exact text back. Fast for experts, scriptable, precise.</p></div>
+      <div class="env-card"><span class="env-badge">GUI</span><h4>Graphical</h4><p>Mouse + keyboard + monitor; icons stand in for files, programs, and actions.</p></div>
+      <div class="env-card"><span class="env-badge">TS</span><h4>Touch-screen</h4><p>No mouse — gestures + on-screen virtual keyboard replace it entirely.</p></div>
+    </div>
+
+    <p class="en">Touch-screen devices needed a fourth kind of interface entirely, since a mouse is neither possible nor desired: actions and selection are now based on gestures, a virtual keyboard appears on-screen for text entry, and many systems layer voice commands on top of all that.</p>
+    <span class="vi">Thiết bị màn hình cảm ứng cần hẳn 1 kiểu giao diện thứ tư, vì chuột không khả thi cũng không cần thiết: hành động và lựa chọn giờ dựa trên cử chỉ (gesture), bàn phím ảo hiện ngay trên màn hình để nhập chữ, và nhiều hệ thống còn thêm cả ra lệnh bằng giọng nói lên trên tất cả.</span>
+
+    <div class="phone-mock">
+      <div class="pm-grid">
+        <div class="pm-icon">📷</div><div class="pm-icon">💬</div><div class="pm-icon">🎵</div>
+        <div class="pm-icon">📧</div><div class="pm-icon">🗺️</div><div class="pm-icon">⚙️</div>
+      </div>
+    </div>
+
+    <p class="en">Most systems today actually include both CLI and GUI interfaces at once. Microsoft Windows is GUI-first but ships a "command" shell alongside it; Apple's macOS is an "Aqua" GUI sitting on top of a Unix kernel, with full shell access underneath; Unix and Linux offer CLI by default with optional GUI environments like CDE, KDE, or GNOME layered on top.</p>
+    <span class="vi">Hầu hết hệ thống ngày nay thực ra có cả <b>CLI lẫn GUI</b> cùng lúc. Microsoft Windows lấy GUI làm chính nhưng vẫn kèm 1 shell "command" đi cùng; macOS của Apple là GUI "Aqua" nằm trên nhân Unix, bên dưới vẫn truy cập được shell đầy đủ; Unix và Linux mặc định dùng CLI, có thể lắp thêm môi trường GUI tùy chọn như CDE, KDE, hay GNOME.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Windows</div><p>GUI trước, kèm CLI "command"</p></div>
+      <div class="compare-box"><div class="ck">macOS</div><p>GUI "Aqua" trên nhân Unix + shell</p></div>
+      <div class="compare-box"><div class="ck">Linux</div><p>CLI mặc định, GUI tùy chọn (KDE/GNOME)</p></div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">CLI / shell</span><span class="rchip">command interpreter</span><span class="rchip">GUI</span>
+        <span class="rchip">Xerox PARC</span><span class="rchip">touch-screen</span><span class="rchip">gestures</span><span class="rchip">voice commands</span>
+      </div>
+      <p class="rline">Gần như mọi OS hiện đại đều hỗ trợ nhiều hơn 1 kiểu giao diện cùng lúc — câu hỏi "OS nào chỉ dùng CLI" gần như luôn sai.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: SYSTEM CALLS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-syscalls" hidden>
+    <div class="panel-eyebrow">03 · Mechanism</div>
+    <h2>The only legal doorway into the kernel</h2>
+    <p class="intro">Every service from tab 1 — reading a file, allocating memory, talking to a device — ultimately has to cross the user/kernel boundary from Chapter 1. A system call is that crossing point, and nothing else.</p>
+    <span class="vi">Mọi dịch vụ ở tab 1 — đọc file, cấp phát bộ nhớ, giao tiếp thiết bị — cuối cùng đều phải vượt qua ranh giới user/kernel đã học ở Chương 1. System call chính là điểm vượt ranh giới đó, không hơn không kém.</span>
+
+    <div class="illus">
+      <div class="emo">🚪</div>
+      <div class="cap"><b>Cánh cửa duy nhất</b>Mọi yêu cầu từ user space đều phải đi qua đúng 1 cửa này để chạm được vào kernel.</div>
+    </div>
+
+    <p class="en">A <b>system call</b> is the programming interface to the services the OS provides, typically written in a high-level language like C or C++. Programs mostly don't invoke system calls directly — instead they go through a high-level <b>Application Programming Interface (API)</b>. The three most common are <b>Win32 API</b> for Windows, <b>POSIX API</b> for virtually all UNIX, Linux, and Mac OS X systems, and <b>Java API</b> for programs running on the JVM.</p>
+    <span class="vi"><b>System call</b> là <b>giao diện lập trình</b> tới các dịch vụ mà OS cung cấp, thường viết bằng ngôn ngữ bậc cao như C hoặc C++. Chương trình phần lớn không gọi system call trực tiếp — mà đi qua 1 <b>Giao diện lập trình ứng dụng (API)</b> bậc cao. 3 API phổ biến nhất: <b>Win32 API</b> cho Windows, <b>POSIX API</b> cho hầu hết mọi hệ UNIX, Linux, Mac OS X, và <b>Java API</b> cho chương trình chạy trên JVM.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">Your program<br><small>(C / C++ / Java)</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">API<br><small>Win32 / POSIX / Java</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">system call</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">OS kernel</div>
+    </div>
+
+    <p class="en">To see this concretely, walk through the <b>system call sequence</b> needed just to copy the contents of one file into another — far more steps than the one line of code a programmer actually writes:</p>
+    <span class="vi">Để thấy rõ điều này, hãy xem qua <b>chuỗi system call</b> cần thiết chỉ để copy nội dung từ file này sang file khác — nhiều bước hơn hẳn so với 1 dòng code mà lập trình viên thực sự viết ra:</span>
+
+    <div class="seqlist">
+      <div class="sitem"><span class="snum"></span><span class="stext">Acquire input file name → prompt on screen → accept from keyboard</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Acquire output file name → prompt on screen → accept from keyboard</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Open the input file — if it doesn't exist, abort</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Create the output file — if a file with that name exists, abort</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Loop: read from input file → write to output file, until end-of-file</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Close both files, display a completion message</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Terminate normally</span></div>
+    </div>
+
+    <p class="en">Underneath one call like <span class="mono">open()</span> sits the <b>system-call interface</b>: an <b>index table</b> indexed by a number associated with each system call, which invokes the intended call inside the kernel and returns its status plus any return values. The caller only needs to obey the API and understand what the OS will do — it needs to know nothing about how the call is actually implemented, since that detail is hidden away and managed by a <b>run-time support library</b> built into the compiler's libraries.</p>
+    <span class="vi">Bên dưới 1 lời gọi như <span class="mono">open()</span> là <b>giao diện system call</b>: 1 bảng được đánh chỉ số theo 1 con số gắn với từng system call, dùng để gọi đúng lời gọi trong kernel và trả về trạng thái cùng giá trị trả về (nếu có). Bên gọi chỉ cần tuân theo API và hiểu OS sẽ làm gì — không cần biết gì về cách lời gọi được cài đặt thật sự, vì chi tiết đó được giấu đi và quản lý bởi 1 <b>thư viện hỗ trợ runtime</b> tích hợp sẵn trong thư viện của trình biên dịch.</span>
+
+    <div class="illus">
+      <div class="emo">📇</div>
+      <div class="cap"><b>API–System call–OS relationship</b>user application gọi open() → hệ thống tra "index table" tìm đúng cài đặt open() → nhảy vào kernel thực thi → trả kết quả ngược lại cho ứng dụng.</div>
+    </div>
+
+    <div class="hook">
+      <b>Why hide the implementation at all?</b> Because the OS team can completely rewrite how <span class="mono">open()</span> works internally — new file system, new algorithm — and every program that ever called <span class="mono">open()</span> keeps working, unmodified.
+      <span class="vi">Vì đội ngũ phát triển OS có thể viết lại hoàn toàn cách <span class="mono">open()</span> hoạt động bên trong — hệ thống file mới, thuật toán mới — mà mọi chương trình từng gọi <span class="mono">open()</span> vẫn chạy tốt, không cần sửa gì cả.</span>
+    </div>
+
+    <p class="en">When a system call needs more information than just "which call is this," that extra data has to be passed somehow. Three general methods exist. The simplest is passing parameters in <b>registers</b> — but registers may not be enough if there are more parameters than available registers.</p>
+    <span class="vi">Khi 1 system call cần nhiều thông tin hơn chỉ là "đây là lời gọi nào," dữ liệu thêm đó phải được truyền đi bằng cách nào đó. Có 3 cách chung. Cách <b>đơn giản nhất</b> là truyền tham số qua <b>thanh ghi (registers)</b> — nhưng thanh ghi có thể không đủ nếu số tham số nhiều hơn số thanh ghi có sẵn.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Method 1</div><p><b>Registers</b></p><ul><li>Fastest, simplest</li><li>Limited by register count</li></ul></div>
+      <div class="compare-box"><div class="ck">Method 2</div><p>A <b>block</b>/table in memory</p><ul><li>Address of block passed in a register</li><li>Used by Linux &amp; Solaris</li></ul></div>
+      <div class="compare-box"><div class="ck">Method 3</div><p>Push onto the <b>stack</b></p><ul><li>Program pushes, OS pops</li><li>No limit on count or length</li></ul></div>
+    </div>
+
+    <p class="en">Parameters can also be stored in a <b>block</b>, or table, in memory, with the address of that block passed as a single parameter in a register — the approach taken by Linux and Solaris. Finally, parameters can be pushed onto the <b>stack</b> by the program and popped off by the OS; neither the block nor the stack method limits the number or length of parameters being passed.</p>
+    <span class="vi">Tham số cũng có thể được lưu trong 1 <b>khối (block)</b>, hay bảng, trong bộ nhớ, với địa chỉ của khối đó được truyền như 1 tham số duy nhất qua thanh ghi — cách mà Linux và Solaris dùng. Cuối cùng, tham số có thể được đẩy lên <b>ngăn xếp (stack)</b> bởi chương trình rồi được OS lấy ra; cả cách dùng khối lẫn stack đều không giới hạn số lượng hay độ dài tham số truyền vào.</span>
+
+    <div class="illus">
+      <div class="emo">📦</div>
+      <div class="cap"><b>Block/table vs Stack</b>cả 2 cách đều không giới hạn số tham số — khác register ở đúng chỗ đó.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">system call</span><span class="rchip">API</span><span class="rchip">Win32 / POSIX / Java</span>
+        <span class="rchip">system-call interface</span><span class="rchip">index table</span><span class="rchip">registers</span><span class="rchip">block/table</span><span class="rchip">stack</span>
+      </div>
+      <p class="rline">Chương trình gọi API → API gọi system call → system-call interface tra bảng chỉ số → kernel thực thi thật sự. Lập trình viên không bao giờ cần biết bước cuối.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: TYPES & EXAMPLES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-synscall-types" hidden>
+    <div class="panel-eyebrow">04 · Catalog</div>
+    <h2>Six categories, two very different operating systems</h2>
+    <p class="intro">Every system call an OS offers falls into one of six buckets. Same buckets, wildly different spelling from one OS to the next — which is exactly why the API layer from the last tab exists.</p>
+    <span class="vi">Mọi system call mà 1 OS cung cấp đều rơi vào 1 trong 6 nhóm. Cùng 6 nhóm đó, nhưng cách viết cụ thể lại khác hoàn toàn giữa các OS — và đó chính xác là lý do lớp API ở tab trước tồn tại.</span>
+
+    <div class="illus">
+      <div class="emo">🗂️</div>
+      <div class="cap"><b>6 ngăn, vô số OS</b>Windows và Unix chia sẻ đúng 6 nhóm chức năng này, chỉ khác tên hàm gọi ra.</div>
+    </div>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Process control</div><p>create/terminate process, load, execute, wait for time or event, allocate memory, <span class="mono">debugger</span> for bugs, <span class="mono">locks</span> for shared data.</p></div>
+      <div class="res-card"><div class="rk">File management</div><p>create, delete, open, close, read, write, reposition, get/set file attributes.</p></div>
+      <div class="res-card"><div class="rk">Device management</div><p>request/release a device, read, write, reposition, get/set device attributes, logically attach or detach.</p></div>
+      <div class="res-card"><div class="rk">Information maintenance</div><p>get/set time or date, get/set system data, get/set process, file, or device attributes.</p></div>
+      <div class="res-card"><div class="rk">Communications</div><p>create/delete a connection, send/receive messages, transfer status info, attach/detach remote devices.</p></div>
+      <div class="res-card"><div class="rk">Protection</div><p>control access to resources, get and set permissions, allow and deny user access.</p></div>
+    </div>
+
+    <p class="en">Communication between processes can follow either the <b>message-passing model</b> — exchanging messages via a host name or process name — or the <b>shared-memory model</b>, where processes create and gain access to a common memory region to transfer data directly.</p>
+    <span class="vi">Giao tiếp giữa các tiến trình có thể theo <b>mô hình truyền thông điệp</b> — trao đổi qua tên máy hoặc tên tiến trình — hoặc <b>mô hình bộ nhớ dùng chung</b>, nơi các tiến trình tạo và truy cập 1 vùng nhớ chung để chuyển dữ liệu trực tiếp.</span>
+
+    <div class="flow-row">
+      <div class="flow-box hi">message-passing<br><small>qua tên host/tiến trình</small></div>
+      <div class="flow-arrow">vs</div>
+      <div class="flow-box mid">shared-memory<br><small>1 vùng nhớ chung</small></div>
+    </div>
+
+    <p class="en">Same six categories, same underlying hardware capabilities — but the exact function names differ completely between Windows and Unix, which is the whole reason the API layer exists in the first place:</p>
+    <span class="vi">Vẫn 6 loại đó, vẫn khả năng phần cứng như nhau — nhưng tên hàm cụ thể khác hoàn toàn giữa Windows và Unix, và đó chính xác là lý do lớp API tồn tại ngay từ đầu:</span>
+
+    <table class="cmp-table">
+      <tr><th>Category</th><th>Windows</th><th>Unix</th></tr>
+      <tr><td>Process control</td><td>CreateProcess()</td><td>fork()</td></tr>
+      <tr><td></td><td>ExitProcess()</td><td>exit()</td></tr>
+      <tr><td>File management</td><td>CreateFile()</td><td>open()</td></tr>
+      <tr><td></td><td>ReadFile() / WriteFile()</td><td>read() / write()</td></tr>
+      <tr><td>Device management</td><td>SetConsoleMode()</td><td>ioctl()</td></tr>
+      <tr><td>Info maintenance</td><td>GetCurrentProcessID()</td><td>getpid()</td></tr>
+      <tr><td>Communications</td><td>CreatePipe()</td><td>pipe()</td></tr>
+      <tr><td>Protection</td><td>SetFileSecurity()</td><td>chmod()</td></tr>
+    </table>
+
+    <p class="en">Programs rarely call even <span class="mono">write()</span> directly — instead they call something like the <b>Standard C Library</b>'s <span class="mono">printf()</span>, which itself invokes the <span class="mono">write()</span> system call on your behalf. This is the run-time support library from the last tab, in action.</p>
+    <span class="vi">Chương trình hiếm khi gọi thẳng <span class="mono">write()</span> — thay vào đó chúng gọi thứ như <span class="mono">printf()</span> của <b>Standard C Library</b>, và chính hàm đó mới gọi system call <span class="mono">write()</span> thay cho bạn. Đây chính là thư viện hỗ trợ runtime ở tab trước, đang hoạt động thật.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">C program<br><small>printf("hi")</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">Standard C<br>Library</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">write()<br><small>system call</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">kernel</div>
+    </div>
+
+    <p class="en">Two real systems make the contrast vivid. <b>Arduino</b> is a hardware/software platform with essentially no OS underneath — its bootstrap loader simply loads a single program into flash memory over a USB cable, and that one program simply runs forever; there's no multitasking to manage, so almost none of the six categories above even apply.</p>
+    <span class="vi">2 hệ thống thật minh họa rõ sự tương phản. <b>Arduino</b> là 1 nền tảng phần cứng/phần mềm hầu như không có OS bên dưới — bootstrap loader của nó chỉ đơn giản nạp 1 chương trình duy nhất vào bộ nhớ flash qua cáp USB, rồi chương trình đó chạy mãi mãi; không có gì để đa nhiệm quản lý, nên gần như không có loại nào trong 6 loại trên áp dụng được.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">🔌 Arduino</div><p>No OS at all</p><ul><li>Single program, loops forever</li><li>Bootstrap loader just copies it into flash</li><li>No process control needed — there's only ever one process</li></ul></div>
+      <div class="compare-box"><div class="ck">🐡 FreeBSD</div><p>A full Unix variant</p><ul><li>User types a command at the shell</li><li>Shell calls <span class="mono">fork()</span>, then <span class="mono">exec()</span> to run it</li><li>Shell <span class="mono">wait()</span>s; exit code 0 = success, &gt;0 = error</li></ul></div>
+    </div>
+
+    <p class="en"><b>FreeBSD</b>, by contrast, is a full Unix variant: when you type a command at its shell, the shell <b>fork()</b>s a new process and then uses <b>exec()</b> to load and run your program inside it, waiting for it to finish and checking its exit status — a value of 0 conventionally means success, any positive number signals an error.</p>
+    <span class="vi">Ngược lại, <b>FreeBSD</b> là 1 biến thể Unix đầy đủ: khi bạn gõ 1 lệnh ở shell, shell sẽ <b>fork()</b> ra 1 tiến trình mới rồi dùng <b>exec()</b> để nạp và chạy chương trình của bạn bên trong đó, rồi chờ nó xong và kiểm tra mã thoát — giá trị 0 theo quy ước là thành công, số dương bất kỳ báo hiệu có lỗi.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">shell: gõ lệnh</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">fork()</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">exec()</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">wait() → exit code</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Process control</span><span class="rchip">File mgmt</span><span class="rchip">Device mgmt</span>
+        <span class="rchip">Info maintenance</span><span class="rchip">Communications</span><span class="rchip">Protection</span>
+        <span class="rchip">fork()</span><span class="rchip">exec()</span>
+      </div>
+      <p class="rline">6 loại system call là cố định về khái niệm — chỉ tên hàm cụ thể là đổi theo OS. Arduino gần như không dùng loại nào; FreeBSD dùng đủ cả 6.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: SYSTEM PROGRAMS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-sysprograms" hidden>
+    <div class="panel-eyebrow">05 · Tooling</div>
+    <h2>What most users actually think "the OS" is</h2>
+    <p class="intro">Ask a random user what their operating system does, and they'll describe a file explorer, a compiler, a background updater — not raw system calls. That's because most people's whole view of the OS is really its system programs.</p>
+    <span class="vi">Hỏi bất kỳ người dùng nào OS của họ làm gì, họ sẽ mô tả trình quản lý file, trình biên dịch, bộ cập nhật chạy nền — chứ không phải system call thô. Vì với đa số, cái họ nghĩ là "OS" thực chất chính là các system program này.</span>
+
+    <div class="illus">
+      <div class="emo">🧰</div>
+      <div class="cap"><b>Cái người dùng thực sự thấy</b>Không phải system call vô hình, mà là công cụ hữu hình: file explorer, compiler, daemon chạy nền.</div>
+    </div>
+
+    <p class="en"><b>System programs</b> provide a convenient environment for program development and execution, and they're what defines most users' view of the operating system — not the actual, invisible system calls underneath. They fall into several categories: file manipulation, status information, programming-language support, program loading and execution, communications, background services, and application programs.</p>
+    <span class="vi"><b>Chương trình hệ thống</b> tạo ra môi trường thuận tiện để phát triển và chạy chương trình, và chính chúng mới định hình cái nhìn của hầu hết người dùng về hệ điều hành — chứ không phải các system call vô hình bên dưới. Chúng chia thành vài loại: thao tác file, thông tin trạng thái, hỗ trợ ngôn ngữ lập trình, nạp và chạy chương trình, giao tiếp, dịch vụ nền, và chương trình ứng dụng.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">File manipulation</div><p>Create, delete, copy, rename, print, list, and generally manipulate files and directories.</p></div>
+      <div class="res-card"><div class="rk">Status information</div><p>Date, time, free memory/disk space, number of users — sometimes even a settings interface.</p></div>
+      <div class="res-card"><div class="rk">Programming-language support</div><p>Compilers, assemblers, debuggers, interpreters for common languages, all bundled with the OS.</p></div>
+      <div class="res-card"><div class="rk">Program loading &amp; execution</div><p>Loaders, linkers, and debuggers for general and language-specific programs.</p></div>
+      <div class="res-card"><div class="rk">Communications</div><p>Virtual connections between processes, users, and even different computer systems.</p></div>
+      <div class="res-card"><div class="rk">Background services</div><p><b>Daemons</b> that launch at boot and keep running in the background, outside the kernel itself.</p></div>
+    </div>
+
+    <p class="en">These background services — commonly called <b>daemons</b> — start when the system boots and keep running quietly for as long as the machine is on. Crucially, most of them run in a regular user context, not inside the kernel: a web server or a print spooler doesn't need kernel privileges to do its job.</p>
+    <span class="vi"><b>Dịch vụ nền</b> — thường gọi là <b>daemon</b> — khởi động khi hệ thống boot và chạy âm thầm suốt thời gian máy còn bật. Điều quan trọng: hầu hết chạy ở ngữ cảnh người dùng bình thường, không nằm trong kernel: 1 web server hay 1 hàng đợi in không cần đặc quyền kernel để làm việc của nó.</span>
+
+    <div class="illus">
+      <div class="emo">⚙️</div>
+      <div class="cap"><b>Daemon</b>chạy nền từ lúc boot, thường ở user mode — không cần đặc quyền kernel.</div>
+    </div>
+
+    <div class="hook">
+      <b>Quick check:</b> a background print spooler waiting for jobs — kernel code, or a system program running as a daemon?
+      <span class="vi">Kiểm tra nhanh: 1 hàng đợi in đang chờ job — đó là mã kernel, hay là 1 chương trình hệ thống chạy dưới dạng daemon?</span>
+    </div>
+
+    <p class="en">One specific pair of system programs deserves a closer look: the <b>linker</b> and the <b>loader</b>. Source code is first compiled into object files, deliberately designed so they can be loaded into any physical memory location — hence the name <b>relocatable object file</b>. The linker then combines those object files, plus any needed libraries, into one single binary executable file.</p>
+    <span class="vi">Có 1 cặp chương trình hệ thống đáng nói kỹ hơn: <b>linker</b> và <b>loader</b>. Source code trước tiên được biên dịch thành <b>object file</b>, được thiết kế có chủ đích để có thể nạp vào bất kỳ vị trí bộ nhớ vật lý nào — vì vậy mới gọi là <b>relocatable object file</b> (file đối tượng có thể tái định vị). Linker sau đó gộp các object file này, cùng thư viện cần thiết, thành 1 file thực thi nhị phân duy nhất.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">source code<br><small>main.c</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">compiler<br><small>gcc -c</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">object file<br><small>main.o</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">linker<br><small>+ libraries</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">executable<br><small>main</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">loader<br><small>./main</small></div>
+    </div>
+
+    <p class="en">The program then sits on secondary storage as that binary executable, and must be brought into memory by the <b>loader</b> to actually run. Part of that job is <b>relocation</b>: assigning final memory addresses to every part of the program and adjusting its code and data so those addresses match. Modern general-purpose systems mostly skip statically linking libraries into every executable — instead they use <b>dynamically linked libraries</b> (Windows calls them <b>DLLs</b>), loaded only when needed and shared across every program that uses that same library version.</p>
+    <span class="vi">Chương trình sau đó nằm trên bộ nhớ phụ dưới dạng file thực thi nhị phân đó, và phải được <b>loader</b> đưa vào bộ nhớ để thực sự chạy. 1 phần việc của loader là <b>relocation</b> (tái định vị): gán địa chỉ bộ nhớ cuối cùng cho từng phần của chương trình và chỉnh code/dữ liệu để khớp đúng địa chỉ đó. Hệ thống đa dụng hiện đại phần lớn không còn liên kết tĩnh thư viện vào mọi file thực thi — thay vào đó dùng <b>thư viện liên kết động</b> (Windows gọi là <b>DLL</b>), chỉ nạp khi cần và dùng chung cho mọi chương trình dùng cùng phiên bản thư viện đó.</span>
+
+    <div class="illus">
+      <div class="emo">🧷</div>
+      <div class="cap"><b>Relocation vs DLL</b>relocation = gán địa chỉ cuối cùng lúc nạp; DLL = nhiều chương trình dùng chung 1 bản duy nhất trong bộ nhớ.</div>
+    </div>
+
+    <p class="en">Object and executable files follow standard formats, so the OS always knows how to load and start them. This same standardization is exactly why applications tend to be tied to one OS: each OS's unique set of system calls and file formats means an app compiled for one usually can't just run on another — unless it was written in an interpreted language (Python, Ruby), targets a virtual machine (Java's bytecode), or is recompiled per-OS from the same C/C++ source using each system's <b>Application Binary Interface (ABI)</b> as the contract to build against.</p>
+    <span class="vi">File object và file thực thi tuân theo định dạng chuẩn, để OS luôn biết cách <b>nạp</b> và <b>chạy</b> chúng. Chính sự chuẩn hóa này là lý do vì sao ứng dụng thường gắn chặt với 1 OS: bộ system call và định dạng file riêng của mỗi OS khiến 1 app biên dịch cho OS này thường không chạy được trên OS khác — trừ khi nó viết bằng ngôn ngữ thông dịch (Python, Ruby), nhắm tới 1 máy ảo (bytecode của Java), hoặc được biên dịch lại riêng cho từng OS từ cùng mã nguồn C/C++, dựa trên <b>Application Binary Interface (ABI)</b> của mỗi hệ làm hợp đồng để build theo.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">cùng 1 mã nguồn C</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">biên dịch theo ABI riêng từng OS</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">.exe / ELF / Mach-O</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">System programs</span><span class="rchip">daemons</span><span class="rchip">object file</span>
+        <span class="rchip">linker</span><span class="rchip">loader</span><span class="rchip">relocation</span><span class="rchip">DLL</span><span class="rchip">ABI</span>
+      </div>
+      <p class="rline">Đường đi: source code → compiler → object file → linker (+ thư viện) → executable → loader → chương trình chạy trong bộ nhớ.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: DESIGN & IMPLEMENTATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-design" hidden>
+    <div class="panel-eyebrow">06 · Philosophy</div>
+    <h2>Designing an OS is not a solved problem</h2>
+    <p class="intro">There's no single "correct" way to build an operating system — every design starts from a set of goals and specifications, shaped heavily by the hardware chosen and the type of system being built.</p>
+    <span class="vi">Không có 1 cách "đúng" duy nhất để xây 1 hệ điều hành — mọi thiết kế đều bắt đầu từ 1 tập mục tiêu và đặc tả, bị chi phối rất nhiều bởi phần cứng được chọn và loại hệ thống đang xây.</span>
+
+    <div class="illus">
+      <div class="emo">📐</div>
+      <div class="cap"><b>Không có đáp án đúng duy nhất</b>Mục tiêu người dùng và mục tiêu hệ thống thường kéo về 2 hướng khác nhau, buộc phải đánh đổi.</div>
+    </div>
+
+    <p class="en">The very first fork in the road is whose goals come first. <b>User goals</b> ask the system to be convenient to use, easy to learn, reliable, safe, and fast. <b>System goals</b> ask something almost opposite: that the OS be easy to design, implement, and maintain, as well as flexible, reliable, error-free, and efficient.</p>
+    <span class="vi">Ngã rẽ đầu tiên là mục tiêu của ai được ưu tiên trước. <b>Mục tiêu người dùng</b> đòi hỏi hệ thống thuận tiện khi dùng, dễ học, đáng tin cậy, an toàn, và nhanh. <b>Mục tiêu hệ thống</b> đòi hỏi gần như ngược lại: OS phải dễ thiết kế, dễ hiện thực, dễ bảo trì, cùng với linh hoạt, đáng tin cậy, không lỗi, và hiệu quả.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">👤 User goals</div><ul><li>Convenient to use</li><li>Easy to learn</li><li>Reliable, safe, fast</li></ul></div>
+      <div class="compare-box"><div class="ck">⚙️ System goals</div><ul><li>Easy to design &amp; implement</li><li>Easy to maintain</li><li>Flexible, reliable, efficient</li></ul></div>
+    </div>
+
+    <p class="en">Because these goals genuinely pull in different directions, no universal set of specifications satisfies everyone — the same goals mean something completely different for an embedded system with 16 MB of memory and no disk than they do for a general-purpose system juggling many different resources.</p>
+    <span class="vi">Vì các mục tiêu này thực sự kéo về 2 hướng khác nhau, không có bộ đặc tả chung nào làm hài lòng tất cả — cùng 1 mục tiêu lại mang ý nghĩa hoàn toàn khác với 1 hệ thống nhúng chỉ có 16 MB bộ nhớ và không ổ đĩa, so với 1 hệ đa dụng đang phải cân nhiều loại tài nguyên khác nhau cùng lúc.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">🔌 Embedded</div><p>16 MB RAM, không ổ đĩa — mục tiêu rất khác</p></div>
+      <div class="compare-box"><div class="ck">🖥️ General-purpose</div><p>Nhiều loại tài nguyên phải cân bằng cùng lúc</p></div>
+    </div>
+
+    <p class="en">A second, orthogonal separation matters just as much: <b>policy</b> decides <em>what</em> will be done, while <b>mechanism</b> decides <em>how</em> to do it. Keeping the two separate gives real flexibility — for example, changing a resource-protection timer's length is purely a policy decision, and it should be possible to make that change without ever touching the underlying mechanism that enforces it.</p>
+    <span class="vi">Một sự tách biệt thứ hai, độc lập, cũng quan trọng không kém: <b>policy</b> (chính sách) quyết định <em>cái gì</em> sẽ được làm, còn <b>mechanism</b> (cơ chế) quyết định <em>làm bằng cách nào</em>. Giữ 2 thứ này tách rời mang lại sự linh hoạt thật sự — ví dụ, đổi độ dài của 1 bộ đếm thời gian bảo vệ tài nguyên chỉ là 1 quyết định policy, và việc đổi đó nên thực hiện được mà không cần đụng vào cơ chế đang thực thi nó bên dưới.</span>
+
+    <div class="flow-row">
+      <div class="flow-box hi">Policy<br><small>WHAT to do</small></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box mid">Mechanism<br><small>HOW to do it</small></div>
+    </div>
+
+    <p class="en">Finally, implementation language shapes the whole system. Early OSes were written entirely in assembly language; then came systems like Unix, mostly written in C — a much bigger jump than it sounds, since it made those systems dramatically more portable across hardware. Today, most of an OS's body is still C, with C++ and scripting languages like Perl or Python handling higher-level system programs. The trade-off is real: higher-level code is easier to port and maintain, but it typically runs slower and needs more storage than hand-written assembly.</p>
+    <span class="vi">Cuối cùng, ngôn ngữ hiện thực định hình cả hệ thống. OS đời đầu viết hoàn toàn bằng hợp ngữ (assembly); rồi tới các hệ như Unix, phần lớn viết bằng C — một bước nhảy lớn hơn tưởng tượng, vì nó khiến các hệ này dễ mang đi (portable) hơn hẳn giữa các loại phần cứng. Ngày nay, phần thân của OS vẫn chủ yếu là C, còn C++ và ngôn ngữ kịch bản như Perl hay Python lo phần chương trình hệ thống bậc cao hơn. Đánh đổi là có thật: code bậc cao dễ mang đi và bảo trì hơn, nhưng thường chạy chậm hơn và tốn bộ nhớ hơn so với hợp ngữ viết tay.</span>
+
+    <div class="stack">
+      <div class="layer hi">C++ / scripting (Perl, Python) <small>higher-level system programs</small></div>
+      <div class="arrow">↑ more portable, easier to maintain</div>
+      <div class="layer os">C <small>main body of the OS</small></div>
+      <div class="arrow">↑ faster, more compact</div>
+      <div class="layer">Assembly language <small>lowest, most time-critical levels</small></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Policy = "cái gì" (what), Mechanism = "làm sao" (how). Đề hay cho 1 tình huống rồi hỏi đó là ví dụ của policy hay mechanism — nhớ: đổi được mà không sửa code lõi → đó là policy.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">User goals</span><span class="rchip">System goals</span><span class="rchip">Policy</span><span class="rchip">Mechanism</span><span class="rchip">C / assembly</span>
+      </div>
+      <p class="rline">User goals và System goals thường mâu thuẫn nhau; Policy và Mechanism nên luôn tách rời để dễ thay đổi sau này.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OS STRUCTURE -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-structure" hidden>
+    <div class="panel-eyebrow">07 · Architecture</div>
+    <h2>Five ways to organize one giant program</h2>
+    <p class="intro">A general-purpose OS is a genuinely huge program. Every design below is really just a different answer to "how do we keep something this big from turning into an unmanageable mess?"</p>
+    <span class="vi">1 OS đa dụng là 1 chương trình thực sự khổng lồ. Mọi kiểu thiết kế dưới đây thực chất chỉ là những câu trả lời khác nhau cho câu hỏi: "làm sao giữ cho thứ to như vậy không biến thành mớ hỗn độn không quản nổi?"</span>
+
+    <div class="illus">
+      <div class="emo">🏗️</div>
+      <div class="cap"><b>5 cách tổ chức 1 khối khổng lồ</b>Monolithic, layered, microkernel, modules, hybrid — mỗi cách trả lời khác nhau cho cùng 1 bài toán.</div>
+    </div>
+
+    <p class="en">The simplest structure has no structure at all — think MS-DOS, where the whole system is a large program with barely any internal boundaries. Slightly more organized is the <b>Monolithic structure</b> of the original UNIX, which split into just two separable parts: system programs, and the <b>kernel</b> itself.</p>
+    <span class="vi">Cấu trúc đơn giản nhất là không có cấu trúc gì cả — hãy nghĩ tới <b>MS-DOS</b>, nơi toàn bộ hệ thống chỉ là 1 chương trình lớn gần như không có ranh giới nội bộ nào. Có tổ chức hơn 1 chút là <b>cấu trúc Monolithic (khối liền)</b> của UNIX nguyên bản, chỉ tách ra 2 phần riêng biệt: chương trình hệ thống, và chính <b>kernel</b>.</span>
+
+    <div class="illus">
+      <div class="emo">🧱</div>
+      <div class="cap"><b>MS-DOS: không cấu trúc</b>gần như 1 khối chương trình lớn, ranh giới nội bộ rất mờ nhạt.</div>
+    </div>
+
+    <p class="en">That original UNIX kernel consists of everything below the system-call interface and above the physical hardware — providing the file system, CPU scheduling, memory management, and every other OS function, all inside one large function, for one privilege level.</p>
+    <span class="vi">Kernel UNIX nguyên bản đó gồm mọi thứ nằm dưới giao diện system-call và trên phần cứng vật lý — cung cấp hệ thống file, lập lịch CPU, quản lý bộ nhớ, và mọi chức năng OS khác, tất cả gói trong 1 khối chức năng lớn, chạy ở 1 mức đặc quyền duy nhất.</span>
+
+    <div class="stack">
+      <div class="layer users">(the users)</div>
+      <div class="arrow">↓</div>
+      <div class="layer">shells, commands, compilers, system libraries</div>
+      <div class="arrow">↓ system-call interface ↓</div>
+      <div class="layer hi">KERNEL <small>file system · CPU scheduling · memory mgmt · everything, one level</small></div>
+      <div class="arrow">↓ interface to hardware ↓</div>
+      <div class="layer hw">hardware</div>
+    </div>
+
+    <p class="en">Even "beyond simple," the Traditional UNIX System Structure was never fully layered: signal handling, character I/O, the file system, CPU scheduling, page replacement, demand paging, and virtual memory all sit together inside the same kernel blob, only loosely grouped for the diagram's sake.</p>
+    <span class="vi">Ngay cả khi đã "vượt qua đơn giản," <b>cấu trúc UNIX truyền thống</b> vẫn chưa bao giờ được phân lớp hoàn toàn: xử lý tín hiệu, I/O ký tự, hệ thống file, lập lịch CPU, thay trang, phân trang theo yêu cầu, và bộ nhớ ảo — tất cả nằm chung trong cùng 1 khối kernel, chỉ nhóm lại lỏng lẻo cho dễ vẽ sơ đồ.</span>
+
+    <div class="labeled-box">
+      <span class="lb-tag">Kernel</span>
+      <div class="core-grid">
+        <div class="core-box"><div class="core-label">Signals</div>terminal handling</div>
+        <div class="core-box"><div class="core-label">Char I/O</div>system, terminal drivers</div>
+        <div class="core-box"><div class="core-label">File system</div>disk &amp; tape drivers</div>
+        <div class="core-box"><div class="core-label">CPU sched.</div>page replacement</div>
+        <div class="core-box"><div class="core-label">Virtual mem.</div>demand paging</div>
+      </div>
+    </div>
+
+    <p class="en">Modern <b>Linux</b> follows a related monolithic-plus-modular design: applications sit on the standard C library (glibc), which crosses the system-call interface into a kernel containing file systems, networking (TCP/IP), CPU/memory management, and character/block devices, which then talk to hardware through device drivers.</p>
+    <span class="vi">Linux hiện đại theo 1 thiết kế liên quan: monolithic cộng thêm modular. Ứng dụng nằm trên thư viện C chuẩn (glibc), băng qua giao diện system-call vào 1 kernel chứa hệ thống file, mạng (TCP/IP), quản lý CPU/bộ nhớ, và thiết bị ký tự/khối, rồi các thứ đó nói chuyện với phần cứng qua device driver.</span>
+
+    <div class="stack">
+      <div class="layer apps">applications</div>
+      <div class="arrow">↓</div>
+      <div class="layer">glibc — standard C library</div>
+      <div class="arrow">↓ system-call interface ↓</div>
+      <div class="layer hi">kernel <small>file systems · networking (TCP/IP) · CPU/memory mgmt · devices</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer">device drivers</div>
+      <div class="arrow">↓</div>
+      <div class="layer hw">hardware</div>
+    </div>
+
+    <p class="en">The <b>Layered approach</b> divides the operating system into a number of layers (levels), each built on top of only the layers below it. Layer 0 is the hardware; the highest layer, N, is the user interface. With <b>modularity</b>, every layer is designed to use only the functions (operations) and services of the layers strictly below it — never above, and never skipping around.</p>
+    <span class="vi"><b>Cách tiếp cận phân lớp (Layered)</b> chia hệ điều hành thành nhiều lớp (tầng), mỗi tầng chỉ được xây trên các tầng bên dưới nó. Lớp 0 là phần cứng; lớp cao nhất, N, là giao diện người dùng. Với tính <b>modularity</b>, mỗi lớp được thiết kế để chỉ dùng chức năng (thao tác) và dịch vụ của các lớp nằm ngay bên dưới nó — không bao giờ dùng lớp trên, và không bao giờ nhảy cóc.</span>
+
+    <div class="rings-wrap">
+      <div class="rings">
+        <div class="ring r4"></div>
+        <div class="ring r3"></div>
+        <div class="ring r2"></div>
+        <div class="ring r1"><span>layer 0<br>hardware</span></div>
+      </div>
+      <div class="rings-legend">
+        <div class="rl-item"><span class="sw r4"></span>Layer N — user interface</div>
+        <div class="rl-item"><span class="sw r3"></span>Layer 2</div>
+        <div class="rl-item"><span class="sw r2"></span>Layer 1</div>
+        <div class="rl-item"><span class="sw r1"></span>Layer 0 — hardware</div>
+      </div>
+    </div>
+
+    <p class="en"><b>Microkernels</b> take the opposite instinct: move as much as possible <em>out</em> of the kernel and into user space, leaving only a minimal core inside — <b>Mach</b> is the classic example, and Mac OS X's kernel (<b>Darwin</b>) is partly based on it. Since the kernel and its user-space modules can no longer just call each other's functions directly, they communicate entirely via a <b>message-passing model</b> instead.</p>
+    <span class="vi"><b>Microkernel</b> đi theo hướng ngược lại: đưa càng nhiều thứ <em>ra khỏi</em> kernel càng tốt, chuyển vào user space, chỉ để lại 1 lõi tối thiểu bên trong — <b>Mach</b> là ví dụ kinh điển, và kernel của Mac OS X (<b>Darwin</b>) 1 phần dựa trên nó. Vì kernel và các module ở user space giờ không thể gọi thẳng hàm của nhau, chúng giao tiếp hoàn toàn qua <b>mô hình truyền thông điệp</b>.</span>
+
+    <div class="boundary-box">
+      <div class="boundary-half user">
+        <div class="role">User mode</div>
+        <div class="core-grid">
+          <div class="core-box">application program</div>
+          <div class="core-box">file system</div>
+          <div class="core-box">device driver</div>
+        </div>
+      </div>
+      <div class="boundary-line">⇅ <span class="rule"></span> messages <span class="rule"></span> ⇅</div>
+      <div class="boundary-half kernel">
+        <div class="role">Kernel mode</div>
+        <div class="core-grid">
+          <div class="core-box">interprocess communication</div>
+          <div class="core-box">memory management</div>
+          <div class="core-box">CPU scheduling</div>
+        </div>
+        <div style="margin-top:10px; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--teal-deep);">↑ microkernel ↑</div>
+      </div>
+    </div>
+
+    <p class="en">The benefits are real: a microkernel is easier to extend, easier to port to new hardware architectures, and — since less code runs with full kernel privileges — generally more secure and reliable. The detriment is just as real: constantly shuttling messages between user space and kernel space introduces genuine performance overhead compared to just calling a function directly inside one big kernel.</p>
+    <span class="vi">Lợi ích là có thật: microkernel dễ <b>mở rộng</b> hơn, dễ <b>chuyển (port)</b> sang kiến trúc phần cứng mới hơn, và — vì ít code chạy với đặc quyền kernel đầy đủ hơn — nhìn chung an toàn và đáng tin cậy hơn. Bất lợi cũng có thật: việc liên tục chuyển thông điệp qua lại giữa user space và kernel space tạo ra chi phí hiệu năng thật sự, so với việc chỉ gọi thẳng 1 hàm bên trong 1 kernel lớn.</span>
+
+    <div class="illus">
+      <div class="emo">⚡</div>
+      <div class="cap"><b>Đánh đổi</b>an toàn hơn, dễ mở rộng hơn — nhưng chậm hơn vì phải nhắn tin qua lại liên tục.</div>
+    </div>
+
+    <p class="en">Many modern OSes take a third route: <b>Loadable Kernel Modules (LKMs)</b>. The kernel uses an object-oriented approach where each core component is separate, and each talks to the others only through known, well-defined interfaces — every module is loadable into the kernel as needed. It's similar to layers, but noticeably more flexible, since modules can call each other more freely than strict layering allows. Linux and Solaris both use this approach.</p>
+    <span class="vi">Nhiều OS hiện đại đi theo hướng thứ ba: <b>Loadable Kernel Modules (LKM)</b> — module kernel có thể nạp được. Kernel dùng cách tiếp cận hướng đối tượng, mỗi thành phần lõi tách riêng, và mỗi thành phần chỉ nói chuyện với nhau qua giao diện đã biết rõ, được định nghĩa sẵn — mỗi module có thể nạp vào kernel khi cần. Nó giống layer, nhưng linh hoạt hơn rõ rệt, vì các module có thể gọi nhau tự do hơn so với phân lớp nghiêm ngặt. Cả Linux và Solaris đều dùng cách này.</span>
+
+    <div class="illus">
+      <div class="emo">🧩</div>
+      <div class="cap"><b>Loadable Kernel Module</b>giống layer, nhưng module có thể cắm vào/rút ra khỏi kernel bất cứ lúc nào cần.</div>
+    </div>
+
+    <p class="en">In practice, almost no modern OS is one pure model — most are <b>Hybrid systems</b> mixing several approaches to balance performance, security, and usability. Linux and Solaris are monolithic, plus modular for loading functionality dynamically. Windows is mostly monolithic, plus microkernel behavior for different "subsystem personalities." Apple's macOS is hybrid, layered, using Aqua UI and Cocoa on top — with a kernel underneath combining the Mach microkernel and BSD Unix parts, plus an I/O kit and dynamically loadable <b>kernel extensions</b>.</p>
+    <span class="vi">Trong thực tế, gần như không OS hiện đại nào là 1 mô hình thuần túy — hầu hết là <b>hệ lai (Hybrid)</b>, trộn nhiều cách tiếp cận để cân bằng hiệu năng, an ninh, và dễ dùng. Linux và Solaris là monolithic, cộng thêm modular để nạp chức năng động. Windows chủ yếu là monolithic, cộng thêm hành vi microkernel cho các "personality" hệ thống con khác nhau. macOS của Apple là hybrid, phân lớp, dùng Aqua UI và Cocoa ở trên — với kernel bên dưới kết hợp microkernel Mach và các phần BSD Unix, cộng thêm I/O kit và <b>kernel extension</b> nạp được linh động.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Linux / Solaris</div><p>Monolithic + Modular</p></div>
+      <div class="compare-box"><div class="ck">Windows</div><p>Monolithic + hành vi Microkernel</p></div>
+      <div class="compare-box"><div class="ck">macOS</div><p>Layered + Hybrid (Mach + BSD)</p></div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Monolithic</span><span class="rchip">Layered</span><span class="rchip">Microkernel</span>
+        <span class="rchip">Mach</span><span class="rchip">LKM</span><span class="rchip">Hybrid</span><span class="rchip">message passing</span>
+      </div>
+      <p class="rline">5 cấu trúc chính: Monolithic (1 khối) → Layered (vòng tròn/tầng) → Microkernel (lõi cực nhỏ + message passing) → Modules/LKM (module cắm được) → Hybrid (trộn nhiều cái). Hầu hết OS thật đều là Hybrid.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: REAL-WORLD OSES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-realworld" hidden>
+    <div class="panel-eyebrow">08 · Case studies</div>
+    <h2>Four structures you actually carry in your pocket</h2>
+    <p class="intro">Every idea from the last tab shows up, mixed together, inside the phone or laptop you're reading this on right now.</p>
+    <span class="vi">Mọi ý tưởng ở tab trước đều xuất hiện, trộn lẫn với nhau, ngay bên trong chiếc điện thoại hay laptop bạn đang đọc dòng này.</span>
+
+    <div class="illus">
+      <div class="emo">📱</div>
+      <div class="cap"><b>Lý thuyết hóa ra rất gần</b>macOS, iOS, Android — cả 3 đều là ví dụ sống của các kiểu kiến trúc vừa học.</div>
+    </div>
+
+    <p class="en">macOS and iOS share the same underlying structure, layered from top to bottom: applications sit on a user-experience layer (Aqua on macOS, Cocoa Touch on iOS), which sits on application frameworks, which sit on core frameworks, which finally sit on the kernel environment — <b>Darwin</b>.</p>
+    <span class="vi"><b>macOS và iOS</b> dùng chung 1 cấu trúc, phân lớp từ trên xuống: ứng dụng nằm trên lớp trải nghiệm người dùng (Aqua trên macOS, Cocoa Touch trên iOS), lớp đó nằm trên application framework, rồi tới core framework, và cuối cùng là môi trường kernel — <b>Darwin</b>.</span>
+
+    <div class="stack">
+      <div class="layer apps">applications</div>
+      <div class="arrow">↓</div>
+      <div class="layer">user experience <small>Aqua / Cocoa Touch</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer">application frameworks</div>
+      <div class="arrow">↓</div>
+      <div class="layer">core frameworks</div>
+      <div class="arrow">↓</div>
+      <div class="layer hi">kernel environment <small>Darwin</small></div>
+    </div>
+
+    <p class="en"><b>Darwin</b> itself is the clean hybrid example: applications sit on a library interface, which splits into <b>Mach traps</b> on one side and <b>BSD (POSIX) system calls</b> on the other — both routes lead into scheduling, IPC, and memory management, plus <span class="mono">iokit</span> and <span class="mono">kexts</span> (kernel extensions) for hardware, all inside the Mach kernel.</p>
+    <span class="vi"><b>Darwin</b> chính là ví dụ hybrid rõ ràng nhất: ứng dụng nằm trên 1 lớp giao diện thư viện, tách thành 2 nhánh — <b>Mach traps</b> 1 bên và <b>BSD (POSIX) system calls</b> bên kia — cả 2 đều dẫn vào lập lịch, IPC, và quản lý bộ nhớ, cộng thêm <span class="mono">iokit</span> và <span class="mono">kexts</span> (kernel extension) cho phần cứng, tất cả nằm trong Mach kernel.</span>
+
+    <div class="labeled-box">
+      <span class="lb-tag">Mach kernel</span>
+      <div class="core-grid">
+        <div class="core-box"><div class="core-label">Mach traps</div></div>
+        <div class="core-box"><div class="core-label">BSD syscalls</div>(POSIX)</div>
+      </div>
+      <div class="core-grid" style="margin-top:6px;">
+        <div class="core-box">scheduling</div>
+        <div class="core-box">IPC</div>
+        <div class="core-box">memory management</div>
+      </div>
+      <div class="core-grid" style="margin-top:6px;">
+        <div class="core-box">iokit</div>
+        <div class="core-box">kexts</div>
+      </div>
+    </div>
+
+    <p class="en"><b>iOS</b> is Apple's mobile OS for the iPhone and iPad — structured much like macOS but built for ARM CPUs, and it can't natively run macOS applications. From bottom to top it layers Core OS (the macOS-kernel-based foundation) up through Core Services, then Media Services for graphics/audio/video, capped by <b>Cocoa Touch</b> — the Objective-C API that developers actually write against.</p>
+    <span class="vi"><b>iOS</b> là hệ điều hành di động của Apple cho iPhone và iPad — cấu trúc rất giống macOS nhưng xây cho CPU ARM, và không chạy được ứng dụng macOS gốc. Từ dưới lên trên nó phân lớp: Core OS (nền tảng dựa trên kernel macOS) rồi tới Core Services, rồi Media Services cho đồ họa/âm thanh/video, trên cùng là <b>Cocoa Touch</b> — API Objective-C mà lập trình viên thực sự viết lên đó.</span>
+
+    <div class="stack">
+      <div class="layer apps">apps <small>Objective-C / Swift</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer hi">Cocoa Touch</div>
+      <div class="arrow">↓</div>
+      <div class="layer">Media Services <small>graphics/audio/video</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer">Core Services</div>
+      <div class="arrow">↓</div>
+      <div class="layer hw">Core OS <small>nền macOS-kernel</small></div>
+    </div>
+
+    <p class="en"><b>Android</b>, developed largely by Google under the <b>Open Handset Alliance</b>, is a free, open-source, Linux-based mobile platform. Its kernel is a modified Linux kernel handling process, memory, and device-driver management, plus power management tuned for mobile; sitting above it are core libraries and the <b>Dalvik virtual machine</b>, specifically designed for mobile devices with limited memory and CPU speed.</p>
+    <span class="vi"><b>Android</b>, phần lớn do Google phát triển dưới Open Handset Alliance, là 1 nền tảng di động mã nguồn mở, miễn phí, dựa trên Linux. Kernel của nó là 1 nhân Linux đã chỉnh sửa, lo quản lý tiến trình, bộ nhớ, device driver, cộng thêm quản lý điện năng riêng cho di động; nằm trên đó là các thư viện lõi và <b>máy ảo Dalvik</b>, được thiết kế riêng cho thiết bị di động có bộ nhớ và tốc độ CPU hạn chế.</span>
+
+    <div class="stack">
+      <div class="layer apps">applications <small>Java + Android API</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer">Android framework / API</div>
+      <div class="arrow">↓</div>
+      <div class="layer hi">Android runtime <small>core libraries + Dalvik VM</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer hw">modified Linux kernel</div>
+    </div>
+
+    <p class="en">Applications are written in Java using the Android API, compiled into bytecode, and turned into an executable that runs inside the Dalvik VM — never running as native machine code the way a compiled C program does. Android also bundles its own libraries: a version of <span class="mono">webkit</span> for browsers, <span class="mono">SQLite</span> for structured data, and libraries for multimedia playback, running on top of a smaller <span class="mono">libc</span> than a typical Linux distribution uses.</p>
+    <span class="vi">Ứng dụng được viết bằng Java dùng Android API, biên dịch thành bytecode, rồi biến thành 1 file thực thi chạy bên trong Dalvik VM — không bao giờ chạy dưới dạng mã máy gốc như 1 chương trình C đã biên dịch. Android còn kèm theo thư viện riêng: 1 phiên bản <span class="mono">webkit</span> cho trình duyệt, <span class="mono">SQLite</span> cho dữ liệu có cấu trúc, và thư viện phát đa phương tiện, chạy trên 1 <span class="mono">libc</span> nhỏ hơn so với bản Linux thông thường.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">Java source</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">bytecode</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">Dalvik VM</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Darwin</span><span class="rchip">Mach</span><span class="rchip">Cocoa Touch</span>
+        <span class="rchip">iOS</span><span class="rchip">Android</span><span class="rchip">Dalvik VM</span><span class="rchip">Open Handset Alliance</span>
+      </div>
+      <p class="rline">macOS/iOS = layered + Darwin (hybrid Mach/BSD) bên dưới. Android = Linux kernel đã chỉnh sửa + Dalvik VM chạy app Java.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: BUILD, BOOT & DEBUG -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-building" hidden>
+    <div class="panel-eyebrow">09 · Practice</div>
+    <h2>From source code to a tunable, running kernel</h2>
+    <p class="intro">Everything so far has been about structure on paper. This last stretch is what actually happens on a real machine — building the kernel, booting it, and then watching it work (or misbehave) once it's alive.</p>
+    <span class="vi">Mọi thứ từ đầu tới giờ chỉ là cấu trúc trên giấy. Chặng cuối này là những gì thực sự xảy ra trên 1 máy thật — build kernel, boot nó lên, rồi quan sát nó chạy (hay chạy sai) khi đã "sống".</span>
+
+    <div class="illus">
+      <div class="emo">⚙️</div>
+      <div class="cap"><b>Từ giấy ra máy thật</b>Source code → biên dịch → boot → theo dõi bằng log, trace, và các công cụ debug.</div>
+    </div>
+
+    <p class="en">Building a brand-new operating system generally follows the same handful of steps regardless of target: write the OS source code, configure it for the specific target system, compile that source, install the resulting OS, and boot the computer with the freshly built system.</p>
+    <span class="vi">Xây 1 hệ điều hành hoàn toàn mới nhìn chung theo cùng vài bước, bất kể hệ đích là gì: viết mã nguồn OS, cấu hình nó cho đúng hệ đích, biên dịch mã nguồn đó, cài đặt OS vừa build ra, rồi boot máy tính với hệ thống mới build.</span>
+
+    <div class="seqlist">
+      <div class="sitem"><span class="snum"></span><span class="stext">Write the operating-system source code</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Configure it for the specific target system</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Compile the OS</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Install the operating system</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Boot the computer with the new OS</span></div>
+    </div>
+
+    <p class="en">Building and booting Linux specifically makes those steps concrete: download the Linux source code from <span class="mono">kernel.org</span>, configure it with <span class="mono">make menuconfig</span>, then compile with <span class="mono">make</span> — which produces <b>vmlinuz</b>, the actual kernel image. Kernel modules are compiled separately via <span class="mono">make modules</span>, installed into that image with <span class="mono">make modules_install</span>, and the whole new kernel is finally installed onto the system with <span class="mono">make install</span>.</p>
+    <span class="vi">Build và boot Linux cụ thể sẽ làm rõ các bước đó: tải mã nguồn Linux từ <span class="mono">kernel.org</span>, cấu hình bằng <span class="mono">make menuconfig</span>, rồi biên dịch bằng <span class="mono">make</span> — cho ra <b>vmlinuz</b>, chính là ảnh kernel thật sự. Module kernel được biên dịch riêng qua <span class="mono">make modules</span>, cài vào ảnh đó bằng <span class="mono">make modules_install</span>, và cuối cùng cả kernel mới được cài vào hệ thống bằng <span class="mono">make install</span>.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body">
+        <div><span class="tm-prompt">$</span> make menuconfig</div>
+        <div><span class="tm-prompt">$</span> make</div>
+        <div class="tm-out">→ builds vmlinuz</div>
+        <div><span class="tm-prompt">$</span> make modules &amp;&amp; make modules_install</div>
+        <div><span class="tm-prompt">$</span> make install</div>
+      </div>
+    </div>
+
+    <p class="en">Once you reboot, the machine has to actually find and start that new kernel — the <b>system boot</b> sequence. It begins with a small piece of code called the <b>bootstrap loader</b>, stored in firmware such as the <b>BIOS</b> or, on newer machines, <b>UEFI</b>; its whole job is to locate the kernel, load it into memory, and start it running. Multiboot systems often use a boot manager like <b>GRUB</b>, which asks which kernel and options to load from possibly several disks and partitions.</p>
+    <span class="vi">Sau khi khởi động lại, máy phải thực sự tìm và chạy kernel mới đó — chuỗi <b>boot hệ thống</b>. Nó bắt đầu bằng 1 đoạn mã nhỏ gọi là <b>bootstrap loader</b>, nằm trong firmware như <b>BIOS</b>, hay trên máy đời mới hơn là <b>UEFI</b>; việc của nó chỉ là tìm kernel, nạp vào bộ nhớ, rồi khởi chạy. Hệ đa boot thường dùng 1 trình quản lý boot như <b>GRUB</b>, hỏi cần nạp kernel nào và tùy chọn gì, từ khả năng nhiều ổ đĩa và phân vùng khác nhau.</span>
+
+    <div class="seqlist">
+      <div class="sitem"><span class="snum"></span><span class="stext">Power on — CPU begins execution at a fixed hardware address</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Bootstrap loader (in BIOS/UEFI firmware) locates the kernel image</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Boot manager (e.g. GRUB) may ask which kernel/options to load</span></div>
+      <div class="sitem"><span class="snum"></span><span class="stext">Kernel is loaded into memory and begins running</span></div>
+    </div>
+
+    <p class="en">Once an OS is actually running, two related jobs never really stop: <b>debugging</b> (finding and fixing bugs) and <b>performance tuning</b> (removing <b>bottlenecks</b> so the system runs faster). Debugging leans on log files recording significant system events, and on trace listings of the most recent system calls a process made — both invaluable evidence when something goes wrong.</p>
+    <span class="vi">Một khi OS thực sự chạy, 2 việc liên quan không bao giờ thật sự dừng lại: <b>debug</b> (tìm và sửa lỗi) và <b>tinh chỉnh hiệu năng</b> (loại bỏ nút thắt cổ chai để hệ thống chạy nhanh hơn). Debug dựa vào file log ghi lại các sự kiện quan trọng của hệ thống, và các bản ghi trace liệt kê các system call gần nhất mà 1 tiến trình đã gọi — cả 2 đều là bằng chứng vô giá khi có sự cố xảy ra.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body">
+        <div class="tm-out">[12:03:11] process 4021 opened /etc/config</div>
+        <div class="tm-out">[12:03:12] syscall write() returned 0</div>
+      </div>
+    </div>
+
+    <p class="en">To improve performance, the OS itself must provide the means to compute and display measures of overall system behavior — familiar tools like the Linux <span class="mono">top</span> program or the Windows Task Manager give exactly that: a live view of CPU, memory, and process activity, so bottlenecks become visible instead of invisible.</p>
+    <span class="vi">Để cải thiện hiệu năng, chính OS phải cung cấp cách tính toán và hiển thị các số đo hành vi tổng thể của hệ thống — công cụ quen thuộc như chương trình <span class="mono">top</span> trên Linux hay Task Manager trên Windows cho đúng thứ đó: 1 góc nhìn trực tiếp về CPU, bộ nhớ, hoạt động tiến trình, để nút thắt cổ chai trở nên hiện hình thay vì vô hình.</span>
+
+    <div class="illus">
+      <div class="emo">📊</div>
+      <div class="cap"><b>top / Task Manager</b>góc nhìn sống về CPU, bộ nhớ, tiến trình — để thấy nút thắt cổ chai đang nằm ở đâu.</div>
+    </div>
+
+    <p class="en">Beyond simple monitoring, more advanced <b>profiling</b> tools sample a running program's instruction pointer at regular time intervals, building up a statistical picture of where the program actually spends its time. Several specific tools have become standard in the field: <b>strace</b> traces system calls a process makes, <b>gdb</b> is a source-level interactive debugger, <b>perf</b> collects a whole suite of Linux performance-counter statistics, and <b>tcpdump</b> captures network packets for inspection.</p>
+    <span class="vi">Xa hơn việc theo dõi đơn giản, công cụ <b>profiling</b> nâng cao hơn lấy mẫu con trỏ lệnh (instruction pointer) của chương trình đang chạy theo chu kỳ đều đặn, dựng nên 1 bức tranh thống kê cho biết chương trình thực sự tốn thời gian ở đâu. Vài công cụ cụ thể đã trở thành chuẩn trong ngành: <b>strace</b> ghi lại các system call mà 1 tiến trình gọi, <b>gdb</b> là trình debug tương tác ở mức mã nguồn, <b>perf</b> thu thập cả bộ số liệu performance-counter của Linux, và <b>tcpdump</b> bắt các gói tin mạng để soi xét.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">strace</div><p>Traces every system call a process makes — great for "what is this program actually asking the kernel for?"</p></div>
+      <div class="res-card"><div class="rk">gdb</div><p>Interactive, source-level debugger — step through code line by line, inspect variables.</p></div>
+      <div class="res-card"><div class="rk">perf</div><p>A whole collection of Linux performance-counter tools bundled together.</p></div>
+      <div class="res-card"><div class="rk">tcpdump</div><p>Captures raw network packets so you can inspect exactly what's being sent and received.</p></div>
+    </div>
+
+    <p class="en">The most powerful modern option is <b>BCC (BPF Compiler Collection)</b>: a rich toolkit for creating efficient tracing tools that span both user-level and kernel code in one session, built on the Linux kernel's <b>BPF</b> facility. A classic example script, <span class="mono">disksnoop.py</span>, traces every disk I/O request as it happens, in real time — a spiritual descendant of Solaris's earlier <b>DTrace</b> tracing framework.</p>
+    <span class="vi">Lựa chọn mạnh nhất hiện đại là <b>BCC (BPF Compiler Collection)</b>: 1 bộ công cụ phong phú để tạo ra công cụ trace hiệu quả, bao trùm cả code ở mức người dùng lẫn kernel trong cùng 1 phiên, xây trên cơ chế <b>BPF</b> của nhân Linux. 1 script ví dụ kinh điển, <span class="mono">disksnoop.py</span>, trace từng yêu cầu I/O đĩa ngay khi nó xảy ra, theo thời gian thực — có thể coi là hậu duệ tinh thần của framework trace <b>DTrace</b> trước đây trên Solaris.</span>
+
+    <div class="illus">
+      <div class="emo">🔬</div>
+      <div class="cap"><b>BCC / DTrace</b>trace trực tiếp, xuyên suốt cả user và kernel, ngay khi hệ thống đang chạy thật.</div>
+    </div>
+
+    <div class="note teal">
+      <b>Mẹo thi</b>
+      Phân biệt: log file / trace listing = ghi lại QUÁ KHỨ để soi sau; profiling = lấy mẫu ĐỊNH KỲ khi đang chạy để biết chương trình tốn thời gian ở đâu; BCC/DTrace = trace TRỰC TIẾP theo thời gian thực, xuyên cả user và kernel.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">vmlinuz</span><span class="rchip">bootstrap loader</span><span class="rchip">BIOS / UEFI</span><span class="rchip">GRUB</span>
+        <span class="rchip">profiling</span><span class="rchip">strace</span><span class="rchip">gdb</span><span class="rchip">perf</span><span class="rchip">BCC</span><span class="rchip">DTrace</span>
+      </div>
+      <p class="rline">Boot: bootstrap loader (BIOS/UEFI) → tìm kernel → (GRUB chọn kernel) → nạp và chạy. Debug/tune: log/trace (nhìn lại) vs profiling/BCC (theo dõi sống).</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: QUIZ -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 2</h2>
+    <p class="intro">Let's review what you've learned!</p>
+    <div class="quiz-score" id="quizScore">0 / 16 correct</div>
+    <div id="quizRoot"></div>
+  </section>
+
+  <footer>Xin chào, mình là admin. Gọi mình là Whis-san nhé!</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','osservices','interface','syscalls','synscall-types','sysprograms','design','structure','realworld','building','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch2-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "execution": ["Actually running a program's instructions, as opposed to it just sitting on disk.", "Thực sự chạy các lệnh của chương trình, khác với việc nó chỉ nằm im trên đĩa."],
+      "user interface (UI)": ["Whatever lets a human actually operate the system — CLI, GUI, or touch.", "Thứ cho phép con người thực sự thao tác hệ thống — CLI, GUI, hoặc cảm ứng."],
+      "program execution": ["Loading a program into memory, running it, and ending it normally or on error.", "Nạp chương trình vào bộ nhớ, chạy nó, rồi kết thúc bình thường hoặc do lỗi."],
+      "I/O operations": ["Reading/writing files or devices — normally forbidden to users directly, for safety.", "Đọc/ghi file hoặc thiết bị — thường cấm người dùng làm trực tiếp, vì an toàn."],
+      "file-system manipulation": ["Creating, deleting, reading, writing, searching files/directories and their permissions.", "Tạo, xóa, đọc, ghi, tìm file/thư mục và quản lý quyền truy cập của chúng."],
+      "communications": ["Exchanging information between processes, on one machine or across a network.", "Trao đổi thông tin giữa các tiến trình, trên 1 máy hay qua mạng."],
+      "shared memory": ["Two or more processes reading/writing the same memory region directly.", "Hai hay nhiều tiến trình đọc/ghi trực tiếp cùng 1 vùng bộ nhớ."],
+      "message passing": ["Processes exchange data as discrete messages, moved by the OS itself.", "Các tiến trình trao đổi dữ liệu dưới dạng thông điệp rời rạc, do chính OS di chuyển."],
+      "error detection": ["Constant OS-level watching for problems in CPU, memory, devices, or programs.", "OS liên tục theo dõi sự cố ở CPU, bộ nhớ, thiết bị, hay chương trình."],
+      "Resource allocation": ["Fairly assigning CPU, memory, storage and devices when many jobs compete.", "Phân chia công bằng CPU, bộ nhớ, lưu trữ, thiết bị khi nhiều job cùng cạnh tranh."],
+      "Logging": ["Tracking which users/processes use how much of which resource.", "Theo dõi người dùng/tiến trình nào dùng bao nhiêu tài nguyên nào."],
+      "accounting": ["Another name for logging resource usage — often tied to billing.", "Tên khác của việc ghi log sử dụng tài nguyên — thường gắn với tính phí."],
+      "Protection": ["Controlling access to resources so concurrent processes don't interfere.", "Kiểm soát quyền truy cập tài nguyên để các tiến trình song song không đụng nhau."],
+      "Security": ["Defending the system from outside attackers, via user authentication and more.", "Bảo vệ hệ thống khỏi kẻ tấn công từ bên ngoài, qua xác thực người dùng và hơn thế."],
+      "Command-Line Interface (CLI)": ["A text-only interface where the user types exact commands.", "Giao diện thuần văn bản, người dùng gõ đúng câu lệnh."],
+      "Graphical User Interface (GUI)": ["A mouse-driven desktop metaphor using icons and windows.", "Ẩn dụ desktop điều khiển bằng chuột, dùng icon và cửa sổ."],
+      "command interpreter": ["The program that reads and executes typed commands — usually the shell.", "Chương trình đọc và thực thi các lệnh được gõ vào — thường là shell."],
+      "shell": ["The common name for a command interpreter program.", "Tên thường gọi của 1 chương trình thông dịch lệnh."],
+      "system call": ["The programming interface to an OS service, the only real doorway into the kernel.", "Giao diện lập trình tới 1 dịch vụ OS, cửa duy nhất thật sự vào được kernel."],
+      "Application Programming Interface (API)": ["A high-level set of functions programs call instead of raw system calls.", "Tập hàm bậc cao mà chương trình gọi, thay vì gọi thẳng system call."],
+      "Win32 API": ["The main application programming interface for Microsoft Windows.", "API chính để lập trình ứng dụng cho Microsoft Windows."],
+      "POSIX API": ["The API standard used by virtually all UNIX, Linux, and Mac OS X systems.", "Chuẩn API dùng cho gần như mọi hệ UNIX, Linux, và Mac OS X."],
+      "Java API": ["The API for programs written to run on the Java Virtual Machine.", "API cho chương trình viết để chạy trên máy ảo Java (JVM)."],
+      "system call sequence": ["The full, granular chain of OS calls behind one simple task like copying a file.", "Chuỗi đầy đủ, chi tiết các lời gọi OS đứng sau 1 việc tưởng đơn giản như copy file."],
+      "system-call interface": ["The layer that maps a call number to the right kernel routine and invokes it.", "Lớp ánh xạ số hiệu lời gọi tới đúng hàm kernel và gọi thực thi nó."],
+      "index table": ["A table indexed by system-call number, used to find the right kernel routine.", "Bảng đánh chỉ số theo số hiệu system call, dùng để tìm đúng hàm kernel."],
+      "run-time support library": ["Compiler-bundled library code that quietly handles a system call's real implementation.", "Thư viện đi kèm trình biên dịch, âm thầm lo phần cài đặt thật của system call."],
+      "registers": ["The fastest way to pass system-call parameters — but limited in count.", "Cách nhanh nhất để truyền tham số system call — nhưng giới hạn về số lượng."],
+      "block": ["A table in memory holding parameters, with only its address passed in a register.", "Một bảng trong bộ nhớ chứa tham số, chỉ địa chỉ của nó được truyền qua thanh ghi."],
+      "stack": ["Parameters pushed on by the program and popped off by the OS — no size limit.", "Tham số được chương trình đẩy vào và OS lấy ra — không giới hạn kích thước."],
+      "message-passing model": ["Processes communicate by name (host/process), exchanging discrete messages.", "Các tiến trình giao tiếp qua tên (máy/tiến trình), trao đổi thông điệp rời rạc."],
+      "shared-memory model": ["Processes set up and access one common memory region to exchange data.", "Các tiến trình lập và truy cập chung 1 vùng bộ nhớ để trao đổi dữ liệu."],
+      "Standard C Library": ["The C library that wraps raw system calls in friendlier functions like printf().", "Thư viện C bọc các system call thô thành hàm thân thiện hơn như printf()."],
+      "Arduino": ["A hardware/software platform with essentially no OS — one program, loaded and run forever.", "Nền tảng phần cứng/phần mềm gần như không có OS — 1 chương trình, nạp vào và chạy mãi."],
+      "FreeBSD": ["A full, general-purpose Unix operating system variant.", "Một biến thể hệ điều hành Unix đầy đủ, đa dụng."],
+      "fork()": ["The Unix system call that creates a new process by duplicating the caller.", "System call của Unix tạo tiến trình mới bằng cách nhân bản tiến trình gọi nó."],
+      "exec()": ["Replaces a process's program image with a new one to actually run it.", "Thay thế hình ảnh chương trình của 1 tiến trình bằng chương trình mới để chạy nó."],
+      "System programs": ["Programs shipped with the OS that shape most users' whole idea of \u201cthe OS.\u201d", "Chương trình đi kèm OS, định hình gần như toàn bộ khái niệm \u201cOS\u201d trong đầu người dùng."],
+      "daemons": ["Background system programs that start at boot and keep running, usually in user mode.", "Chương trình hệ thống chạy nền, khởi động lúc boot, thường chạy ở chế độ người dùng."],
+      "linker": ["Combines object files and libraries into one single executable file.", "Gộp các object file và thư viện lại thành 1 file thực thi duy nhất."],
+      "loader": ["Brings an executable from disk into memory so it can actually run.", "Đưa 1 file thực thi từ đĩa vào bộ nhớ để nó thực sự chạy được."],
+      "relocatable object file": ["An object file deliberately designed to be loadable at any memory address.", "Object file được thiết kế cố ý để có thể nạp vào bất kỳ địa chỉ bộ nhớ nào."],
+      "relocation": ["Assigning final memory addresses and fixing up code/data to match them.", "Gán địa chỉ bộ nhớ cuối cùng và chỉnh code/dữ liệu cho khớp với địa chỉ đó."],
+      "dynamically linked libraries": ["Shared libraries loaded only when needed, instead of copied into every executable.", "Thư viện dùng chung, chỉ nạp khi cần, thay vì chép vào từng file thực thi."],
+      "DLLs": ["Windows' name for dynamically linked libraries.", "Tên gọi của Windows cho thư viện liên kết động."],
+      "Application Binary Interface (ABI)": ["The low-level contract a compiled program must follow to run on a given OS/CPU.", "Hợp đồng ở mức thấp mà chương trình đã biên dịch phải theo để chạy trên 1 OS/CPU cụ thể."],
+      "User goals": ["What users want from an OS: convenient, easy to learn, reliable, safe, fast.", "Điều người dùng muốn ở OS: tiện dụng, dễ học, đáng tin cậy, an toàn, nhanh."],
+      "System goals": ["What system designers want: easy to build/maintain, flexible, efficient.", "Điều người thiết kế hệ thống muốn: dễ xây/bảo trì, linh hoạt, hiệu quả."],
+      "policy": ["The decision of WHAT will be done — can change without touching the mechanism.", "Quyết định CÁI GÌ sẽ được làm — có thể đổi mà không cần đụng vào cơ chế."],
+      "mechanism": ["The implementation of HOW something is actually done.", "Phần hiện thực quyết định LÀM BẰNG CÁCH NÀO một việc thực sự xảy ra."],
+      "Monolithic structure": ["The whole kernel is one big program with no internal separation, one privilege level.", "Toàn bộ kernel là 1 chương trình lớn không tách biệt nội bộ, chạy 1 mức đặc quyền."],
+      "Layered approach": ["The OS split into layers, each using only the services of layers strictly below it.", "OS chia thành nhiều lớp, mỗi lớp chỉ dùng dịch vụ của các lớp nằm ngay bên dưới nó."],
+      "modularity": ["The discipline of a layer only depending on layers below it, never above.", "Nguyên tắc 1 lớp chỉ phụ thuộc lớp bên dưới nó, không bao giờ phụ thuộc lớp trên."],
+      "Microkernels": ["A design moving almost everything out of the kernel into user-space processes.", "Thiết kế đưa gần như mọi thứ ra khỏi kernel, thành các tiến trình ở user-space."],
+      "Mach": ["The classic microkernel design; part of the basis for macOS's Darwin kernel.", "Thiết kế microkernel kinh điển; là 1 phần nền tảng của kernel Darwin trong macOS."],
+      "Loadable Kernel Modules (LKMs)": ["Independent, pluggable kernel components loaded in as needed.", "Thành phần kernel độc lập, có thể cắm vào và nạp khi cần."],
+      "Hybrid systems": ["Real-world OSes that mix monolithic, layered, microkernel, and modular ideas.", "OS ngoài đời trộn lẫn ý tưởng monolithic, layered, microkernel, và modular."],
+      "kernel extensions": ["Dynamically loadable modules that extend macOS's kernel, similar to Linux's LKMs.", "Module có thể nạp động để mở rộng kernel macOS, tương tự LKM của Linux."],
+      "Darwin": ["The open-source, hybrid Mach/BSD kernel underlying macOS and iOS.", "Kernel mã nguồn mở, hybrid Mach/BSD, làm nền cho macOS và iOS."],
+      "Mach traps": ["The low-level system-call route into Darwin's Mach microkernel core.", "Đường system call ở mức thấp đi vào lõi microkernel Mach của Darwin."],
+      "BSD (POSIX) system calls": ["The Unix-style syscall route into Darwin, alongside Mach traps.", "Đường system call kiểu Unix vào Darwin, song song với Mach traps."],
+      "Cocoa Touch": ["The Objective-C application framework developers use to build iOS apps.", "Framework ứng dụng Objective-C mà lập trình viên dùng để xây app iOS."],
+      "Android": ["Google's open-source, Linux-based mobile operating system.", "Hệ điều hành di động mã nguồn mở, dựa trên Linux, của Google."],
+      "Dalvik virtual machine": ["The runtime Android apps execute in, tuned for low-memory mobile devices.", "Máy ảo runtime mà app Android chạy bên trong, tối ưu cho thiết bị di động ít bộ nhớ."],
+      "Open Handset Alliance": ["The industry group, led largely by Google, behind Android's development.", "Liên minh các hãng công nghệ, chủ yếu do Google dẫn dắt, đứng sau phát triển Android."],
+      "vmlinuz": ["The actual compiled Linux kernel image produced by the build process.", "Ảnh kernel Linux đã biên dịch thật sự, do quá trình build tạo ra."],
+      "bootstrap loader": ["Small firmware code that locates, loads, and starts the kernel at power-on.", "Đoạn mã firmware nhỏ, tìm, nạp, và khởi chạy kernel ngay khi bật máy."],
+      "BIOS": ["Older PC firmware standard that stores the bootstrap loader.", "Chuẩn firmware PC đời cũ, lưu trữ bootstrap loader."],
+      "UEFI": ["The modern replacement for BIOS firmware on most current PCs.", "Chuẩn firmware hiện đại thay thế BIOS trên hầu hết PC hiện nay."],
+      "GRUB": ["A popular boot manager letting you pick which kernel/options to load.", "1 trình quản lý boot phổ biến, cho chọn kernel/tùy chọn nào để nạp."],
+      "debugging": ["The ongoing process of finding and fixing bugs in a running system.", "Quá trình liên tục tìm và sửa lỗi trong 1 hệ thống đang chạy."],
+      "profiling": ["Sampling a running program's instruction pointer periodically to see where time goes.", "Lấy mẫu định kỳ con trỏ lệnh của chương trình đang chạy để biết thời gian tiêu tốn ở đâu."],
+      "bottlenecks": ["The specific points slowing an entire system down, worth finding and removing.", "Những điểm cụ thể làm chậm cả hệ thống, đáng để tìm ra và loại bỏ."],
+      "strace": ["A Linux tool that traces every system call a process makes.", "Công cụ Linux trace lại từng system call mà 1 tiến trình thực hiện."],
+      "gdb": ["The standard interactive, source-level debugger on Unix-like systems.", "Trình debug tương tác, mức mã nguồn, chuẩn trên các hệ giống Unix."],
+      "perf": ["A bundled collection of Linux performance-measurement and profiling tools.", "Bộ công cụ đo hiệu năng và profiling của Linux, đóng gói chung."],
+      "tcpdump": ["A tool that captures and displays network packets for inspection.", "Công cụ bắt và hiển thị gói tin mạng để kiểm tra."],
+      "BCC (BPF Compiler Collection)": ["A toolkit for building efficient tracing tools spanning user and kernel code.", "Bộ công cụ để xây công cụ trace hiệu quả, bao trùm cả code người dùng lẫn kernel."],
+      "BPF": ["The Linux kernel facility BCC's tracing tools are built on top of.", "Cơ chế trong nhân Linux mà các công cụ trace của BCC được xây dựa trên."],
+      "DTrace": ["Solaris's earlier, influential dynamic tracing framework.", "Framework trace động, có ảnh hưởng lớn, ra đời trước trên Solaris."],
+      "kernel": ["The core OS component always resident in memory, doing the actual low-level work.", "Thành phần lõi của OS, luôn thường trực trong bộ nhớ, làm việc ở mức thấp thật sự."],
+      "Linux": ["A free, open-source, Unix-like kernel and OS family used from servers to phones.", "Một họ kernel/OS mã nguồn mở, giống Unix, dùng từ server cho tới điện thoại."],
+      "iOS": ["Apple's mobile operating system for iPhone and iPad, built on the same base as macOS.", "Hệ điều hành di động của Apple cho iPhone và iPad, xây trên cùng nền tảng với macOS."],
+      "system boot": ["The full sequence from power-on to a fully loaded, running kernel.", "Toàn bộ chuỗi từ lúc bật máy tới khi kernel được nạp đầy đủ và chạy."],
+      "performance tuning": ["Improving a running system by finding and removing its bottlenecks.", "Cải thiện hệ thống đang chạy bằng cách tìm và loại bỏ các nút thắt cổ chai."]
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    document.querySelectorAll('p.en b').forEach(el => {
+      const text = el.textContent.trim();
+      if (!G[text]) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = text;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+    { q:"Which of these belongs to the \u201cconvenience for the user\u201d group of OS services, not the \u201csystem efficiency\u201d group?", opts:["Resource allocation","Logging / accounting","File-system manipulation","Protection and security"], correct:2, exp:"UI, program execution, I/O operations, file-system manipulation, communications, and error detection are the 6 user-facing services. The other 3 (resource allocation, logging, protection & security) exist for the system's own efficiency." },
+    { q:"A shell fetches a command from the user and executes it. What is this shell an example of?", opts:["A system call","A command interpreter","An API","A device driver"], correct:1, exp:"The shell is the classic example of a command interpreter, implementing the CLI." },
+    { q:"Which was the first environment to introduce the GUI desktop metaphor?", opts:["Microsoft Windows","Apple Macintosh","Xerox PARC","Google Android"], correct:2, exp:"The GUI metaphor was invented at Xerox PARC before Apple or Microsoft popularized it." },
+    { q:"What is the correct order of layers when a program requests an OS service?", opts:["Kernel → API → system call → program","Program → API → system call → kernel","Program → system call → API → kernel","API → program → kernel → system call"], correct:1, exp:"A program calls a high-level API, which invokes the actual system call, which the kernel executes." },
+    { q:"In the file-copy system-call sequence, what happens if the requested output filename already exists?", opts:["It overwrites silently","The program aborts","It appends to the file","It renames the old file automatically"], correct:1, exp:"Per the example sequence, creating the output file aborts if a file with that name already exists." },
+    { q:"Which parameter-passing method has no limit on the number or length of parameters?", opts:["Registers only","Stack (push/pop)","A fixed set of 4 registers","None of these methods"], correct:1, exp:"Both the block/table method and the stack method avoid limiting parameter count or length — registers alone can run out of room." },
+    { q:"Linux and Solaris typically pass system-call parameters using which method?", opts:["Pushing them onto the stack","Registers only","A block or table in memory, with its address passed in a register","Global shared variables"], correct:2, exp:"Linux and Solaris pass parameters via a memory block/table, with only its address given in a register." },
+    { q:"Which system call category includes \u201cwait for time,\u201d \u201ccreate process,\u201d and \u201callocate memory\u201d?", opts:["File management","Device management","Process control","Information maintenance"], correct:2, exp:"Creating/terminating processes, waiting, and memory allocation are all Process control system calls." },
+    { q:"On FreeBSD, what does the shell do after fork()ing to run your typed command?", opts:["It terminates immediately","It calls exec() to load and run the program, then waits for it","It ignores the new process entirely","It converts the command into a system daemon"], correct:1, exp:"The shell forks, execs the program into the new process, and waits for it to finish, checking the exit code." },
+    { q:"What best describes a relocatable object file?", opts:["A file that can only run on the exact machine that compiled it","A compiled file designed so it can be loaded at any physical memory address","A file format only used by Windows DLLs","The final linked executable ready to run"], correct:1, exp:"Relocatable object files are deliberately built to be loadable anywhere in memory; the linker/loader fix up addresses later." },
+    { q:"Separating policy from mechanism means:", opts:["Only the mechanism can ever change","Deciding WHAT should happen can change without rewriting HOW it's done","Policy and mechanism must always be implemented in the same function","Mechanism decides what will be done"], correct:1, exp:"Policy answers \u201cwhat,\u201d mechanism answers \u201chow\u201d — keeping them separate lets you change policy (e.g. a timer length) without touching the mechanism enforcing it." },
+    { q:"Which OS structure keeps almost everything, including the file system and device drivers, running as user-space processes outside a minimal core?", opts:["Monolithic","Layered","Microkernel","Simple structure (like MS-DOS)"], correct:2, exp:"Microkernels (e.g. Mach) push nearly everything into user space, communicating with the tiny kernel via message passing." },
+    { q:"In the Layered approach, which layer is the user interface?", opts:["Layer 0","The middle layer, always","Layer N, the topmost layer","There is no fixed layer for it"], correct:2, exp:"Layer 0 is hardware; the highest layer, N, is the user interface — each layer only uses the services of layers below it." },
+    { q:"Darwin, the kernel behind macOS and iOS, is best described as:", opts:["A pure monolithic UNIX kernel","A pure microkernel with nothing else mixed in","A hybrid combining the Mach microkernel with BSD (POSIX) parts","A Java virtual machine running on top of Linux"], correct:2, exp:"Darwin combines Mach traps and BSD/POSIX system calls — a hybrid, not a pure model." },
+    { q:"What does the Dalvik virtual machine do in Android's architecture?", opts:["Manages Wi-Fi hardware directly","Runs the compiled bytecode of Android apps, tuned for limited mobile resources","Replaces the Linux kernel entirely","Compiles C++ directly to native machine code"], correct:1, exp:"Android apps are compiled to bytecode and run inside the Dalvik VM, purpose-built for low-memory, low-CPU mobile devices." },
+    { q:"What is the role of the bootstrap loader at power-on?", opts:["It runs the user's login shell","It locates the kernel image, loads it into memory, and starts it running","It formats the hard disk","It compiles the OS from source every boot"], correct:1, exp:"Small firmware code (in BIOS/UEFI) whose only job is finding, loading, and starting the kernel." }
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  let correctCount = 0;
+
+  QUIZ.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q';
+    qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+    const optsWrap = document.createElement('div');
+    item.opts.forEach((optText, oi) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.type = 'button';
+      b.textContent = optText;
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        const allOpts = optsWrap.querySelectorAll('.opt');
+        allOpts.forEach(o => o.disabled = true);
+        if (oi === item.correct){
+          b.classList.add('correct');
+          correctCount++;
+        } else {
+          b.classList.add('wrong');
+          allOpts[item.correct].classList.add('correct');
+        }
+        quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+        const ex = qDiv.querySelector('.explain');
+        ex.classList.add('show');
+      });
+      optsWrap.appendChild(b);
+    });
+    qDiv.appendChild(optsWrap);
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.textContent = item.exp;
+    qDiv.appendChild(explain);
+    quizRoot.appendChild(qDiv);
+  });
+</script>
+</body>
+</html>

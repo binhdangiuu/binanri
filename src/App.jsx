@@ -155,7 +155,7 @@ const subjects = [
         type: "course",
         documents: [
   { id: "ch1", title: "Chapter 1 - Introduction", file: "/lectures/os-ch1-lecture.html" },
-  { id: "ch2", title: "Chapter 2 - Operating System Structures", file: null },
+  { id: "ch2", title: "Chapter 2 - Operating System Structures", file: "/lectures/os-ch2-lecture.html" },
   { id: "ch3", title: "Chapter 3 - Process", file: null },
   { id: "ch4", title: "Chapter 4 - Threads", file: null },
   { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: null },
@@ -511,7 +511,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 28/08/2026 • 17:44:17 (Lecture Notes 01 fixed)
+            Last Updated: 29/08/2026 • 18:30:51 (Lecture Notes 02 added)
           </p>
         </div>
 
