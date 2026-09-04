@@ -218,6 +218,11 @@
   .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
   .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
 
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
   footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
 
   @media (max-width:640px){
@@ -268,15 +273,15 @@
   </section>
 
   <div class="grid-cards">
-    <div class="card user" data-goto="osservices"><div class="kicker">01 · OS Services</div><h3>OS Services</h3><p>The 9 things every OS promises — split into "for the user" and "for itself."</p></div>
-    <div class="card user" data-goto="interface"><div class="kicker">02 · User Interface</div><h3>CLI, GUI &amp; Touch</h3><p>Three ways humans actually reach those services.</p></div>
-    <div class="card kernel" data-goto="syscalls"><div class="kicker">03 · System Calls</div><h3>System Calls</h3><p>The only legal doorway from user code into the kernel.</p></div>
-    <div class="card kernel" data-goto="synscall-types"><div class="kicker">04 · Types & Examples</div><h3>Types &amp; Examples</h3><p>Six categories of system call, plus real OSes using them.</p></div>
-    <div class="card user" data-goto="sysprograms"><div class="kicker">05 · System Programs</div><h3>System Programs</h3><p>What most users actually think "the OS" is — plus linkers &amp; loaders.</p></div>
-    <div class="card kernel" data-goto="design"><div class="kicker">06 · Design & Implementation</div><h3>Design &amp; Implementation</h3><p>User goals vs. system goals, and policy vs. mechanism.</p></div>
-    <div class="card kernel" data-goto="structure"><div class="kicker">07 · OS Structure</div><h3>OS Structure</h3><p>Monolithic, layered, microkernel, modular, hybrid.</p></div>
-    <div class="card user" data-goto="realworld"><div class="kicker">08 · Real-World OSes</div><h3>Real-World OSes</h3><p>macOS, Darwin, iOS and Android's actual structure.</p></div>
-    <div class="card kernel" data-goto="building"><div class="kicker">09 · Build, Boot & Debug</div><h3>Build, Boot &amp; Debug</h3><p>From source code to a running, tunable kernel.</p></div>
+    <div class="card user" data-goto="osservices"><div class="kicker">01 · Services</div><h3>OS Services</h3><p>The 9 things every OS promises — split into "for the user" and "for itself."</p></div>
+    <div class="card user" data-goto="interface"><div class="kicker">02 · Interface</div><h3>CLI, GUI &amp; Touch</h3><p>Three ways humans actually reach those services.</p></div>
+    <div class="card kernel" data-goto="syscalls"><div class="kicker">03 · Mechanism</div><h3>System Calls</h3><p>The only legal doorway from user code into the kernel.</p></div>
+    <div class="card kernel" data-goto="synscall-types"><div class="kicker">04 · Catalog</div><h3>Types &amp; Examples</h3><p>Six categories of system call, plus real OSes using them.</p></div>
+    <div class="card user" data-goto="sysprograms"><div class="kicker">05 · Tooling</div><h3>System Programs</h3><p>What most users actually think "the OS" is — plus linkers &amp; loaders.</p></div>
+    <div class="card kernel" data-goto="design"><div class="kicker">06 · Philosophy</div><h3>Design &amp; Implementation</h3><p>User goals vs. system goals, and policy vs. mechanism.</p></div>
+    <div class="card kernel" data-goto="structure"><div class="kicker">07 · Architecture</div><h3>OS Structure</h3><p>Monolithic, layered, microkernel, modular, hybrid.</p></div>
+    <div class="card user" data-goto="realworld"><div class="kicker">08 · Case studies</div><h3>Real-World OSes</h3><p>macOS, Darwin, iOS and Android's actual structure.</p></div>
+    <div class="card kernel" data-goto="building"><div class="kicker">09 · Practice</div><h3>Build, Boot &amp; Debug</h3><p>From source code to a running, tunable kernel.</p></div>
   </div>
 
   <div class="outline">
@@ -293,15 +298,16 @@
   <!-- TAB: OS SERVICES -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-osservices" hidden>
-    <div class="panel-eyebrow">01 · Services</div>
-    <h2>What does an OS actually promise?</h2>
-    <p class="intro">Every service below exists to answer one of two questions: "does this make life easier for the person/program using the machine?" or "does this keep the machine itself running well for everyone sharing it?"</p>
-    <span class="vi">Mỗi dịch vụ dưới đây tồn tại để trả lời 1 trong 2 câu hỏi: "cái này có làm cuộc sống người dùng/chương trình dễ hơn không?" hay "cái này có giúp máy chạy tốt cho tất cả mọi người đang dùng chung không?"</span>
-
-    <div class="illus">
-      <div class="emo">🧭</div>
-      <div class="cap"><b>2 nhóm dịch vụ</b>Convenience cho người dùng, Efficiency cho chính hệ thống — mọi mục trong tab này thuộc 1 trong 2 nhóm đó.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🧰</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Services</div>
+        <h2>What does an OS actually promise?</h2>
+        <span class="vi">OS thực sự hứa hẹn điều gì?</span>
+      </div>
     </div>
+    <p class="intro">Every service below exists to answer one of two questions: "does this make life easier for the person/program using the machine?" or "does this keep the machine itself running well for everyone sharing it?"</p>
+    <span class="vi">Mỗi dịch vụ dưới đây tồn tại để trả lời 1 trong 2 câu hỏi: "cái này có làm cuộc sống người/chương trình dùng máy dễ hơn không?", hay "cái này có giúp chính cái máy chạy tốt cho mọi người đang dùng chung không?"</span>
 
     <div class="hook">
       <b>Before the list — take a guess:</b> when you double-click a file to open it, how many separate "services" does the OS quietly perform before you see anything on screen?
@@ -377,15 +383,16 @@
   <!-- TAB: USER INTERFACE -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-interface" hidden>
-    <div class="panel-eyebrow">02 · Interface</div>
-    <h2>Three doorways into the same services</h2>
-    <p class="intro">CLI, GUI, and touch are just different skins over the exact same underlying OS services from the last tab — none of them is "more powerful," they just fit different hands and different devices.</p>
-    <span class="vi">CLI, GUI, và cảm ứng chỉ là những lớp vỏ khác nhau phủ lên đúng những dịch vụ OS y hệt ở tab trước — không cái nào "mạnh hơn" cái nào, chúng chỉ hợp với những đôi tay và thiết bị khác nhau.</span>
-
-    <div class="illus">
-      <div class="emo">🖱️</div>
-      <div class="cap"><b>Cùng 1 dịch vụ, 3 lớp vỏ</b>CLI gõ lệnh, GUI nhấp chuột, cảm ứng chạm/vuốt — bên dưới vẫn gọi đúng các OS service như nhau.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🖱️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Interface</div>
+        <h2>Three doorways into the same services</h2>
+        <span class="vi">Ba cánh cửa dẫn tới cùng 1 tập dịch vụ</span>
+      </div>
     </div>
+    <p class="intro">CLI, GUI, and touch are just different skins over the exact same underlying OS services from the last tab — none of them is "more powerful," they just fit different hands and different devices.</p>
+    <span class="vi">CLI, GUI, và cảm ứng chỉ là những lớp vỏ khác nhau phủ lên đúng cùng 1 tập dịch vụ OS ở tab trước — không cái nào "mạnh hơn" cái nào, chúng chỉ hợp với những đôi tay và thiết bị khác nhau.</span>
 
     <p class="en">The <b>command interpreter</b> — often called a <b>shell</b> — is what actually implements the <b>Command-Line Interface (CLI)</b>. Sometimes it lives inside the kernel; more often it's just a regular system program, and a system may even ship several shells to choose from. Its whole job, over and over, is: fetch a command from the user, execute it.</p>
     <span class="vi">Trình thông dịch lệnh — hay còn gọi là <b>shell</b> — chính là thứ hiện thực <b>giao diện dòng lệnh (CLI)</b>. Đôi khi nó nằm trong kernel; thường thì chỉ là 1 chương trình hệ thống bình thường, và 1 hệ thống còn có thể có sẵn nhiều shell để chọn. Việc của nó, lặp đi lặp lại, chỉ là: lấy 1 lệnh từ người dùng, rồi thực thi nó.</span>
@@ -450,15 +457,16 @@
   <!-- TAB: SYSTEM CALLS -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-syscalls" hidden>
-    <div class="panel-eyebrow">03 · Mechanism</div>
-    <h2>The only legal doorway into the kernel</h2>
-    <p class="intro">Every service from tab 1 — reading a file, allocating memory, talking to a device — ultimately has to cross the user/kernel boundary from Chapter 1. A system call is that crossing point, and nothing else.</p>
-    <span class="vi">Mọi dịch vụ ở tab 1 — đọc file, cấp phát bộ nhớ, giao tiếp thiết bị — cuối cùng đều phải vượt qua ranh giới user/kernel đã học ở Chương 1. System call chính là điểm vượt ranh giới đó, không hơn không kém.</span>
-
-    <div class="illus">
-      <div class="emo">🚪</div>
-      <div class="cap"><b>Cánh cửa duy nhất</b>Mọi yêu cầu từ user space đều phải đi qua đúng 1 cửa này để chạm được vào kernel.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🚪</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Mechanism</div>
+        <h2>The only legal doorway into the kernel</h2>
+        <span class="vi">Cánh cửa hợp pháp duy nhất vào kernel</span>
+      </div>
     </div>
+    <p class="intro">Every service from tab 1 — reading a file, allocating memory, talking to a device — ultimately has to cross the user/kernel boundary from Chapter 1. A system call is that crossing point, and nothing else.</p>
+    <span class="vi">Mọi dịch vụ ở tab 1 — đọc file, cấp phát bộ nhớ, nói chuyện với thiết bị — cuối cùng đều phải băng qua ranh giới user/kernel đã học ở Chương 1. System call chính là điểm băng qua đó, không hơn không kém.</span>
 
     <p class="en">A <b>system call</b> is the programming interface to the services the OS provides, typically written in a high-level language like C or C++. Programs mostly don't invoke system calls directly — instead they go through a high-level <b>Application Programming Interface (API)</b>. The three most common are <b>Win32 API</b> for Windows, <b>POSIX API</b> for virtually all UNIX, Linux, and Mac OS X systems, and <b>Java API</b> for programs running on the JVM.</p>
     <span class="vi"><b>System call</b> là <b>giao diện lập trình</b> tới các dịch vụ mà OS cung cấp, thường viết bằng ngôn ngữ bậc cao như C hoặc C++. Chương trình phần lớn không gọi system call trực tiếp — mà đi qua 1 <b>Giao diện lập trình ứng dụng (API)</b> bậc cao. 3 API phổ biến nhất: <b>Win32 API</b> cho Windows, <b>POSIX API</b> cho hầu hết mọi hệ UNIX, Linux, Mac OS X, và <b>Java API</b> cho chương trình chạy trên JVM.</span>
@@ -530,15 +538,16 @@
   <!-- TAB: TYPES & EXAMPLES -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-synscall-types" hidden>
-    <div class="panel-eyebrow">04 · Catalog</div>
-    <h2>Six categories, two very different operating systems</h2>
-    <p class="intro">Every system call an OS offers falls into one of six buckets. Same buckets, wildly different spelling from one OS to the next — which is exactly why the API layer from the last tab exists.</p>
-    <span class="vi">Mọi system call mà 1 OS cung cấp đều rơi vào 1 trong 6 nhóm. Cùng 6 nhóm đó, nhưng cách viết cụ thể lại khác hoàn toàn giữa các OS — và đó chính xác là lý do lớp API ở tab trước tồn tại.</span>
-
-    <div class="illus">
-      <div class="emo">🗂️</div>
-      <div class="cap"><b>6 ngăn, vô số OS</b>Windows và Unix chia sẻ đúng 6 nhóm chức năng này, chỉ khác tên hàm gọi ra.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🗂️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · Catalog</div>
+        <h2>Six categories, two very different operating systems</h2>
+        <span class="vi">6 loại system call, 2 hệ điều hành rất khác nhau</span>
+      </div>
     </div>
+    <p class="intro">Every system call an OS offers falls into one of six buckets. Same buckets, wildly different spelling from one OS to the next — which is exactly why the API layer from the last tab exists.</p>
+    <span class="vi">Mọi system call mà 1 OS cung cấp đều rơi vào 1 trong 6 nhóm. Cùng 6 nhóm đó, nhưng tên hàm cụ thể lại khác nhau hoàn toàn giữa các OS — và đó chính xác là lý do lớp API ở tab trước tồn tại.</span>
 
     <div class="res-grid">
       <div class="res-card"><div class="rk">Process control</div><p>create/terminate process, load, execute, wait for time or event, allocate memory, <span class="mono">debugger</span> for bugs, <span class="mono">locks</span> for shared data.</p></div>
@@ -622,15 +631,16 @@
   <!-- TAB: SYSTEM PROGRAMS -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-sysprograms" hidden>
-    <div class="panel-eyebrow">05 · Tooling</div>
-    <h2>What most users actually think "the OS" is</h2>
-    <p class="intro">Ask a random user what their operating system does, and they'll describe a file explorer, a compiler, a background updater — not raw system calls. That's because most people's whole view of the OS is really its system programs.</p>
-    <span class="vi">Hỏi bất kỳ người dùng nào OS của họ làm gì, họ sẽ mô tả trình quản lý file, trình biên dịch, bộ cập nhật chạy nền — chứ không phải system call thô. Vì với đa số, cái họ nghĩ là "OS" thực chất chính là các system program này.</span>
-
-    <div class="illus">
-      <div class="emo">🧰</div>
-      <div class="cap"><b>Cái người dùng thực sự thấy</b>Không phải system call vô hình, mà là công cụ hữu hình: file explorer, compiler, daemon chạy nền.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🧱</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · Tooling</div>
+        <h2>What most users actually think "the OS" is</h2>
+        <span class="vi">Thứ mà hầu hết người dùng nghĩ chính là "OS"</span>
+      </div>
     </div>
+    <p class="intro">Ask a random user what their operating system does, and they'll describe a file explorer, a compiler, a background updater — not raw system calls. That's because most people's whole view of the OS is really its system programs.</p>
+    <span class="vi">Hỏi 1 người dùng bất kỳ OS của họ làm gì, họ sẽ mô tả trình quản lý file, trình biên dịch, bộ cập nhật chạy nền — chứ không phải system call thô. Vì cái nhìn của hầu hết mọi người về OS thực ra chính là các chương trình hệ thống của nó.</span>
 
     <p class="en"><b>System programs</b> provide a convenient environment for program development and execution, and they're what defines most users' view of the operating system — not the actual, invisible system calls underneath. They fall into several categories: file manipulation, status information, programming-language support, program loading and execution, communications, background services, and application programs.</p>
     <span class="vi"><b>Chương trình hệ thống</b> tạo ra môi trường thuận tiện để phát triển và chạy chương trình, và chính chúng mới định hình cái nhìn của hầu hết người dùng về hệ điều hành — chứ không phải các system call vô hình bên dưới. Chúng chia thành vài loại: thao tác file, thông tin trạng thái, hỗ trợ ngôn ngữ lập trình, nạp và chạy chương trình, giao tiếp, dịch vụ nền, và chương trình ứng dụng.</span>
@@ -707,15 +717,16 @@
   <!-- TAB: DESIGN & IMPLEMENTATION -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-design" hidden>
-    <div class="panel-eyebrow">06 · Philosophy</div>
-    <h2>Designing an OS is not a solved problem</h2>
-    <p class="intro">There's no single "correct" way to build an operating system — every design starts from a set of goals and specifications, shaped heavily by the hardware chosen and the type of system being built.</p>
-    <span class="vi">Không có 1 cách "đúng" duy nhất để xây 1 hệ điều hành — mọi thiết kế đều bắt đầu từ 1 tập mục tiêu và đặc tả, bị chi phối rất nhiều bởi phần cứng được chọn và loại hệ thống đang xây.</span>
-
-    <div class="illus">
-      <div class="emo">📐</div>
-      <div class="cap"><b>Không có đáp án đúng duy nhất</b>Mục tiêu người dùng và mục tiêu hệ thống thường kéo về 2 hướng khác nhau, buộc phải đánh đổi.</div>
+    <div class="panel-head">
+      <span class="panel-icon">⚖️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Philosophy</div>
+        <h2>Designing an OS is not a solved problem</h2>
+        <span class="vi">Thiết kế OS chưa bao giờ là bài toán có đáp án cố định</span>
+      </div>
     </div>
+    <p class="intro">There's no single "correct" way to build an operating system — every design starts from a set of goals and specifications, shaped heavily by the hardware chosen and the type of system being built.</p>
+    <span class="vi">Không có 1 cách "đúng duy nhất" để xây 1 hệ điều hành — mọi thiết kế đều bắt đầu từ 1 bộ mục tiêu và đặc tả, bị định hình mạnh bởi phần cứng được chọn và loại hệ thống đang xây.</span>
 
     <p class="en">The very first fork in the road is whose goals come first. <b>User goals</b> ask the system to be convenient to use, easy to learn, reliable, safe, and fast. <b>System goals</b> ask something almost opposite: that the OS be easy to design, implement, and maintain, as well as flexible, reliable, error-free, and efficient.</p>
     <span class="vi">Ngã rẽ đầu tiên là mục tiêu của ai được ưu tiên trước. <b>Mục tiêu người dùng</b> đòi hỏi hệ thống thuận tiện khi dùng, dễ học, đáng tin cậy, an toàn, và nhanh. <b>Mục tiêu hệ thống</b> đòi hỏi gần như ngược lại: OS phải dễ thiết kế, dễ hiện thực, dễ bảo trì, cùng với linh hoạt, đáng tin cậy, không lỗi, và hiệu quả.</span>
@@ -771,15 +782,16 @@
   <!-- TAB: OS STRUCTURE -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-structure" hidden>
-    <div class="panel-eyebrow">07 · Architecture</div>
-    <h2>Five ways to organize one giant program</h2>
-    <p class="intro">A general-purpose OS is a genuinely huge program. Every design below is really just a different answer to "how do we keep something this big from turning into an unmanageable mess?"</p>
-    <span class="vi">1 OS đa dụng là 1 chương trình thực sự khổng lồ. Mọi kiểu thiết kế dưới đây thực chất chỉ là những câu trả lời khác nhau cho câu hỏi: "làm sao giữ cho thứ to như vậy không biến thành mớ hỗn độn không quản nổi?"</span>
-
-    <div class="illus">
-      <div class="emo">🏗️</div>
-      <div class="cap"><b>5 cách tổ chức 1 khối khổng lồ</b>Monolithic, layered, microkernel, modules, hybrid — mỗi cách trả lời khác nhau cho cùng 1 bài toán.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🏛️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Architecture</div>
+        <h2>Five ways to organize one giant program</h2>
+        <span class="vi">5 cách tổ chức 1 chương trình khổng lồ</span>
+      </div>
     </div>
+    <p class="intro">A general-purpose OS is a genuinely huge program. Every design below is really just a different answer to "how do we keep something this big from turning into an unmanageable mess?"</p>
+    <span class="vi">1 OS đa dụng thực sự là 1 chương trình cực lớn. Mỗi thiết kế dưới đây chỉ là 1 câu trả lời khác nhau cho câu hỏi "làm sao giữ cho thứ to thế này không biến thành mớ hỗn độn không quản nổi?"</span>
 
     <p class="en">The simplest structure has no structure at all — think MS-DOS, where the whole system is a large program with barely any internal boundaries. Slightly more organized is the <b>Monolithic structure</b> of the original UNIX, which split into just two separable parts: system programs, and the <b>kernel</b> itself.</p>
     <span class="vi">Cấu trúc đơn giản nhất là không có cấu trúc gì cả — hãy nghĩ tới <b>MS-DOS</b>, nơi toàn bộ hệ thống chỉ là 1 chương trình lớn gần như không có ranh giới nội bộ nào. Có tổ chức hơn 1 chút là <b>cấu trúc Monolithic (khối liền)</b> của UNIX nguyên bản, chỉ tách ra 2 phần riêng biệt: chương trình hệ thống, và chính <b>kernel</b>.</span>
@@ -912,15 +924,16 @@
   <!-- TAB: REAL-WORLD OSES -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-realworld" hidden>
-    <div class="panel-eyebrow">08 · Case studies</div>
-    <h2>Four structures you actually carry in your pocket</h2>
-    <p class="intro">Every idea from the last tab shows up, mixed together, inside the phone or laptop you're reading this on right now.</p>
-    <span class="vi">Mọi ý tưởng ở tab trước đều xuất hiện, trộn lẫn với nhau, ngay bên trong chiếc điện thoại hay laptop bạn đang đọc dòng này.</span>
-
-    <div class="illus">
-      <div class="emo">📱</div>
-      <div class="cap"><b>Lý thuyết hóa ra rất gần</b>macOS, iOS, Android — cả 3 đều là ví dụ sống của các kiểu kiến trúc vừa học.</div>
+    <div class="panel-head">
+      <span class="panel-icon">📱</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">08 · Case studies</div>
+        <h2>Four structures you actually carry in your pocket</h2>
+        <span class="vi">4 kiến trúc bạn đang cầm trong túi mỗi ngày</span>
+      </div>
     </div>
+    <p class="intro">Every idea from the last tab shows up, mixed together, inside the phone or laptop you're reading this on right now.</p>
+    <span class="vi">Mọi ý tưởng ở tab trước đều xuất hiện, trộn lẫn với nhau, ngay bên trong chiếc điện thoại hay laptop mà bạn đang đọc bài này.</span>
 
     <p class="en">macOS and iOS share the same underlying structure, layered from top to bottom: applications sit on a user-experience layer (Aqua on macOS, Cocoa Touch on iOS), which sits on application frameworks, which sit on core frameworks, which finally sit on the kernel environment — <b>Darwin</b>.</p>
     <span class="vi"><b>macOS và iOS</b> dùng chung 1 cấu trúc, phân lớp từ trên xuống: ứng dụng nằm trên lớp trải nghiệm người dùng (Aqua trên macOS, Cocoa Touch trên iOS), lớp đó nằm trên application framework, rồi tới core framework, và cuối cùng là môi trường kernel — <b>Darwin</b>.</span>
@@ -1010,15 +1023,16 @@
   <!-- TAB: BUILD, BOOT & DEBUG -->
   <!-- ============================================================ -->
   <section class="tab-panel" id="panel-building" hidden>
-    <div class="panel-eyebrow">09 · Practice</div>
-    <h2>From source code to a tunable, running kernel</h2>
-    <p class="intro">Everything so far has been about structure on paper. This last stretch is what actually happens on a real machine — building the kernel, booting it, and then watching it work (or misbehave) once it's alive.</p>
-    <span class="vi">Mọi thứ từ đầu tới giờ chỉ là cấu trúc trên giấy. Chặng cuối này là những gì thực sự xảy ra trên 1 máy thật — build kernel, boot nó lên, rồi quan sát nó chạy (hay chạy sai) khi đã "sống".</span>
-
-    <div class="illus">
-      <div class="emo">⚙️</div>
-      <div class="cap"><b>Từ giấy ra máy thật</b>Source code → biên dịch → boot → theo dõi bằng log, trace, và các công cụ debug.</div>
+    <div class="panel-head">
+      <span class="panel-icon">🛠️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">09 · Practice</div>
+        <h2>From source code to a tunable, running kernel</h2>
+        <span class="vi">Từ mã nguồn tới 1 kernel chạy được và tinh chỉnh được</span>
+      </div>
     </div>
+    <p class="intro">Everything so far has been about structure on paper. This last stretch is what actually happens on a real machine — building the kernel, booting it, and then watching it work (or misbehave) once it's alive.</p>
+    <span class="vi">Mọi thứ từ đầu tới giờ mới chỉ là cấu trúc trên giấy. Chặng cuối này là những gì thực sự xảy ra trên 1 máy thật — build kernel, boot nó lên, rồi quan sát nó chạy (hoặc chạy sai) khi đã "sống".</span>
 
     <p class="en">Building a brand-new operating system generally follows the same handful of steps regardless of target: write the OS source code, configure it for the specific target system, compile that source, install the resulting OS, and boot the computer with the freshly built system.</p>
     <span class="vi">Xây 1 hệ điều hành hoàn toàn mới nhìn chung theo cùng vài bước, bất kể hệ đích là gì: viết mã nguồn OS, cấu hình nó cho đúng hệ đích, biên dịch mã nguồn đó, cài đặt OS vừa build ra, rồi boot máy tính với hệ thống mới build.</span>
@@ -1113,8 +1127,8 @@
   <section class="tab-panel" id="panel-quiz" hidden>
     <div class="panel-eyebrow">Self-check</div>
     <h2>MCQ Quiz — Chapter 2</h2>
-    <p class="intro">Let's review what you've learned!</p>
-    <div class="quiz-score" id="quizScore">0 / 16 correct</div>
+    <p class="intro">16 câu ôn tập</p>
+    <div class="quiz-score" id="quizScore">0 / 16 đã trả lời đúng</div>
     <div id="quizRoot"></div>
   </section>
 
