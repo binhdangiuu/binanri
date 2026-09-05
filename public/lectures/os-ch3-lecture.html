@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2017 · Chapter 3 — Processes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#2E7FC1; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); display:flex; align-items:center; gap:6px; padding:12px 14px; flex-wrap:wrap; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper); color:#fff; border-color:var(--copper); }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:18ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:20px; margin:36px 0 10px; }
+
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:440px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; max-width:560px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:10px; padding:14px 10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:18px 20px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 20px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  p.en .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  p.en .term:hover, p.en .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  p.en .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .rings-wrap{ display:flex; align-items:center; gap:28px; margin:10px 0 24px; flex-wrap:wrap; }
+  .rings{ position:relative; width:210px; height:210px; flex-shrink:0; }
+  .rings .ring{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:1px solid var(--grid); display:flex; align-items:center; justify-content:center; }
+  .rings .r4{ width:210px; height:210px; background:var(--paper-deep); }
+  .rings .r3{ width:158px; height:158px; background:#FFE0EE; }
+  .rings .r2{ width:106px; height:106px; background:var(--teal-tint); }
+  .rings .r1{ width:54px; height:54px; background:var(--teal); }
+  .rings .r1 span{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:#fff; text-align:center; font-weight:600; line-height:1.2; }
+  .rings-legend{ display:flex; flex-direction:column; gap:9px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .rl-item{ display:flex; align-items:center; gap:8px; }
+  .rl-item .sw{ width:14px; height:14px; border-radius:50%; border:1px solid var(--grid); flex-shrink:0; }
+  .rl-item .sw.r4{ background:var(--paper-deep); } .rl-item .sw.r3{ background:#FFE0EE; } .rl-item .sw.r2{ background:var(--teal-tint); } .rl-item .sw.r1{ background:var(--teal); }
+
+  .seqlist{ margin:6px 0 24px; max-width:540px; counter-reset:seq; }
+  .seqlist .sitem{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px dashed var(--grid); }
+  .seqlist .sitem:first-child{ border-top:none; }
+  .seqlist .snum{ counter-increment:seq; flex-shrink:0; width:23px; height:23px; border-radius:50%; background:var(--copper); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:11.5px; display:flex; align-items:center; justify-content:center; font-weight:700; margin-top:1px; }
+  .seqlist .snum::before{ content: counter(seq); }
+  .seqlist .stext{ font-family:"IBM Plex Mono",monospace; font-size:12.8px; color:var(--ink); padding-top:2px; line-height:1.5; }
+
+  .term-mock{ max-width:460px; margin:6px 0 24px; border-radius:10px; overflow:hidden; box-shadow:0 12px 28px -16px rgba(74,46,64,.45); }
+  .term-mock .tm-bar{ background:#2b2530; padding:8px 12px; display:flex; gap:6px; }
+  .term-mock .tm-dot{ width:10px; height:10px; border-radius:50%; }
+  .term-mock .tm-dot.r{ background:#ff5f56; } .term-mock .tm-dot.y{ background:#ffbd2e; } .term-mock .tm-dot.g{ background:#27c93f; }
+  .term-mock .tm-body{ background:#241f29; color:#e8dce3; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:14px 16px; line-height:1.75; white-space:pre-wrap; }
+  .term-mock .tm-prompt{ color:#7FC4F0; }
+  .term-mock .tm-out{ color:#c7a8bb; }
+  .term-mock .tm-com{ color:#7bd88f; }
+
+  .phone-mock{ max-width:220px; margin:6px auto 24px; border:8px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--paper-deep); }
+  .phone-mock .pm-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .phone-mock .pm-icon{ aspect-ratio:1; border-radius:12px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .phone-mock .pm-icon:nth-child(3n+2){ background:var(--copper-tint); }
+
+  table.cmp-table{ width:100%; max-width:600px; border-collapse:collapse; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .tree{ display:flex; flex-direction:column; align-items:center; gap:6px; margin:10px 0 24px; }
+  .tree .trow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .tree .tnode{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:8px 12px; border-radius:8px; border:1px solid var(--grid); background:var(--paper-deep); text-align:center; }
+  .tree .tnode.root{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .tree .tconn{ color:var(--ink-soft); font-size:12px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .rings-wrap{ justify-content:center; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2017 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="concept">Process Concept</button>
+    <button class="tab-btn" data-tab="scheduling">Scheduling</button>
+    <button class="tab-btn" data-tab="operations">Create &amp; Terminate</button>
+    <button class="tab-btn" data-tab="ipc">IPC &amp; Shared Memory</button>
+    <button class="tab-btn" data-tab="messaging">Message Passing</button>
+    <button class="tab-btn" data-tab="examples">IPC Examples</button>
+    <button class="tab-btn" data-tab="clientserver">Pipes &amp; Client-Server</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 3 · Processes</span>
+    <h1>A program is just a file — a <em>process</em> is the file, alive</h1>
+    <p class="lede">Chapter 2 showed the doorway (system calls) into the kernel. This chapter looks at who's actually knocking: the process — how the OS represents it, schedules it, creates and kills it, and lets two of them talk to each other.</p>
+    <span class="vi">Chương 2 cho thấy cánh cửa (system call) vào kernel. Chương này nhìn vào ai đang gõ cửa: tiến trình (process) — cách OS biểu diễn nó, lập lịch nó, tạo và kết thúc nó, và cách hai tiến trình nói chuyện được với nhau.</span>
+    <div class="tagrow">
+      <span class="tag user">Process lifecycle: new → ready → running → waiting → terminated</span>
+      <span class="tag kernel">IPC: shared memory vs message passing</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="concept"><div class="kicker">01 · Concept</div><h3>Process Concept</h3><p>Text, data, heap, stack, PCB, and the states a process moves through.</p></div>
+    <div class="card kernel" data-goto="scheduling"><div class="kicker">02 · Scheduling</div><h3>Process Scheduling</h3><p>Ready/wait queues, context switch, mobile multitasking.</p></div>
+    <div class="card user" data-goto="operations"><div class="kicker">03 · Lifecycle</div><h3>Create &amp; Terminate</h3><p>fork(), exec(), wait(), zombies, orphans, cascading termination.</p></div>
+    <div class="card kernel" data-goto="ipc"><div class="kicker">04 · IPC</div><h3>IPC &amp; Shared Memory</h3><p>Cooperating processes, the producer–consumer problem.</p></div>
+    <div class="card user" data-goto="messaging"><div class="kicker">05 · IPC</div><h3>Message Passing</h3><p>Direct vs indirect links, blocking vs non-blocking, buffering.</p></div>
+    <div class="card kernel" data-goto="examples"><div class="kicker">06 · Case studies</div><h3>IPC Examples</h3><p>POSIX shared memory, Mach messages, Windows LPC.</p></div>
+    <div class="card user" data-goto="clientserver"><div class="kicker">07 · Networked IPC</div><h3>Pipes &amp; Client-Server</h3><p>Ordinary &amp; named pipes, sockets, and Remote Procedure Calls.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.3</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Identify the parts of a process</h4><p>How they're represented and scheduled inside an operating system.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Creation &amp; termination</h4><p>Writing programs that use the right system calls for these operations.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Compare IPC models</h4><p>Shared memory vs message passing, and why processes cooperate.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 4</div><div><h4>Client-server communication</h4><p>Sockets and Remote Procedure Calls (RPC) across a network.</p></div></div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: PROCESS CONCEPT -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-concept" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧬</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Concept</div>
+        <h2>What exactly is a process?</h2>
+        <span class="vi">Tiến trình thực sự là cái gì?</span>
+      </div>
+    </div>
+    <p class="intro">An operating system runs a variety of programs, and every one of them runs as a process — but "process" means something much more specific than "program."</p>
+    <span class="vi">Hệ điều hành chạy đủ loại chương trình, và mỗi chương trình chạy dưới dạng 1 tiến trình — nhưng "tiến trình" (process) mang nghĩa cụ thể hơn nhiều so với "chương trình" (program).</span>
+
+    <div class="hook">
+      <b>Before the list — take a guess:</b> if two students double-click the exact same game.exe at the same time, is that one process or two?
+      <span class="vi">Trước khi đọc tiếp — thử đoán: nếu 2 sinh viên cùng nhấp đúp vào đúng file game.exe cùng lúc, đó là 1 tiến trình hay 2?</span>
+    </div>
+
+    <p class="en">A <b>process</b> is a program in execution, and its execution must progress in strictly <b>sequential fashion</b>. A process is more than just the code: it has multiple parts — the <b>text section</b> (the program code itself), the current activity (<b>program counter</b> and <b>processor registers</b>), a <b>stack section</b> holding temporary data such as function parameters, return addresses and local variables, a <b>data section</b> holding global variables, and a <b>heap section</b> holding memory allocated dynamically at run time.</p>
+    <span class="vi">Một <b>tiến trình</b> là 1 chương trình đang chạy, và việc thực thi của nó phải tiến triển theo <b>trình tự tuần tự</b>. Tiến trình không chỉ là đoạn mã: nó có nhiều phần — <b>vùng text</b> (chính mã chương trình), hoạt động hiện tại (<b>program counter</b> và <b>thanh ghi CPU</b>), <b>vùng stack</b> chứa dữ liệu tạm như tham số hàm, địa chỉ trả về, biến cục bộ, <b>vùng data</b> chứa biến toàn cục, và <b>vùng heap</b> chứa bộ nhớ cấp phát động lúc chạy.</span>
+
+    <div class="stack">
+      <div class="layer hi">max — stack <small>tham số, địa chỉ trả về, biến cục bộ</small></div>
+      <div class="arrow">↓ grows down / heap grows up ↑</div>
+      <div class="layer os">heap <small>cấp phát động (malloc)</small></div>
+      <div class="layer">data <small>biến toàn cục</small></div>
+      <div class="layer">0 — text <small>mã chương trình</small></div>
+    </div>
+
+    <p class="en">A <b>program</b> is a <b>passive</b> entity, just an executable file sitting on disk; a <b>process</b> is an <b>active</b> entity — a program becomes a process the moment its executable file is loaded into memory. Execution can start via a GUI mouse-click, typing its name at a command line (CLI), and so on. Crucially, <b>one program can be several processes</b> at once — think of many users running the same text editor simultaneously; each gets its own process, its own stack, heap and data, even though the text section (the code) may be shared.</p>
+    <span class="vi">Một <b>chương trình</b> là thực thể <b>thụ động</b>, chỉ là 1 file thực thi nằm trên đĩa; 1 <b>tiến trình</b> là thực thể <b>chủ động</b> — chương trình trở thành tiến trình ngay khi file thực thi được nạp vào bộ nhớ. Có thể khởi chạy qua nhấp chuột GUI, gõ tên ở dòng lệnh (CLI), v.v. Quan trọng: <b>1 chương trình có thể là nhiều tiến trình</b> cùng lúc — hình dung nhiều người dùng cùng chạy 1 trình soạn thảo văn bản; mỗi người có tiến trình riêng, stack/heap/data riêng, dù vùng text (mã) có thể dùng chung.</span>
+
+    <div class="illus">
+      <div class="emo">👥</div>
+      <div class="cap"><b>Quay lại câu đố đầu bài</b>2 sinh viên chạy cùng game.exe → 2 process khác nhau, mỗi cái có PCB, stack, heap, data riêng, dù text (code) có thể share.</div>
+    </div>
+
+    <p class="en">As a process executes, it changes <b>state</b>: <b>New</b> — the process is being created; <b>Running</b> — instructions are actually being executed; <b>Waiting</b> — the process is waiting for some event to occur (like I/O completion); <b>Ready</b> — the process is waiting to be assigned to a processor; and <b>Terminated</b> — the process has finished execution.</p>
+    <span class="vi">Khi 1 tiến trình chạy, nó đổi <b>trạng thái</b>: <b>New</b> — đang được tạo; <b>Running</b> — lệnh đang thực thi; <b>Waiting</b> — đang chờ 1 sự kiện xảy ra (như hoàn tất I/O); <b>Ready</b> — đang chờ được cấp CPU; và <b>Terminated</b> — đã chạy xong.</span>
+
+    <svg viewBox="0 0 640 300" style="max-width:640px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <defs>
+        <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8A5F78"/></marker>
+      </defs>
+      <ellipse cx="70" cy="70" rx="55" ry="32" fill="#FFF6FB" stroke="#FFD3E8"/><text x="70" y="75" text-anchor="middle" font-size="13" fill="#4A2E40">new</text>
+      <ellipse cx="270" cy="150" rx="55" ry="32" fill="#7FC4F026" stroke="#4FA4DD"/><text x="270" y="155" text-anchor="middle" font-size="13" fill="#2E7FC1">ready</text>
+      <ellipse cx="470" cy="70" rx="55" ry="32" fill="#7FC4F026" stroke="#4FA4DD"/><text x="470" y="75" text-anchor="middle" font-size="13" fill="#2E7FC1">running</text>
+      <ellipse cx="270" cy="240" rx="55" ry="32" fill="#FFF6FB" stroke="#FFD3E8"/><text x="270" y="245" text-anchor="middle" font-size="13" fill="#4A2E40">waiting</text>
+      <ellipse cx="590" cy="150" rx="45" ry="32" fill="#FF6FA51f" stroke="#E8407F"/><text x="590" y="155" text-anchor="middle" font-size="12" fill="#C22A63">terminated</text>
+      <path d="M120,80 Q190,120 220,138" fill="none" stroke="#8A5F78" marker-end="url(#arrow3)"/><text x="130" y="105" font-size="10.5" fill="#8A5F78">admitted</text>
+      <path d="M320,140 Q400,105 420,90" fill="none" stroke="#8A5F78" marker-end="url(#arrow3)"/><text x="335" y="105" font-size="10.5" fill="#8A5F78">scheduler dispatch</text>
+      <path d="M440,95 Q380,155 325,158" fill="none" stroke="#8A5F78" marker-end="url(#arrow3)"/><text x="430" y="130" font-size="10.5" fill="#8A5F78">interrupt</text>
+      <path d="M440,90 Q350,210 325,225" fill="none" stroke="#8A5F78" marker-end="url(#arrow3)"/><text x="400" y="200" font-size="10.5" fill="#8A5F78">I/O or event wait</text>
+      <path d="M320,220 Q400,175 325,155" fill="none" stroke="#8A5F78" marker-end="url(#arrow3)"/><text x="330" y="200" font-size="10.5" fill="#8A5F78">I/O or event completion</text>
+      <path d="M520,90 Q570,110 585,120" fill="none" stroke="#8A5F78" marker-end="url(#arrow3)"/><text x="510" y="105" font-size="10.5" fill="#8A5F78">exit</text>
+    </svg>
+    <div class="illus">
+      <div class="emo">⏳</div>
+      <div class="cap"><b>Đọc sơ đồ</b>new → (admitted) → ready ⇄ (dispatch/interrupt) → running → (exit) → terminated; running ⇄ waiting qua I/O or event wait / completion.</div>
+    </div>
+
+    <p class="en">Every process the OS tracks is represented by a <b>Process Control Block (PCB)</b>, also called a <b>Task Control Block (TCB)</b>. It bundles together: <b>process state</b>, <b>process number</b> (its identity), <b>program counter</b>, <b>CPU registers</b>, <b>CPU-scheduling info</b> (priorities, queue pointers), <b>memory-management information</b>, <b>accounting information</b> (CPU used, elapsed clock time, time limits), and <b>I/O status information</b> (devices allocated, list of open files).</p>
+    <span class="vi">Mọi tiến trình mà OS theo dõi được biểu diễn bằng <b>Process Control Block (PCB)</b>, còn gọi <b>Task Control Block (TCB)</b>. Nó gom lại: <b>trạng thái tiến trình</b>, <b>số hiệu tiến trình</b> (định danh), <b>program counter</b>, <b>thanh ghi CPU</b>, <b>thông tin lập lịch CPU</b> (độ ưu tiên, con trỏ hàng đợi), <b>thông tin quản lý bộ nhớ</b>, <b>thông tin kế toán</b> (CPU đã dùng, thời gian trôi qua, giới hạn thời gian), và <b>thông tin trạng thái I/O</b> (thiết bị được cấp, danh sách file đang mở).</span>
+
+    <div class="labeled-box">
+      <span class="lb-tag">PCB fields</span>
+      <div class="flowchip">process state</div><div class="flowchip">process number</div><div class="flowchip">program counter</div>
+      <div class="flowchip">CPU registers</div><div class="flowchip">CPU scheduling info</div><div class="flowchip">memory-management info</div>
+      <div class="flowchip">accounting info</div><div class="flowchip">I/O status info</div>
+    </div>
+
+    <p class="en">So far a process has had a <b>single thread</b> of execution — one program counter. A <b>thread</b> gives a process <b>multiple program counters</b>, so multiple locations of the same process can execute at once; this just means the PCB now has to store multiple program counters instead of one. In Linux, every process is represented by the C structure <span class="mono">task_struct</span>, holding its pid, state, scheduling time_slice, a pointer to its parent, a list of its children, its open files, and its address space.</p>
+    <span class="vi">Từ đầu tới giờ, 1 tiến trình chỉ có <b>1 luồng (thread)</b> thực thi — 1 program counter. 1 <b>thread</b> cho tiến trình <b>nhiều program counter</b>, để nhiều vị trí của cùng 1 tiến trình chạy song song; chỉ đơn giản là PCB giờ phải lưu nhiều program counter thay vì 1. Trong Linux, mỗi tiến trình được biểu diễn bằng struct C <span class="mono">task_struct</span>, chứa pid, trạng thái, time_slice lập lịch, con trỏ tới tiến trình cha, danh sách con, file đang mở, và không gian địa chỉ.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* struct task_struct (simplified) */</span>
+pid_t  t_pid;              <span class="tm-out">/* process identifier */</span>
+long   state;              <span class="tm-out">/* state of the process */</span>
+unsigned int time_slice;   <span class="tm-out">/* scheduling information */</span>
+struct task_struct *parent;<span class="tm-out">/* this process's parent */</span>
+struct list_head children; <span class="tm-out">/* this process's children */</span>
+struct files_struct *files;<span class="tm-out">/* list of open files */</span>
+struct mm_struct *mm;      <span class="tm-out">/* address space */</span></div>
+    </div>
+
+    <p class="en">Zooming into one real C program shows exactly where each variable lands. <b>argc/argv</b> and the <b>stack</b> sit at high memory (parameters, local variables like <span class="mono">int y = 15;</span> live here); the <b>heap</b> grows upward from the middle (anything returned by <span class="mono">malloc()</span> lands here); <b>uninitialized data</b> and <b>initialized data</b> (global variables) sit below that; and the <b>text</b> section — the compiled instructions of <span class="mono">main()</span> itself — sits at the very bottom, low memory.</p>
+    <span class="vi">Soi vào 1 chương trình C thật cho thấy chính xác mỗi biến nằm ở đâu. <b>argc/argv</b> và <b>stack</b> nằm ở vùng nhớ cao (tham số, biến cục bộ như <span class="mono">int y = 15;</span> nằm ở đây); <b>heap</b> lớn dần lên từ giữa (bất cứ gì <span class="mono">malloc()</span> trả về đều nằm ở đây); <b>uninitialized data</b> và <b>initialized data</b> (biến toàn cục) nằm dưới đó; và vùng <b>text</b> — mã lệnh đã biên dịch của chính <span class="mono">main()</span> — nằm ở đáy, vùng nhớ thấp nhất.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Memory Layout of a C Program */</span>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int x;              <span class="tm-out">// uninitialized data</span>
+int y = 15;          <span class="tm-out">// initialized data</span>
+
+int main(int argc, char *argv[])   <span class="tm-out">// high memory: argc, argv</span>
+{
+    int *values;      <span class="tm-out">// stack: local pointer</span>
+    int i;            <span class="tm-out">// stack: local variable</span>
+
+    values = (int *)malloc(sizeof(int)*5);  <span class="tm-out">// heap</span>
+
+    for (i = 0; i &lt; 5; i++)
+        values[i] = i;
+
+    return 0;         <span class="tm-out">// text: instructions live here, low memory</span>
+}</div>
+    </div>
+
+    <div class="stack">
+      <div class="layer hi">high memory — argc, argv</div>
+      <div class="layer hi">stack <small>int *values; int i;</small></div>
+      <div class="arrow">↕ vùng trống ở giữa</div>
+      <div class="layer os">heap <small>values = malloc(...)</small></div>
+      <div class="layer">uninitialized data <small>int x;</small></div>
+      <div class="layer">initialized data <small>int y = 15;</small></div>
+      <div class="layer">low memory — text <small>mã lệnh main()</small></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Nhớ đúng thứ tự trạng thái: New → Ready → Running → (Waiting ⇄ Ready) → Terminated. Đề hay bẫy chuyển thẳng Waiting → Running (SAI) — từ Waiting luôn phải quay lại Ready trước. Về memory layout: biến toàn cục có gán giá trị = initialized data; chưa gán = uninitialized data; malloc() luôn nằm ở heap, không phải stack.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">text/data/heap/stack</span><span class="rchip">program vs process</span><span class="rchip">5 trạng thái</span>
+        <span class="rchip">PCB / TCB</span><span class="rchip">thread</span><span class="rchip">task_struct</span><span class="rchip">memory layout of C program</span>
+      </div>
+      <p class="rline">Program = thụ động (file); Process = chủ động (đang chạy, có PCB riêng). 5 trạng thái nối nhau qua admitted / dispatch / interrupt / I-O wait / I-O completion / exit. Trong 1 chương trình C: biến toàn cục → data, malloc() → heap, biến cục bộ/tham số → stack.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: SCHEDULING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-scheduling" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🗂️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Scheduling</div>
+        <h2>Who gets the CPU next?</h2>
+        <span class="vi">Ai được cấp CPU tiếp theo?</span>
+      </div>
+    </div>
+    <p class="intro">The whole point of scheduling is to maximize CPU use by quickly switching processes onto a CPU core the instant one leaves.</p>
+    <span class="vi">Mục tiêu của lập lịch là tối đa hóa việc dùng CPU bằng cách chuyển tiến trình khác vào ngay khi 1 tiến trình rời CPU.</span>
+
+    <p class="en">The <b>process scheduler</b> selects one process among all available (ready) processes for the next execution on a CPU core. To do this it maintains <b>scheduling queues</b>: the <b>ready queue</b> holds every process residing in main memory that is ready and waiting to execute, while separate <b>wait queues</b> hold processes waiting for a specific event, such as I/O. Processes constantly migrate among these queues as their state changes.</p>
+    <span class="vi"><b>Process scheduler</b> chọn 1 tiến trình trong số các tiến trình sẵn sàng (ready) để chạy tiếp trên 1 nhân CPU. Để làm việc này nó duy trì <b>hàng đợi lập lịch</b>: <b>ready queue</b> chứa mọi tiến trình đang ở bộ nhớ chính, sẵn sàng chờ chạy, còn các <b>wait queue</b> riêng chứa tiến trình đang chờ 1 sự kiện cụ thể, như I/O. Tiến trình liên tục di chuyển giữa các hàng đợi này khi trạng thái đổi.</span>
+
+    <svg viewBox="0 0 560 170" style="max-width:560px;width:100%;margin:6px 0 20px;font-family:'IBM Plex Mono',monospace;">
+      <defs><marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8A5F78"/></marker></defs>
+      <text x="10" y="20" font-size="11" fill="#8A5F78">ready queue</text>
+      <rect x="10" y="28" width="60" height="34" fill="#FFF6FB" stroke="#FFD3E8"/><text x="40" y="49" text-anchor="middle" font-size="11" fill="#4A2E40">head</text>
+      <rect x="90" y="28" width="70" height="34" fill="#7FC4F026" stroke="#4FA4DD"/><text x="125" y="49" text-anchor="middle" font-size="11" fill="#2E7FC1">PCB 7</text>
+      <rect x="190" y="28" width="70" height="34" fill="#7FC4F026" stroke="#4FA4DD"/><text x="225" y="49" text-anchor="middle" font-size="11" fill="#2E7FC1">PCB 2</text>
+      <path d="M70,45 H90" stroke="#8A5F78" marker-end="url(#arrow4)"/>
+      <path d="M160,45 H190" stroke="#8A5F78" marker-end="url(#arrow4)"/>
+      <path d="M260,45 H280 V80 H30 V62" stroke="#8A5F78" fill="none" marker-end="url(#arrow4)"/>
+      <text x="10" y="115" font-size="11" fill="#8A5F78">wait queue</text>
+      <rect x="10" y="123" width="60" height="34" fill="#FFF6FB" stroke="#FFD3E8"/><text x="40" y="144" text-anchor="middle" font-size="11" fill="#4A2E40">head</text>
+      <rect x="120" y="123" width="70" height="34" fill="#FF6FA51f" stroke="#E8407F"/><text x="155" y="144" text-anchor="middle" font-size="11" fill="#C22A63">PCB 3</text>
+      <rect x="220" y="123" width="70" height="34" fill="#FF6FA51f" stroke="#E8407F"/><text x="255" y="144" text-anchor="middle" font-size="11" fill="#C22A63">PCB 14</text>
+      <rect x="320" y="123" width="70" height="34" fill="#FF6FA51f" stroke="#E8407F"/><text x="355" y="144" text-anchor="middle" font-size="11" fill="#C22A63">PCB 6</text>
+      <path d="M70,140 H120" stroke="#8A5F78" marker-end="url(#arrow4)"/>
+      <path d="M190,140 H220" stroke="#8A5F78" marker-end="url(#arrow4)"/>
+      <path d="M290,140 H320" stroke="#8A5F78" marker-end="url(#arrow4)"/>
+    </svg>
+
+    <div class="seqlist">
+      <div class="sitem"><div class="snum"></div><div class="stext">new process → nhập <b>ready queue</b></div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">ready queue → CPU (được dispatch)</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">CPU → I/O wait queue (nếu cần I/O) → thiết bị I/O → quay lại ready queue</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">CPU → time slice expired → quay lại ready queue</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">CPU → tạo tiến trình con → chờ ở child-termination wait queue → khi con kết thúc, quay lại ready queue</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">CPU → chờ interrupt → interrupt wait queue → khi interrupt xảy ra, quay lại ready queue</div></div>
+    </div>
+
+    <p class="en">A <b>context switch</b> occurs when the CPU switches from one process to another. When this happens, the system must <b>save the state</b> of the old process and load the <b>saved state</b> for the new process — and that context is exactly what's represented in the PCB. Context-switch time is pure <b>overhead</b>: the system does no useful work while switching, and the more complex the OS and its PCB, the longer a switch takes. Its actual duration is dependent on hardware support — some hardware provides multiple sets of registers per CPU, letting multiple contexts be loaded at once.</p>
+    <span class="vi">1 <b>context switch</b> xảy ra khi CPU chuyển từ tiến trình này sang tiến trình khác. Lúc đó, hệ thống phải <b>lưu trạng thái</b> của tiến trình cũ và nạp <b>trạng thái đã lưu</b> của tiến trình mới — và context đó chính là những gì được biểu diễn trong PCB. Thời gian context-switch hoàn toàn là <b>overhead</b>: hệ thống không làm việc có ích gì trong lúc chuyển, và OS/PCB càng phức tạp thì switch càng lâu. Thời gian thực tế phụ thuộc phần cứng — vài phần cứng có nhiều bộ thanh ghi trên 1 CPU, cho phép nạp nhiều context cùng lúc.</span>
+
+    <svg viewBox="0 0 620 220" style="max-width:620px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="60" y="20" text-anchor="middle" font-size="12" fill="#4A2E40" font-weight="600">process P0</text>
+      <text x="310" y="20" text-anchor="middle" font-size="12" fill="#4A2E40" font-weight="600">operating system</text>
+      <text x="560" y="20" text-anchor="middle" font-size="12" fill="#4A2E40" font-weight="600">process P1</text>
+      <rect x="45" y="30" width="30" height="55" fill="#7FC4F026" stroke="#4FA4DD"/><text x="60" y="62" text-anchor="middle" font-size="9.5" fill="#2E7FC1" transform="rotate(-90 60 62)">executing</text>
+      <rect x="545" y="140" width="30" height="55" fill="#7FC4F026" stroke="#4FA4DD"/><text x="560" y="172" text-anchor="middle" font-size="9.5" fill="#2E7FC1" transform="rotate(-90 560 172)">executing</text>
+      <rect x="45" y="85" width="30" height="110" fill="#FFF6FB" stroke="#FFD3E8"/><text x="60" y="145" text-anchor="middle" font-size="9.5" fill="#8A5F78" transform="rotate(-90 60 145)">idle</text>
+      <rect x="545" y="30" width="30" height="110" fill="#FFF6FB" stroke="#FFD3E8"/><text x="560" y="90" text-anchor="middle" font-size="9.5" fill="#8A5F78" transform="rotate(-90 560 90)">idle</text>
+      <line x1="90" y1="35" x2="285" y2="35" stroke="#8A5F78" stroke-dasharray="3,3"/>
+      <text x="90" y="30" font-size="10" fill="#8A5F78">interrupt or system call</text>
+      <rect x="250" y="45" width="140" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="320" y="62" text-anchor="middle" font-size="10" fill="#C22A63">save state into PCB0</text>
+      <rect x="250" y="100" width="140" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="320" y="117" text-anchor="middle" font-size="10" fill="#C22A63">reload state from PCB1</text>
+      <line x1="390" y1="113" x2="545" y2="150" stroke="#8A5F78"/>
+      <line x1="390" y1="150" x2="285" y2="150" stroke="#8A5F78" stroke-dasharray="3,3"/>
+      <text x="300" y="145" font-size="10" fill="#8A5F78">interrupt or system call</text>
+      <rect x="250" y="160" width="140" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="320" y="177" text-anchor="middle" font-size="10" fill="#C22A63">save state into PCB1</text>
+      <line x1="390" y1="173" x2="75" y2="195" stroke="#8A5F78"/>
+      <text x="150" y="205" font-size="9.5" fill="#8A5F78">reload state from PCB0 → P0 executing lại</text>
+    </svg>
+    <div class="illus">
+      <div class="emo">🔀</div>
+      <div class="cap"><b>P0 executing → interrupt → P1 executing</b>OS lưu state vào PCB0, nạp state từ PCB1 → P1 chạy; khi P1 bị ngắt, lại lưu vào PCB1 và nạp lại PCB0.</div>
+    </div>
+
+    <p class="en">Mobile systems handle multitasking differently because of limited screen space. Early <b>iOS</b> versions allowed only one process — a single <b>foreground process</b> controlled via the UI — to run; everything else became a suspended, limited <b>background process</b> (a single short task, event notifications, or specific long-running tasks like audio playback). <b>Android</b> runs foreground and background processes with far fewer limits: a background process uses a <b>service</b> to keep performing tasks even after being suspended, and that service has no user interface and a small memory footprint.</p>
+    <span class="vi">Hệ điều hành di động xử lý multitasking khác đi vì màn hình có hạn. <b>iOS</b> đời đầu chỉ cho 1 tiến trình chạy — 1 <b>foreground process</b> duy nhất, điều khiển qua UI; mọi cái khác thành <b>background process</b> bị treo, giới hạn (1 tác vụ ngắn, nhận thông báo sự kiện, hoặc vài tác vụ chạy dài đặc biệt như phát nhạc). <b>Android</b> chạy foreground và background với ít giới hạn hơn nhiều: 1 background process dùng 1 <b>service</b> để tiếp tục làm việc kể cả khi bị treo, service đó không có giao diện và tốn ít bộ nhớ.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">iOS (đời đầu)</div>
+        <p>1 foreground process duy nhất, điều khiển bởi UI.</p>
+        <ul><li>Background: 1 tác vụ ngắn</li><li>Nhận thông báo sự kiện</li><li>Vài tác vụ chạy dài (phát nhạc)</li></ul>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Android</div>
+        <p>Foreground + background, ít giới hạn hơn.</p>
+        <ul><li>Background dùng <b>service</b></li><li>Service sống cả khi process bị treo</li><li>Không UI, ít tốn bộ nhớ</li></ul>
+      </div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">ready queue</span><span class="rchip">wait queue</span><span class="rchip">context switch</span><span class="rchip">overhead</span>
+        <span class="rchip">iOS foreground/background</span><span class="rchip">Android service</span>
+      </div>
+      <p class="rline">Context switch không làm việc có ích — nó chỉ là chi phí lưu/nạp PCB. Càng nhiều thanh ghi phần cứng hỗ trợ song song, switch càng nhanh.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OPERATIONS ON PROCESSES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-operations" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🌳</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Lifecycle</div>
+        <h2>Being born, and dying, as a process</h2>
+        <span class="vi">Sinh ra, và chết đi, với tư cách 1 tiến trình</span>
+      </div>
+    </div>
+    <p class="intro">Every system needs mechanisms for two operations: process creation and process termination.</p>
+    <span class="vi">Mọi hệ thống cần cơ chế cho 2 thao tác: tạo tiến trình và kết thúc tiến trình.</span>
+
+    <p class="en"><b>Parent processes</b> create <b>children processes</b>, which in turn create other processes, forming a whole <b>tree of processes</b>. Each process is identified and managed via a <b>Process Identifier (PID)</b>. Parents and children have <b>resource-sharing options</b>: parent and children may share <b>all</b> resources, children may share only a <b>subset</b> of the parent's resources, or parent and child may share <b>no</b> resources at all. There are also <b>execution options</b> — parent and children can execute <b>concurrently</b>, or the parent can <b>wait</b> until its children terminate — and <b>address-space</b> options: the child can be a <b>duplicate</b> of the parent, or have an entirely new program loaded into it.</p>
+    <span class="vi"><b>Tiến trình cha</b> tạo <b>tiến trình con</b>, con lại tạo tiến trình khác, hình thành <b>cây tiến trình (tree of processes)</b>. Mỗi tiến trình được định danh và quản lý qua <b>Process Identifier (PID)</b>. Cha và con có <b>tùy chọn chia sẻ tài nguyên</b>: chia sẻ <b>tất cả</b>, chỉ chia sẻ <b>1 phần</b>, hoặc <b>không</b> chia sẻ gì. Cũng có <b>tùy chọn thực thi</b> — cha và con chạy <b>song song</b>, hoặc cha <b>chờ (wait)</b> con kết thúc — và tùy chọn <b>không gian địa chỉ</b>: con có thể là <b>bản sao</b> của cha, hoặc được nạp 1 chương trình hoàn toàn mới.</span>
+
+    <div class="tree">
+      <div class="trow"><div class="tnode root">systemd — pid = 1</div></div>
+      <div class="tconn">│</div>
+      <div class="trow">
+        <div class="tnode">logind — pid = 8415</div>
+        <div class="tnode">python — pid = 2808</div>
+        <div class="tnode">sshd — pid = 3028</div>
+      </div>
+      <div class="tconn">│                                              │</div>
+      <div class="trow">
+        <div class="tnode">bash — pid = 8416</div>
+        <div class="tnode">sshd — pid = 3610</div>
+      </div>
+      <div class="tconn">│ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; │</div>
+      <div class="trow">
+        <div class="tnode">ps — pid = 9298</div>
+        <div class="tnode">vim — pid = 9204</div>
+        <div class="tnode">tcsh — pid = 4005</div>
+      </div>
+    </div>
+    <div class="illus">
+      <div class="emo">🌲</div>
+      <div class="cap"><b>#pstree</b>Mọi tiến trình đều có cha, trừ tiến trình đầu tiên (systemd, pid = 1).</div>
+    </div>
+
+    <p class="en">On UNIX, <span class="mono">fork()</span> creates a new process by duplicating the caller: the child gets pid = 0 from the returned value, the parent gets the child's actual pid (> 0), and a negative return means the fork failed. <span class="mono">exec()</span> is then used after a fork to replace the process' entire memory space with a new program. The parent process calls <span class="mono">wait()</span> to block until the child terminates. The <span class="mono">system()</span> call is a shortcut that hands its command argument straight to the shell interpreter (<span class="mono">/bin/sh -c &lt;command&gt;</span>) — it returns -1 if the child process couldn't be created.</p>
+    <span class="vi">Trên UNIX, <span class="mono">fork()</span> tạo 1 tiến trình mới bằng cách nhân bản tiến trình gọi nó: con nhận về giá trị pid = 0, cha nhận về pid thật của con (> 0), giá trị âm nghĩa là fork thất bại. <span class="mono">exec()</span> dùng sau fork để thay toàn bộ vùng nhớ của tiến trình bằng 1 chương trình mới. Tiến trình cha gọi <span class="mono">wait()</span> để chờ (block) tới khi con kết thúc. Lời gọi <span class="mono">system()</span> là 1 lối tắt, đưa thẳng đối số command cho shell (<span class="mono">/bin/sh -c &lt;command&gt;</span>) — trả về -1 nếu không tạo được tiến trình con.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* fork a separate process */</span>
+pid_t pid = fork();
+
+if (pid &lt; 0) {                 <span class="tm-out">/* error occurred */</span>
+    fprintf(stderr, "Fork Failed");
+}
+else if (pid == 0) {           <span class="tm-out">/* child process */</span>
+    execlp("/bin/ls","ls",NULL);
+}
+else {                         <span class="tm-out">/* parent process */</span>
+    wait(NULL);                <span class="tm-out">/* wait for child */</span>
+    printf("Child Complete");
+}</div>
+    </div>
+
+    <p class="en">Windows has no <span class="mono">fork()</span>/<span class="mono">exec()</span> pair — instead a single <b>Windows API</b> call, <span class="mono">CreateProcess()</span>, does both jobs at once: it directly launches a brand-new process running a specified program, filling in a <span class="mono">STARTUPINFO</span> and a <span class="mono">PROCESS_INFORMATION</span> structure, and the parent then calls <span class="mono">WaitForSingleObject()</span> — the Windows equivalent of <span class="mono">wait()</span> — to block until that child finishes.</p>
+    <span class="vi">Windows không có cặp <span class="mono">fork()</span>/<span class="mono">exec()</span> — thay vào đó, 1 lời gọi <b>Windows API</b> duy nhất, <span class="mono">CreateProcess()</span>, làm cả 2 việc cùng lúc: khởi chạy trực tiếp 1 tiến trình hoàn toàn mới chạy 1 chương trình được chỉ định, điền vào cấu trúc <span class="mono">STARTUPINFO</span> và <span class="mono">PROCESS_INFORMATION</span>, rồi tiến trình cha gọi <span class="mono">WaitForSingleObject()</span> — tương đương <span class="mono">wait()</span> bên Windows — để chờ tới khi con đó kết thúc.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Creating a Separate Process via Windows API */</span>
+#include &lt;stdio.h&gt;
+#include &lt;windows.h&gt;
+
+int main(VOID) {
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory(&amp;si, sizeof(si));  si.cb = sizeof(si);
+    ZeroMemory(&amp;pi, sizeof(pi));
+
+    <span class="tm-out">/* create child process */</span>
+    if (!CreateProcess(NULL, "C:\\WINDOWS\\system32\\mspaint.exe",
+        NULL, NULL, FALSE, 0, NULL, NULL, &amp;si, &amp;pi))
+    {
+        fprintf(stderr, "Create Process Failed");
+        return -1;
+    }
+    <span class="tm-out">/* parent waits for the child to complete */</span>
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    printf("Child Complete");
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+}</div>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">UNIX / Linux</div>
+        <ul><li><span class="mono">fork()</span> — nhân bản tiến trình cha</li><li><span class="mono">exec()</span> — thay chương trình trong con</li><li><span class="mono">wait()</span> — cha chờ con</li></ul>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Windows</div>
+        <ul><li><span class="mono">CreateProcess()</span> — làm cả 2 việc 1 lúc</li><li>Cần <span class="mono">STARTUPINFO</span> + <span class="mono">PROCESS_INFORMATION</span></li><li><span class="mono">WaitForSingleObject()</span> — cha chờ con</li></ul>
+      </div>
+    </div>
+
+    <div class="hook">
+      <b>Thử sức:</b> printf("Hello\n"); fork(); fork(); printf("Hello\n"); — có bao nhiêu tiến trình được tạo ra tổng cộng, và "Hello" (dòng 2) in ra bao nhiêu lần?
+      <span class="vi">Gợi ý: mỗi lần gọi fork() nhân đôi số tiến trình đang tồn tại tại thời điểm đó. 2 lần fork() liên tiếp → 1 → 2 → 4 tiến trình. Dòng printf thứ 2 chạy trên cả 4 tiến trình → in 4 lần "Hello".</span>
+    </div>
+
+    <div class="hook">
+      <b>Thử sức #2:</b> <span class="mono">for (i = 0; i &lt; n; i++) fork();</span> — với n = 2, tổng cộng có bao nhiêu tiến trình tồn tại sau vòng lặp?
+      <span class="vi">Gợi ý: đây là fork() có điều kiện, chạy trong vòng lặp — mỗi vòng lặp lại nhân đôi số tiến trình <b>đang tồn tại</b>, kể cả những tiến trình vừa được tạo ra ở vòng trước cũng tự chạy tiếp vòng lặp và tự fork(). Với n = 2: 1 → 2 → 4 tiến trình (giống công thức 2ⁿ tính từ 1 tiến trình gốc).</span>
+    </div>
+
+    <p class="en">Every new process gets a unique <b>Process ID</b> assigned by the OS, and every process has a parent process — except the very first one, <span class="mono">systemd</span> (pid = 1) on Linux. A process can read its own and its parent's identifiers with <span class="mono">getpid()</span> and <span class="mono">getppid()</span>; tools like <span class="mono">htop</span> and <span class="mono">pstree</span> let you watch these parent–child relationships live on a running system.</p>
+    <span class="vi">Mỗi tiến trình mới được OS cấp 1 <b>Process ID</b> duy nhất, và mọi tiến trình đều có tiến trình cha — trừ tiến trình đầu tiên, <span class="mono">systemd</span> (pid = 1) trên Linux. 1 tiến trình có thể đọc định danh của chính nó và của cha nó bằng <span class="mono">getpid()</span> và <span class="mono">getppid()</span>; công cụ như <span class="mono">htop</span> và <span class="mono">pstree</span> cho xem trực tiếp quan hệ cha–con này trên hệ thống đang chạy.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Process IDs */</span>
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+
+int main() {
+    printf("The process ID is %d\n", (int) getpid());
+    printf("The parent process ID is %d\n", (int) getppid());
+    sleep(100);
+    return 0;
+}
+
+<span class="tm-prompt">$</span> ./pid
+<span class="tm-out">The process ID is 6790</span>
+<span class="tm-out">The parent process ID is 6579</span>
+
+<span class="tm-prompt">$</span> htop   <span class="tm-out"># theo dõi tiến trình &amp; tài nguyên trực tiếp</span>
+<span class="tm-out">6579 ltvan   32   0  4196M  1240 ?  0.0  0.0  0:00.00  └─ -bash</span>
+<span class="tm-out">6714 ltvan   25   0  4168M   696 ?  0.0  0.0  0:00.00     └─ ./pid</span></div>
+    </div>
+
+    <p class="en">A process executes its <b>last statement</b> and then asks the OS to delete it via the <span class="mono">exit()</span> system call, which returns status data to the parent (through <span class="mono">wait()</span>) and lets the OS deallocate the process' resources. A parent may instead forcibly terminate a child via <span class="mono">abort()</span> — say, because the child exceeded its allocated resources, its task is no longer needed, or the parent itself is exiting and the OS does not allow a child to outlive its parent. When a process terminates, all its children must also be terminated in what's called <b>cascading termination</b> — initiated by the OS itself, killing children, grandchildren, and so on.</p>
+    <span class="vi">1 tiến trình chạy <b>lệnh cuối cùng</b> rồi xin OS xóa nó qua <span class="mono">exit()</span>, trả dữ liệu trạng thái về cho cha (qua <span class="mono">wait()</span>) và cho OS giải phóng tài nguyên của tiến trình. Cha cũng có thể ép buộc kết thúc con qua <span class="mono">abort()</span> — vì con vượt tài nguyên được cấp, tác vụ của con không cần nữa, hoặc chính cha đang thoát và OS không cho con sống lâu hơn cha. Khi 1 tiến trình kết thúc, mọi con của nó cũng phải kết thúc theo, gọi là <b>cascading termination</b> — do chính OS khởi xướng, giết con, cháu, v.v.</span>
+
+    <p class="en">The parent process may wait for a child's termination via <span class="mono">wait(&amp;status)</span>, which returns status information plus the <b>pid</b> of the terminated child — equivalent to <span class="mono">waitpid(-1, &amp;status, 0)</span>. If no parent is waiting, the terminated process becomes a <b>zombie</b>; if the parent terminates without ever calling <span class="mono">wait()</span>, the leftover child becomes an <b>orphan</b>.</p>
+    <span class="vi">Tiến trình cha có thể chờ con kết thúc qua <span class="mono">wait(&amp;status)</span>, trả về thông tin trạng thái cùng <b>pid</b> của con vừa kết thúc — tương đương <span class="mono">waitpid(-1, &amp;status, 0)</span>. Nếu không có cha nào đang chờ, tiến trình kết thúc trở thành <b>zombie</b>; nếu cha kết thúc mà chưa từng gọi <span class="mono">wait()</span>, tiến trình con còn sót lại trở thành <b>orphan</b>.</span>
+
+    <table class="cmp-table">
+      <tr><th>waitpid(pid, status, options)</th><th>Ý nghĩa</th></tr>
+      <tr><td>pid &lt; -1</td><td>chờ bất kỳ con nào có group ID = |pid|</td></tr>
+      <tr><td>pid = -1</td><td>chờ bất kỳ con nào (giống wait())</td></tr>
+      <tr><td>pid = 0</td><td>chờ con có group ID trùng tiến trình gọi</td></tr>
+      <tr><td>pid &gt; 0</td><td>chờ đúng con có process ID = pid</td></tr>
+    </table>
+
+    <p class="en">Mobile systems often must terminate processes to reclaim memory, following an <b>importance hierarchy</b> from most to least important: <b>foreground process</b>, <b>visible process</b>, <b>service process</b>, <b>background process</b>, and <b>empty process</b>. Android begins terminating processes starting from the least important end of that list.</p>
+    <span class="vi">Hệ điều hành di động thường phải kết thúc tiến trình để lấy lại bộ nhớ, theo 1 <b>thứ tự quan trọng</b> từ cao xuống thấp: <b>foreground process</b>, <b>visible process</b>, <b>service process</b>, <b>background process</b>, và <b>empty process</b>. Android bắt đầu giết tiến trình từ cuối danh sách (ít quan trọng nhất) lên.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">1. Foreground</div><p>Đang hiện trên màn hình, tương tác với người dùng — quan trọng nhất.</p></div>
+      <div class="res-card"><div class="rk">2. Visible</div><p>Người dùng thấy được nhưng không tương tác trực tiếp.</p></div>
+      <div class="res-card"><div class="rk">3. Service</div><p>Chạy nền có mục đích cụ thể (đồng bộ, tải nhạc...).</p></div>
+      <div class="res-card"><div class="rk">4. Background</div><p>Không hiển thị, sẵn sàng bị giết khi thiếu bộ nhớ.</p></div>
+      <div class="res-card"><div class="rk">5. Empty</div><p>Không còn hoạt động gì — bị giết đầu tiên.</p></div>
+    </div>
+
+    <p class="en">A classic real-world example of multiprocess design is the <b>Google Chrome</b> browser: instead of running as one single process (where one bad website could hang or crash everything), Chrome splits into three process types — a <b>browser process</b> managing the UI plus disk/network I/O, a new <b>renderer process</b> for every website opened (running <b>sandboxed</b> to limit the damage of a security exploit), and a <b>plug-in process</b> for each type of plug-in.</p>
+    <span class="vi">1 ví dụ kinh điển ngoài đời của thiết kế đa tiến trình là trình duyệt <b>Google Chrome</b>: thay vì chạy như 1 tiến trình duy nhất (1 web lỗi có thể treo/crash cả trình duyệt), Chrome tách thành 3 loại tiến trình — <b>browser process</b> quản lý UI cùng I/O đĩa/mạng, 1 <b>renderer process</b> mới cho mỗi website mở ra (chạy trong <b>sandbox</b> để giới hạn thiệt hại nếu bị khai thác bảo mật), và 1 <b>plug-in process</b> cho mỗi loại plug-in.</span>
+
+    <div class="env-grid">
+      <div class="env-card"><div class="env-badge">UI</div><h4>Browser process</h4><p>Quản lý giao diện, đĩa và mạng I/O.</p></div>
+      <div class="env-card"><div class="env-badge">🖼️</div><h4>Renderer process</h4><p>Render HTML/JS mỗi tab — 1 process/website, chạy sandbox.</p></div>
+      <div class="env-card"><div class="env-badge">🧩</div><h4>Plug-in process</h4><p>1 process riêng cho mỗi loại plug-in.</p></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      "fork() n lần liên tiếp, không điều kiện" → tổng số tiến trình = 2ⁿ (kể cả tiến trình gốc). Zombie = con đã chết nhưng cha CHƯA wait(); Orphan = cha đã chết TRƯỚC khi wait() con.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">fork()</span><span class="rchip">exec()</span><span class="rchip">wait() / waitpid()</span><span class="rchip">exit() / abort()</span>
+        <span class="rchip">zombie</span><span class="rchip">orphan</span><span class="rchip">cascading termination</span><span class="rchip">Chrome multiprocess</span>
+        <span class="rchip">getpid()/getppid()</span><span class="rchip">CreateProcess() (Windows)</span>
+      </div>
+      <p class="rline">fork() nhân đôi, exec() thay chương trình, wait() chờ con — 3 lời gọi này gần như luôn đi cùng nhau trên UNIX/Linux; Windows gộp cả 3 việc đó vào 1 lời gọi duy nhất, CreateProcess().</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: IPC & SHARED MEMORY -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-ipc" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🔗</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · IPC</div>
+        <h2>Why (and how) do processes talk?</h2>
+        <span class="vi">Vì sao (và bằng cách nào) các tiến trình nói chuyện được với nhau?</span>
+      </div>
+    </div>
+    <p class="intro">Processes within a system may be independent or cooperating — and cooperating processes are what create the need for Inter-Process Communication (IPC).</p>
+    <span class="vi">Tiến trình trong 1 hệ thống có thể độc lập (independent) hoặc hợp tác (cooperating) — và chính tiến trình hợp tác tạo ra nhu cầu Giao tiếp Liên tiến trình (IPC).</span>
+
+    <p class="en">An <b>independent process</b> does not share data with any other process executing in the system, while a <b>cooperating process</b> can affect, or be affected by, other processes — including sharing data with them. Reasons for cooperating include: <b>information sharing</b>, <b>computation speed-up</b> (splitting a task across processes), <b>modularity</b> (dividing system functions into separate processes), and plain <b>convenience</b>. All of this requires <b>Inter-Process Communication (IPC)</b>.</p>
+    <span class="vi">1 <b>tiến trình độc lập</b> không chia sẻ dữ liệu với bất kỳ tiến trình nào khác đang chạy trong hệ thống, còn 1 <b>tiến trình hợp tác</b> có thể tác động, hoặc bị tác động, bởi tiến trình khác — kể cả chia sẻ dữ liệu với nhau. Lý do để hợp tác gồm: <b>chia sẻ thông tin</b>, <b>tăng tốc tính toán</b> (chia nhỏ 1 việc cho nhiều tiến trình), <b>module hóa</b> (chia chức năng hệ thống thành các tiến trình riêng), và đơn giản là <b>tiện lợi</b>. Tất cả những điều này cần <b>IPC</b>.</span>
+
+    <p class="en">There are exactly two models of IPC: <b>shared memory</b> and <b>message passing</b>. In shared memory, an area of memory is set up so both process A and process B can read/write it directly, with the communication under the control of the user processes, not the OS — the major issue then is providing a mechanism to let those processes <b>synchronize their actions</b> when accessing the shared region. In message passing, processes exchange messages that are placed in a queue managed by the kernel, without ever resorting to shared variables.</p>
+    <span class="vi">Có đúng 2 mô hình IPC: <b>shared memory (bộ nhớ dùng chung)</b> và <b>message passing (truyền thông điệp)</b>. Với shared memory, 1 vùng bộ nhớ được thiết lập để cả tiến trình A và B đọc/ghi trực tiếp, việc giao tiếp nằm dưới sự kiểm soát của tiến trình người dùng, không phải OS — vấn đề chính lúc này là cung cấp cơ chế để các tiến trình <b>đồng bộ hành động</b> khi truy cập vùng dùng chung đó. Với message passing, tiến trình trao đổi thông điệp được đặt vào 1 hàng đợi do kernel quản lý, không bao giờ cần đến biến dùng chung.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Shared memory</div>
+        <p>Vùng nhớ chung, A và B tự đọc/ghi trực tiếp.</p>
+        <ul><li>Nhanh hơn (sau khi thiết lập)</li><li>OS chỉ set up vùng nhớ, không can thiệp nữa</li><li>Cần tự đồng bộ (dễ race condition)</li></ul>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Message passing</div>
+        <p>Gửi/nhận message qua kernel, không dùng chung biến.</p>
+        <ul><li>Dễ hiện thực đúng hơn (kernel lo đồng bộ)</li><li>Chậm hơn vì luôn qua kernel</li><li>Hữu ích khi liên lạc qua mạng</li></ul>
+      </div>
+    </div>
+
+    <p class="en">The classic paradigm for cooperating processes is the <b>producer–consumer problem</b>: a <b>producer process</b> produces information that is consumed by a <b>consumer process</b>. An <b>unbounded buffer</b> places no practical limit on buffer size; a <b>bounded buffer</b> assumes a fixed buffer size, using an <span class="mono">in</span> pointer to the next free slot and an <span class="mono">out</span> pointer to the first full slot — this shared-memory solution is correct, but can only ever use <span class="mono">BUFFER_SIZE - 1</span> elements (to distinguish "full" from "empty," since both would otherwise look like <span class="mono">in == out</span>).</p>
+    <span class="vi">Mô hình kinh điển cho tiến trình hợp tác là <b>bài toán producer–consumer</b>: 1 <b>tiến trình sản xuất</b> tạo ra thông tin để 1 <b>tiến trình tiêu thụ</b> dùng. <b>unbounded buffer</b> không giới hạn thực tế kích thước buffer; <b>bounded buffer</b> giả sử buffer có kích thước cố định, dùng con trỏ <span class="mono">in</span> trỏ tới ô trống kế tiếp và <span class="mono">out</span> trỏ tới ô đầy đầu tiên — giải pháp shared-memory này đúng, nhưng chỉ dùng được tối đa <span class="mono">BUFFER_SIZE - 1</span> phần tử (để phân biệt "đầy" với "rỗng", nếu không cả 2 đều trông giống <span class="mono">in == out</span>).</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* producer */</span>
+while (true) {
+    while (((in + 1) % BUFFER_SIZE) == out)
+        ;  <span class="tm-out">/* buffer full — do nothing */</span>
+    buffer[in] = next_produced;
+    in = (in + 1) % BUFFER_SIZE;
+}
+
+<span class="tm-com">/* consumer */</span>
+while (true) {
+    while (in == out)
+        ;  <span class="tm-out">/* buffer empty — do nothing */</span>
+    next_consumed = buffer[out];
+    out = (out + 1) % BUFFER_SIZE;
+}</div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      "Bounded buffer chỉ dùng được BUFFER_SIZE − 1 phần tử" — nhớ chính xác con số này, đề rất hay hỏi trực tiếp lý do tại sao (để phân biệt full vs empty bằng con trỏ in/out).
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">independent vs cooperating</span><span class="rchip">shared memory</span><span class="rchip">message passing</span>
+        <span class="rchip">producer–consumer</span><span class="rchip">bounded buffer</span><span class="rchip">BUFFER_SIZE − 1</span>
+      </div>
+      <p class="rline">Shared memory: nhanh nhưng tự lo đồng bộ. Message passing: kernel lo hết, chậm hơn nhưng an toàn hơn, hợp cho mạng.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: MESSAGE PASSING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-messaging" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">✉️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · IPC</div>
+        <h2>Send, receive, and everything in between</h2>
+        <span class="vi">Gửi, nhận, và mọi thứ ở giữa</span>
+      </div>
+    </div>
+    <p class="intro">Message passing is a mechanism for processes to communicate AND to synchronize their actions, all through two primitive operations.</p>
+    <span class="vi">Message passing là cơ chế để tiến trình giao tiếp VÀ đồng bộ hành động, tất cả qua 2 thao tác nguyên thủy.</span>
+
+    <p class="en">The IPC facility provides exactly two operations: <span class="mono">send(message)</span> and <span class="mono">receive(message)</span>, with message size either fixed or variable. If processes P and Q wish to communicate, they must first establish a <b>communication link</b> between them, then exchange messages via send/receive. This raises real implementation questions: how are links established? Can a link be shared by more than two processes? How many links can exist between one pair of processes? What's a link's capacity, message-size limit, and is it unidirectional or bi-directional?</p>
+    <span class="vi">Dịch vụ IPC cung cấp đúng 2 thao tác: <span class="mono">send(message)</span> và <span class="mono">receive(message)</span>, kích thước message có thể cố định hoặc thay đổi. Nếu 2 tiến trình P và Q muốn giao tiếp, trước hết chúng phải thiết lập 1 <b>đường liên kết (communication link)</b>, rồi trao đổi message qua send/receive. Điều này đặt ra câu hỏi hiện thực thật sự: link được thiết lập ra sao? 1 link có thể dùng chung cho hơn 2 tiến trình không? Có bao nhiêu link giữa 1 cặp tiến trình? Dung lượng link, giới hạn kích thước message, và link 1 chiều hay 2 chiều?</span>
+
+    <p class="en">In <b>direct communication</b>, processes must name each other explicitly: <span class="mono">send(P, message)</span> sends to process P, <span class="mono">receive(Q, message)</span> receives from process Q. Links here are established automatically, exactly one link exists per pair, and each link is usually bi-directional (though it may be unidirectional). In <b>indirect communication</b>, messages are instead directed to and received from <b>mailboxes</b> (also called <b>ports</b>): each mailbox has a unique ID, and processes can communicate only if they share one. A link is established only when processes share a common mailbox, one link may serve many processes, and a pair of processes may even share several links.</p>
+    <span class="vi">Trong <b>giao tiếp trực tiếp (direct communication)</b>, tiến trình phải gọi tên nhau tường minh: <span class="mono">send(P, message)</span> gửi tới tiến trình P, <span class="mono">receive(Q, message)</span> nhận từ tiến trình Q. Link ở đây tự động thiết lập, đúng 1 link cho mỗi cặp, và thường 2 chiều (dù có thể 1 chiều). Trong <b>giao tiếp gián tiếp (indirect communication)</b>, message thay vào đó gửi tới/nhận từ <b>hộp thư (mailbox)</b> (còn gọi <b>port</b>): mỗi mailbox có 1 ID duy nhất, tiến trình chỉ giao tiếp được nếu dùng chung mailbox. Link chỉ thiết lập khi các tiến trình dùng chung 1 mailbox, 1 link có thể phục vụ nhiều tiến trình, và 1 cặp tiến trình còn có thể dùng chung nhiều link.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Direct — send(P, msg)</div>
+        <ul><li>Link tự động, đúng 1 link/cặp</li><li>Phải biết tên (định danh) nhau</li><li>Thường 2 chiều</li></ul>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Indirect — send(A, msg) qua mailbox A</div>
+        <ul><li>Link chỉ có nếu chung mailbox</li><li>1 mailbox phục vụ nhiều tiến trình</li><li>1 cặp có thể chung nhiều mailbox</li></ul>
+      </div>
+    </div>
+
+    <p class="en">Mailbox sharing raises a puzzle: if P1, P2, and P3 all share mailbox A, and P1 sends while P2 and P3 both receive — who actually gets the message? Three solutions exist: allow a link to be associated with at most two processes, allow only one process at a time to execute a receive, or let the system pick the receiver arbitrarily and notify the sender who got it.</p>
+    <span class="vi">Việc chia sẻ mailbox đặt ra 1 câu hỏi: nếu P1, P2, P3 cùng dùng mailbox A, P1 gửi còn P2 và P3 đều nhận — ai thực sự nhận được message? Có 3 giải pháp: giới hạn 1 link chỉ cho tối đa 2 tiến trình, chỉ cho 1 tiến trình tại 1 thời điểm được thực hiện receive, hoặc để hệ thống tự chọn người nhận và báo cho người gửi biết ai đã nhận.</span>
+
+    <p class="en">Message passing may be <b>blocking</b> (considered <b>synchronous</b>) or <b>non-blocking</b> (considered <b>asynchronous</b>). A <b>blocking send</b> keeps the sender blocked until the message is received; a <b>blocking receive</b> keeps the receiver blocked until a message becomes available. A <b>non-blocking send</b> lets the sender fire the message and continue immediately; a <b>non-blocking receive</b> either gets a valid message, or a null message right away. If both send and receive block, the result is called a <b>rendezvous</b>.</p>
+    <span class="vi">Message passing có thể là <b>blocking</b> (coi là <b>đồng bộ</b>) hoặc <b>non-blocking</b> (coi là <b>bất đồng bộ</b>). <b>Blocking send</b> giữ người gửi bị chặn tới khi message được nhận; <b>blocking receive</b> giữ người nhận bị chặn tới khi có message. <b>Non-blocking send</b> cho người gửi bắn message rồi chạy tiếp ngay; <b>non-blocking receive</b> hoặc nhận được message hợp lệ, hoặc nhận null ngay lập tức. Nếu cả send và receive đều blocking, kết quả gọi là <b>rendezvous</b>.</span>
+
+    <p class="en">Finally, every link has a message <b>queue</b> attached, implemented one of three ways. <b>Zero capacity</b> means no messages are ever queued on the link — the sender must wait for the receiver, i.e. a rendezvous. <b>Bounded capacity</b> means a finite queue of <span class="mono">n</span> messages, forcing the sender to wait once the link is full. <b>Unbounded capacity</b> means an infinite-length queue, so the sender never waits.</p>
+    <span class="vi">Cuối cùng, mỗi link có 1 <b>hàng đợi</b> message đính kèm, cài đặt theo 1 trong 3 cách. <b>Zero capacity</b> nghĩa là không message nào được xếp hàng trên link — người gửi phải chờ người nhận, tức rendezvous. <b>Bounded capacity</b> nghĩa là hàng đợi hữu hạn <span class="mono">n</span> message, buộc người gửi phải chờ khi link đầy. <b>Unbounded capacity</b> nghĩa là hàng đợi vô hạn, người gửi không bao giờ phải chờ.</span>
+
+    <div class="flow-row">
+      <div class="flow-box hi">zero capacity <br><small>rendezvous</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">bounded <br><small>n message, đầy thì chờ</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">unbounded <br><small>không bao giờ chờ</small></div>
+    </div>
+
+    <div class="note teal">
+      <b>Mẹo thi</b>
+      "Cả send và receive đều blocking" = rendezvous, KHÔNG cần buffer/queue (tương đương zero capacity). Đừng nhầm rendezvous với bounded capacity.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">send() / receive()</span><span class="rchip">direct vs indirect</span><span class="rchip">mailbox</span>
+        <span class="rchip">blocking vs non-blocking</span><span class="rchip">rendezvous</span><span class="rchip">zero/bounded/unbounded</span>
+      </div>
+      <p class="rline">Direct = gọi tên process; Indirect = gửi qua mailbox chung. Blocking cả 2 chiều = rendezvous = zero-capacity link.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: IPC EXAMPLES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-examples" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧪</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Case studies</div>
+        <h2>How real operating systems do IPC</h2>
+        <span class="vi">Hệ điều hành thật cài đặt IPC ra sao</span>
+      </div>
+    </div>
+    <p class="intro">POSIX, Mach, and Windows each take a slightly different approach — one shared-memory-centric, the others message-based.</p>
+    <span class="vi">POSIX, Mach, và Windows mỗi cái đi 1 hướng hơi khác nhau — 1 bên thiên về shared memory, 2 bên còn lại thiên về message.</span>
+
+    <p class="en"><b>POSIX shared memory</b> works like this: a process first creates a shared memory segment with <span class="mono">shm_open(name, O_CREAT | O_RDWR, 0666)</span> (the same call also opens an existing segment), sets the object's size with <span class="mono">ftruncate(shm_fd, size)</span>, then uses <span class="mono">mmap()</span> to memory-map a file pointer to that shared object. From then on, reading and writing to shared memory is done simply through the pointer <span class="mono">mmap()</span> returned.</p>
+    <span class="vi"><b>POSIX shared memory</b> hoạt động như sau: 1 tiến trình trước hết tạo 1 đoạn shared memory bằng <span class="mono">shm_open(name, O_CREAT | O_RDWR, 0666)</span> (cùng lời gọi này cũng mở được đoạn đã có), đặt kích thước đối tượng bằng <span class="mono">ftruncate(shm_fd, size)</span>, rồi dùng <span class="mono">mmap()</span> để ánh xạ 1 con trỏ file tới đối tượng dùng chung đó. Từ đó, đọc/ghi shared memory chỉ đơn giản qua con trỏ mà <span class="mono">mmap()</span> trả về.</span>
+
+    <div class="seqlist">
+      <div class="sitem"><div class="snum"></div><div class="stext">shm_open(name, O_CREAT|O_RDWR, 0666) — tạo/mở segment</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">ftruncate(shm_fd, SIZE) — đặt kích thước</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">mmap(0, SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0) — ánh xạ con trỏ ghi (producer) / PROT_READ (consumer)</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">sprintf(ptr, ...) để ghi, hoặc printf("%s",ptr) để đọc</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">shm_unlink(name) — xóa segment (bên consumer)</div></div>
+    </div>
+
+    <p class="en"><b>Mach</b> communication is entirely <b>message based</b> — even system calls are messages. Every task gets two ports at creation, a <b>Task Self</b> port and a <b>Notify</b> port; messages are sent and received using the <span class="mono">mach_msg()</span> function, and ports needed for communication are created via <span class="mono">mach_port_allocate()</span>. Send and receive are very flexible: if the mailbox is full, four options exist — wait indefinitely, wait at most <span class="mono">n</span> milliseconds, return immediately, or temporarily cache a message.</p>
+    <span class="vi">Giao tiếp trong <b>Mach</b> hoàn toàn dựa trên <b>message</b> — kể cả system call cũng là message. Mỗi task được cấp 2 port khi tạo, port <b>Task Self</b> và port <b>Notify</b>; message gửi/nhận qua hàm <span class="mono">mach_msg()</span>, port cần cho giao tiếp được tạo qua <span class="mono">mach_port_allocate()</span>. Gửi và nhận rất linh hoạt: nếu mailbox đầy, có 4 lựa chọn — chờ vô hạn, chờ tối đa <span class="mono">n</span> mili-giây, trả về ngay lập tức, hoặc tạm cache message lại.</span>
+
+    <p class="en"><b>Windows</b> is message-passing centric via its advanced <b>Local Procedure Call (LPC)</b> facility, which only works between processes on the <em>same</em> system, using ports (like mailboxes) to establish and maintain channels. Communication works as a sequence: the client opens a handle to the subsystem's <b>connection port</b> object and sends a connection request; the server creates two private <b>communication ports</b> and returns a handle to one of them; from then on, client and server each use their own port handle to send messages/callbacks and listen for replies.</p>
+    <span class="vi"><b>Windows</b> thiên về message-passing qua cơ chế <b>Local Procedure Call (LPC)</b> nâng cao, chỉ hoạt động giữa các tiến trình trên <em>cùng 1</em> hệ thống, dùng port (giống mailbox) để thiết lập và duy trì kênh giao tiếp. Giao tiếp diễn ra theo trình tự: client mở 1 handle tới đối tượng <b>connection port</b> của subsystem và gửi yêu cầu kết nối; server tạo 2 <b>communication port</b> riêng và trả về 1 handle cho client; từ đó, client và server mỗi bên dùng port handle riêng để gửi message/callback và lắng nghe phản hồi.</span>
+
+    <div class="seqlist">
+      <div class="sitem"><div class="snum"></div><div class="stext">Client mở handle tới Connection Port của server, gửi connection request</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Server tạo 2 Communication Port riêng (client-side &amp; server-side)</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Trả 1 handle Communication Port về cho client</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Client &amp; server dùng port riêng của mình để gửi/nhận message</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Message lớn (&gt; 256 byte) đi qua 1 Shared Section Object riêng, không qua port</div></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      3 hệ 3 kiểu: POSIX = shared memory (mmap), Mach = 100% message (kể cả syscall), Windows LPC = message qua port nhưng chỉ trong cùng 1 máy (Local, không phải Remote).
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">shm_open / ftruncate / mmap</span><span class="rchip">Mach — mach_msg()</span><span class="rchip">Task Self / Notify port</span>
+        <span class="rchip">Windows LPC</span><span class="rchip">Connection Port</span><span class="rchip">Communication Port</span>
+      </div>
+      <p class="rline">POSIX: shm_open → ftruncate → mmap. Mach: mọi thứ (kể cả syscall) đều là message qua mach_msg(). Windows: LPC dùng port, chỉ local, không qua mạng.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: PIPES & CLIENT-SERVER -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-clientserver" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🌐</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Networked IPC</div>
+        <h2>From one pipe to a whole network</h2>
+        <span class="vi">Từ 1 cái ống tới cả mạng lưới</span>
+      </div>
+    </div>
+    <p class="intro">Pipes let two local processes talk down a single conduit; sockets and RPC extend the same idea across an entire network.</p>
+    <span class="vi">Pipe cho 2 tiến trình cục bộ nói chuyện qua 1 đường ống; socket và RPC mở rộng ý tưởng đó ra khắp mạng.</span>
+
+    <p class="en">A <b>pipe</b> acts as a conduit allowing two processes to communicate, but several design questions must be answered: is communication unidirectional or bidirectional? If two-way, is it half or full-duplex? Must the communicating processes have a relationship (e.g. parent–child)? Can the pipe be used over a network? <b>Ordinary pipes</b> cannot be accessed from outside the process that created them — typically a parent creates the pipe and uses it with a child it spawned, writing to the pipe's <b>write-end</b> and reading from its <b>read-end</b>, making them inherently <b>unidirectional</b> and requiring a parent–child relationship. <b>Named pipes</b> are more powerful: communication is <b>bidirectional</b>, no parent–child relationship is required, and several unrelated processes can use the same named pipe — provided on both UNIX and Windows.</p>
+    <span class="vi">1 <b>pipe (ống dẫn)</b> đóng vai trò đường dẫn cho 2 tiến trình giao tiếp, nhưng có vài câu hỏi thiết kế cần trả lời: giao tiếp 1 chiều hay 2 chiều? Nếu 2 chiều, là half hay full-duplex? Các tiến trình giao tiếp có bắt buộc quan hệ (ví dụ cha–con) không? Pipe có dùng qua mạng được không? <b>Ordinary pipe (pipe thường)</b> không truy cập được từ ngoài tiến trình đã tạo nó — thường cha tạo pipe rồi dùng chung với con nó sinh ra, ghi vào <b>đầu ghi (write-end)</b> và đọc từ <b>đầu đọc (read-end)</b>, nên bản chất <b>1 chiều</b> và cần quan hệ cha–con. <b>Named pipe</b> mạnh hơn: giao tiếp <b>2 chiều</b>, không cần quan hệ cha–con, nhiều tiến trình không liên quan có thể cùng dùng — hỗ trợ trên cả UNIX và Windows.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Ordinary pipe</div>
+        <ul><li>1 chiều (write-end → read-end)</li><li>Bắt buộc quan hệ cha–con</li><li>Không tồn tại ngoài process đã tạo</li></ul>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Named pipe</div>
+        <ul><li>2 chiều</li><li>Không cần quan hệ cha–con</li><li>Nhiều tiến trình bất kỳ dùng chung được</li></ul>
+      </div>
+    </div>
+
+    <p class="en">For genuinely networked IPC, a <b>socket</b> is defined as an endpoint for communication — a concatenation of an <b>IP address</b> and a <b>port</b>, where the port number differentiates network services running on the same host. For example, the socket <span class="mono">161.25.19.8:1625</span> refers to port 1625 on host 161.25.19.8. All communication happens between a <em>pair</em> of sockets, all ports below 1024 are <b>well known</b> (reserved for standard services), and the special IP address <span class="mono">127.0.0.1</span> — the <b>loopback</b> address — refers back to the very system the process is running on.</p>
+    <span class="vi">Với IPC thật sự qua mạng, 1 <b>socket</b> được định nghĩa là 1 điểm cuối cho giao tiếp — là chuỗi ghép giữa 1 <b>địa chỉ IP</b> và 1 <b>port</b>, số port dùng để phân biệt các dịch vụ mạng chạy trên cùng 1 host. Ví dụ, socket <span class="mono">161.25.19.8:1625</span> chỉ port 1625 trên host 161.25.19.8. Mọi giao tiếp diễn ra giữa 1 <em>cặp</em> socket, mọi port dưới 1024 là <b>well known</b> (dành riêng cho dịch vụ chuẩn), và địa chỉ IP đặc biệt <span class="mono">127.0.0.1</span> — địa chỉ <b>loopback</b> — trỏ ngược lại chính hệ thống đang chạy tiến trình đó.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">host X <br><small>146.86.5.20:1625</small></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box hi">web server <br><small>161.25.19.8:80</small></div>
+    </div>
+
+    <p class="en">Java makes sockets concrete in just a few lines. A <span class="mono">DateServer</span> opens a <span class="mono">ServerSocket</span> on a chosen port and blocks on <span class="mono">accept()</span> until a client connects, then writes the current date back down that client's socket. Java also offers three flavors of socket: <b>connection-oriented (TCP)</b> via <span class="mono">Socket</span>/<span class="mono">ServerSocket</span>, <b>connectionless (UDP)</b>, and <span class="mono">MulticastSocket</span>, which can send the same data to multiple recipients at once.</p>
+    <span class="vi">Java biến socket thành thứ cụ thể chỉ trong vài dòng. 1 <span class="mono">DateServer</span> mở 1 <span class="mono">ServerSocket</span> ở port đã chọn và chặn (block) tại <span class="mono">accept()</span> tới khi có client kết nối, rồi ghi ngày giờ hiện tại ngược lại qua socket của client đó. Java còn có 3 loại socket: <b>connection-oriented (TCP)</b> qua <span class="mono">Socket</span>/<span class="mono">ServerSocket</span>, <b>connectionless (UDP)</b>, và <span class="mono">MulticastSocket</span>, có thể gửi cùng 1 dữ liệu tới nhiều người nhận cùng lúc.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">// DateServer.java</span>
+ServerSocket sock = new ServerSocket(6013);
+while (true) {
+    Socket client = sock.accept();
+    PrintWriter pout = new PrintWriter(
+        client.getOutputStream(), true);
+    pout.println(new java.util.Date().toString());
+    client.close();     <span class="tm-out">// resume listening</span>
+}
+
+<span class="tm-com">// DateClient.java</span>
+Socket sock = new Socket("127.0.0.1", 6013);
+BufferedReader bin = new BufferedReader(
+    new InputStreamReader(sock.getInputStream()));
+String line;
+while ((line = bin.readLine()) != null)
+    System.out.println(line);
+sock.close();</div>
+    </div>
+
+    <p class="en"><b>Remote Procedure Call (RPC)</b> abstracts procedure calls between processes on networked systems, again differentiated by ports. <b>Stubs</b> act as proxies for the real procedure on both the client and server sides: the <b>client-side stub</b> locates the server and <b>marshals</b> the parameters, and the <b>server-side stub</b> receives that message, unpacks the marshalled parameters, and actually runs the procedure on the server. Different machine architectures — <b>big-endian</b> (e.g. Motorola) vs <b>little-endian</b> (e.g. Intel x86) — are reconciled via a common <b>External Data Representation (XDR)</b> format.</p>
+    <span class="vi"><b>Remote Procedure Call (RPC)</b> trừu tượng hóa lời gọi hàm giữa các tiến trình trên hệ thống nối mạng, cũng phân biệt qua port. <b>Stub</b> đóng vai trò proxy cho hàm thật ở cả 2 phía client và server: <b>client-side stub</b> tìm server và <b>marshal</b> (đóng gói) tham số, <b>server-side stub</b> nhận message đó, giải đóng gói tham số, rồi thực sự chạy hàm trên server. Các kiến trúc máy khác nhau — <b>big-endian</b> (vd Motorola) so với <b>little-endian</b> (vd Intel x86) — được dung hòa qua 1 định dạng chung là <b>External Data Representation (XDR)</b>.</span>
+
+    <p class="en">Remote communication carries more failure scenarios than local communication (a message can be delivered <b>exactly once</b> rather than merely <b>at most once</b>), so the OS typically provides a <b>rendezvous</b> (or <b>matchmaker</b>) service to actually connect client and server: the client asks the matchmaker daemon which port serves procedure X, gets a port number <span class="mono">P</span> back, and only then sends its real RPC directly to a daemon listening on port <span class="mono">P</span>.</p>
+    <span class="vi">Giao tiếp từ xa gặp nhiều kịch bản lỗi hơn giao tiếp cục bộ (1 message có thể được gửi <b>đúng 1 lần</b> thay vì chỉ <b>tối đa 1 lần</b>), nên OS thường cung cấp dịch vụ <b>rendezvous</b> (hay <b>matchmaker</b>) để thực sự kết nối client và server: client hỏi daemon matchmaker port nào phục vụ hàm X, nhận về số port <span class="mono">P</span>, rồi mới gửi RPC thật trực tiếp tới daemon đang lắng nghe ở port <span class="mono">P</span>.</span>
+
+    <div class="seqlist">
+      <div class="sitem"><div class="snum"></div><div class="stext">Client → kernel: gửi message tới <b>matchmaker</b>, hỏi port của thủ tục X</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Matchmaker tra bảng, trả lời client kèm port P</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Kernel đặt port P vào message RPC của user</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Kernel gửi RPC thật tới port P trên server</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Daemon đang lắng nghe port P xử lý request, gửi output ngược lại client</div></div>
+    </div>
+
+    <div class="note teal">
+      <b>Mẹo thi</b>
+      Named pipe: 2 chiều + không cần quan hệ cha-con — đây là 2 điểm khác biệt hay bị hỏi so với ordinary pipe. RPC luôn cần bước "tìm port qua matchmaker" trước khi gửi request thật.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">ordinary pipe</span><span class="rchip">named pipe</span><span class="rchip">socket = IP:port</span>
+        <span class="rchip">loopback 127.0.0.1</span><span class="rchip">RPC / stub</span><span class="rchip">XDR</span><span class="rchip">matchmaker</span><span class="rchip">Java Socket/ServerSocket</span>
+      </div>
+      <p class="rline">Pipe: cục bộ, đơn giản. Socket: IP + port, endpoint mạng thật (Java: ServerSocket.accept() ở server, new Socket(host,port) ở client). RPC: gọi hàm "từ xa" như gọi hàm bình thường, ẩn hết việc marshal/network phía sau stub.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: QUIZ -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 3</h2>
+    <p class="intro">15 câu, đủ chủ đề trong chương. Bấm vào đáp án để xem đúng/sai và giải thích ngay.</p>
+    <div class="quiz-score" id="quizScore">0 / 15 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+  </section>
+
+  <footer>CO2017 · Operating Systems — HCMUT · Chapter 3 built from Silberschatz, Galvin &amp; Gagne, "Operating System Concepts," 10th ed.</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','concept','scheduling','operations','ipc','messaging','examples','clientserver','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch3-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "process": ["A program in execution; must progress in sequential fashion.", "1 chương trình đang chạy; phải tiến triển tuần tự."],
+      "text section": ["The program code itself.", "Vùng chứa chính mã chương trình."],
+      "program counter": ["Register holding the address of the next instruction to execute.", "Thanh ghi chứa địa chỉ lệnh kế tiếp sẽ chạy."],
+      "processor registers": ["Fast CPU-internal storage holding a process's current activity.", "Bộ nhớ nhanh bên trong CPU, lưu hoạt động hiện tại của tiến trình."],
+      "stack section": ["Temporary data: function parameters, return addresses, local variables.", "Dữ liệu tạm: tham số hàm, địa chỉ trả về, biến cục bộ."],
+      "data section": ["Holds a process's global variables.", "Chứa biến toàn cục của tiến trình."],
+      "heap section": ["Memory dynamically allocated during run time (e.g. malloc).", "Bộ nhớ cấp phát động lúc chạy (vd malloc)."],
+      "program": ["A passive entity — an executable file sitting on disk.", "Thực thể thụ động — 1 file thực thi nằm trên đĩa."],
+      "New": ["Process state: the process is being created.", "Trạng thái: tiến trình đang được tạo."],
+      "Running": ["Process state: instructions are actually being executed.", "Trạng thái: lệnh đang thực sự thực thi."],
+      "Waiting": ["Process state: waiting for some event (e.g. I/O) to occur.", "Trạng thái: đang chờ 1 sự kiện (vd I/O) xảy ra."],
+      "Ready": ["Process state: waiting to be assigned to a processor.", "Trạng thái: đang chờ được cấp CPU."],
+      "Terminated": ["Process state: the process has finished execution.", "Trạng thái: tiến trình đã chạy xong."],
+      "Process Control Block (PCB)": ["The kernel data structure that stores everything about one process.", "Cấu trúc dữ liệu kernel lưu mọi thông tin về 1 tiến trình."],
+      "Task Control Block (TCB)": ["Another name for the Process Control Block.", "Tên khác của Process Control Block."],
+      "thread": ["A single flow of execution within a process, with its own program counter.", "1 luồng thực thi bên trong tiến trình, có program counter riêng."],
+      "process scheduler": ["Selects one ready process to run next on a CPU core.", "Chọn 1 tiến trình sẵn sàng để chạy tiếp trên 1 nhân CPU."],
+      "ready queue": ["Processes in main memory, ready and waiting to execute.", "Các tiến trình ở bộ nhớ chính, sẵn sàng chờ chạy."],
+      "wait queues": ["Processes waiting for a specific event, such as I/O completion.", "Các tiến trình đang chờ 1 sự kiện cụ thể, như hoàn tất I/O."],
+      "context switch": ["Saving the old process's state and loading the new one's when the CPU switches.", "Lưu trạng thái tiến trình cũ, nạp trạng thái tiến trình mới khi CPU chuyển."],
+      "foreground process": ["The single process a mobile UI currently controls directly.", "Tiến trình duy nhất mà UI di động đang điều khiển trực tiếp."],
+      "background process": ["A suspended or limited process not currently shown on screen.", "Tiến trình bị treo hoặc giới hạn, không hiển thị trên màn hình."],
+      "service": ["An Android background component with no UI that keeps running when suspended.", "Thành phần chạy nền của Android, không UI, tiếp tục chạy khi bị treo."],
+      "Parent processes": ["Processes that create other (child) processes.", "Các tiến trình tạo ra tiến trình khác (con)."],
+      "children processes": ["Processes created by a parent process.", "Các tiến trình được tạo ra bởi tiến trình cha."],
+      "tree of processes": ["The hierarchy formed as processes keep creating other processes.", "Hệ thống phân cấp hình thành khi tiến trình liên tục tạo tiến trình khác."],
+      "Process Identifier (PID)": ["The unique number identifying and managing a process.", "Con số duy nhất định danh và quản lý 1 tiến trình."],
+      "fork()": ["Unix system call that creates a new process by duplicating the caller.", "System call Unix tạo tiến trình mới bằng cách nhân bản tiến trình gọi nó."],
+      "exec()": ["Replaces a process's memory space with a new program after a fork.", "Thay vùng nhớ của tiến trình bằng chương trình mới, sau khi fork."],
+      "wait()": ["Blocks the parent until a child process terminates.", "Chặn tiến trình cha tới khi 1 con kết thúc."],
+      "system()": ["Hands a command string to the shell interpreter to execute.", "Đưa 1 chuỗi lệnh cho shell thực thi."],
+      "exit()": ["System call a process uses to ask the OS to delete it.", "System call 1 tiến trình dùng để xin OS xóa nó."],
+      "abort()": ["Lets a parent forcibly terminate one of its children.", "Cho phép cha ép buộc kết thúc 1 tiến trình con."],
+      "cascading termination": ["OS-initiated termination of all of a process's descendants.", "OS chủ động kết thúc toàn bộ con cháu của 1 tiến trình."],
+      "zombie": ["A terminated process whose parent has not yet called wait().", "Tiến trình đã kết thúc nhưng cha chưa gọi wait()."],
+      "orphan": ["A child process whose parent terminated without calling wait().", "Tiến trình con có cha đã kết thúc mà chưa gọi wait()."],
+      "waitpid()": ["A more flexible wait() that can target a specific pid or group.", "Phiên bản wait() linh hoạt hơn, có thể nhắm đúng pid hay group."],
+      "importance hierarchy": ["Android's order for killing processes to reclaim memory.", "Thứ tự Android dùng để giết tiến trình nhằm lấy lại bộ nhớ."],
+      "sandbox": ["A restricted execution environment limiting disk/network access.", "Môi trường thực thi bị giới hạn, hạn chế truy cập đĩa/mạng."],
+      "renderer process": ["A per-website Chrome process that renders HTML/JavaScript.", "Tiến trình Chrome riêng cho mỗi website, render HTML/JavaScript."],
+      "independent process": ["A process that shares no data with any other process.", "1 tiến trình không chia sẻ dữ liệu với bất kỳ tiến trình nào khác."],
+      "cooperating process": ["A process that can affect, or be affected by, other processes.", "1 tiến trình có thể tác động, hoặc bị tác động bởi, tiến trình khác."],
+      "Inter-Process Communication (IPC)": ["Mechanisms letting cooperating processes exchange data.", "Cơ chế cho tiến trình hợp tác trao đổi dữ liệu."],
+      "shared memory": ["An IPC model where processes read/write one common memory region.", "Mô hình IPC nơi tiến trình đọc/ghi chung 1 vùng bộ nhớ."],
+      "message passing": ["An IPC model where processes exchange discrete messages via the kernel.", "Mô hình IPC nơi tiến trình trao đổi thông điệp rời rạc qua kernel."],
+      "producer–consumer problem": ["A producer process creates data a consumer process consumes.", "1 tiến trình sản xuất tạo dữ liệu để 1 tiến trình tiêu thụ dùng."],
+      "unbounded-buffer": ["A buffer with no practical size limit.", "Buffer không giới hạn kích thước thực tế."],
+      "bounded-buffer": ["A buffer with a fixed size, usable up to size − 1 elements.", "Buffer có kích thước cố định, dùng được tối đa size − 1 phần tử."],
+      "direct communication": ["Processes name each other explicitly to send/receive.", "Tiến trình gọi tên nhau tường minh để gửi/nhận."],
+      "indirect communication": ["Processes send/receive via shared mailboxes instead of naming each other.", "Tiến trình gửi/nhận qua mailbox chung thay vì gọi tên nhau."],
+      "mailboxes": ["Shared endpoints (also called ports) used for indirect communication.", "Điểm đến chung (còn gọi port) dùng cho giao tiếp gián tiếp."],
+      "blocking": ["Synchronous send/receive — the caller waits until it completes.", "Send/receive đồng bộ — bên gọi chờ tới khi hoàn tất."],
+      "non-blocking": ["Asynchronous send/receive — the caller continues immediately.", "Send/receive bất đồng bộ — bên gọi tiếp tục ngay lập tức."],
+      "rendezvous": ["When both send and receive block, meeting exactly at the same moment.", "Khi cả send và receive đều blocking, gặp nhau đúng cùng 1 thời điểm."],
+      "Zero capacity": ["A link with no message queue — forces a rendezvous.", "Link không có hàng đợi message — buộc phải rendezvous."],
+      "Bounded capacity": ["A link with a finite-length message queue.", "Link có hàng đợi message độ dài hữu hạn."],
+      "Unbounded capacity": ["A link with an infinite-length message queue.", "Link có hàng đợi message độ dài vô hạn."],
+      "POSIX shared memory": ["The shm_open/ftruncate/mmap API for shared memory on POSIX systems.", "API shm_open/ftruncate/mmap để dùng shared memory trên hệ POSIX."],
+      "mmap()": ["Memory-maps a file pointer to a shared memory object.", "Ánh xạ 1 con trỏ file tới 1 đối tượng shared memory."],
+      "Mach": ["A microkernel OS whose communication is entirely message based.", "1 microkernel OS có giao tiếp hoàn toàn dựa trên message."],
+      "Task Self": ["A port automatically given to every Mach task at creation.", "1 port được cấp tự động cho mỗi Mach task khi tạo."],
+      "Notify": ["The second port automatically given to every Mach task.", "Port thứ 2 được cấp tự động cho mỗi Mach task."],
+      "Local Procedure Call (LPC)": ["Windows' message-passing facility for same-system communication.", "Cơ chế truyền message của Windows, chỉ trong cùng 1 hệ thống."],
+      "connection port": ["The port a Windows client first opens a handle to, to request a connection.", "Port mà client Windows mở handle tới đầu tiên, để xin kết nối."],
+      "communication ports": ["The private port pair a Windows server creates per LPC connection.", "Cặp port riêng mà server Windows tạo cho mỗi kết nối LPC."],
+      "pipe": ["A conduit allowing two processes to communicate.", "1 đường dẫn cho 2 tiến trình giao tiếp."],
+      "Ordinary pipes": ["Unidirectional pipes usable only between a parent and its child.", "Pipe 1 chiều, chỉ dùng được giữa cha và con nó."],
+      "write-end": ["The end of an ordinary pipe a producer writes into.", "Đầu của ordinary pipe mà bên sản xuất ghi vào."],
+      "read-end": ["The end of an ordinary pipe a consumer reads from.", "Đầu của ordinary pipe mà bên tiêu thụ đọc từ."],
+      "Named pipes": ["Bidirectional pipes usable by unrelated processes.", "Pipe 2 chiều, dùng được bởi các tiến trình không liên quan."],
+      "socket": ["An endpoint for network communication: an IP address plus a port.", "1 điểm cuối cho giao tiếp mạng: địa chỉ IP cộng với port."],
+      "well known": ["Ports below 1024, reserved for standard network services.", "Các port dưới 1024, dành riêng cho dịch vụ mạng chuẩn."],
+      "loopback": ["The special address 127.0.0.1 referring back to the local system.", "Địa chỉ đặc biệt 127.0.0.1 trỏ ngược lại chính hệ thống cục bộ."],
+      "Remote Procedure Calls (RPC)": ["Abstracts procedure calls between processes on networked systems.", "Trừu tượng hóa lời gọi hàm giữa các tiến trình trên hệ nối mạng."],
+      "Stubs": ["Client- and server-side proxies standing in for the real remote procedure.", "Proxy phía client và server, đại diện cho hàm thật ở xa."],
+      "marshals": ["Packing parameters into a message for transport to the server.", "Đóng gói tham số vào 1 message để gửi tới server."],
+      "External Data Representation (XDR)": ["A common data format reconciling different machine architectures.", "1 định dạng dữ liệu chung, dung hòa các kiến trúc máy khác nhau."],
+      "rendezvous (or matchmaker)": ["An OS service connecting an RPC client to the right server port.", "Dịch vụ OS kết nối client RPC tới đúng port trên server."]
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    document.querySelectorAll('p.en b').forEach(el => {
+      const text = el.textContent.trim();
+      if (!G[text]) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = text;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+    { q:"What is a process, most precisely?", opts:["Any file stored on disk","A program in execution","A synonym for a system call","A CPU register"], correct:1, exp:"A process is a program in execution; execution must progress in sequential fashion." },
+    { q:"Which section of a process holds function parameters, return addresses, and local variables?", opts:["Text section","Data section","Stack section","Heap section"], correct:2, exp:"The stack section holds temporary data such as parameters, return addresses, and local variables." },
+    { q:"Two students run the exact same program at the same time. How many processes exist?", opts:["Always exactly 1","Exactly 2, one per execution","0, since it's the same program","Cannot be determined"], correct:1, exp:"One program can be several processes — each execution gets its own process, PCB, stack, heap, and data." },
+    { q:"From the Waiting state, a process can move directly to which state?", opts:["Running","Terminated","Ready","New"], correct:2, exp:"Waiting → Ready happens on I/O or event completion; it can never jump straight to Running." },
+    { q:"Which of these is NOT normally stored in a Process Control Block (PCB)?", opts:["Program counter","CPU scheduling information","The process's own source code text file","I/O status information"], correct:2, exp:"The PCB stores state, PID, program counter, registers, scheduling info, memory info, accounting, and I/O status — not the raw source file." },
+    { q:"What does a context switch actually accomplish in terms of useful computation?", opts:["It runs both processes in parallel briefly","It performs no useful work — it's pure overhead","It always speeds up the CPU clock","It merges the two processes' memory"], correct:1, exp:"Context-switch time is overhead: the system does no useful work while saving/loading PCBs." },
+    { q:"On early iOS, what happens to an app once it goes to the background?", opts:["It keeps running with full privileges","It's usually suspended, with only a few very limited exceptions","It's immediately turned into a zombie","It automatically becomes the new foreground process"], correct:1, exp:"Early iOS allowed only one foreground process; background apps were suspended except for very limited task types." },
+    { q:"Which system call replaces a process's entire memory image with a new program?", opts:["fork()", "wait()", "exec()", "abort()"], correct:2, exp:"exec() is used after fork() to load and run a new program in the child's memory space." },
+    { q:"A child process has terminated, but its parent has never called wait(). What is this child called?", opts:["An orphan", "A zombie", "A daemon", "A rendezvous"], correct:1, exp:"A terminated process with no parent waiting for it is a zombie." },
+    { q:"A parent terminates before ever calling wait() on its still-running child. What is the child called?", opts:["A zombie", "An orphan", "A stub", "A mailbox"], correct:1, exp:"A child left running after its parent has terminated (without waiting) is an orphan." },
+    { q:"Chrome's multiprocess design creates a new process of which type for every website opened?", opts:["Browser process", "Plug-in process", "Renderer process", "Matchmaker process"], correct:2, exp:"A new sandboxed renderer process is created for each website opened, limiting the blast radius of any one site's crash or exploit." },
+    { q:"In a bounded-buffer shared-memory solution with BUFFER_SIZE = 10, how many elements can actually be stored at once?", opts:["10", "9", "11", "Unlimited"], correct:1, exp:"Only BUFFER_SIZE − 1 elements can be used, so that in == out can unambiguously mean 'empty' rather than also meaning 'full'." },
+    { q:"What distinguishes direct communication from indirect communication?", opts:["Direct uses mailboxes; indirect names processes explicitly","Direct names processes explicitly; indirect uses shared mailboxes/ports","They are exactly the same thing","Indirect communication is always unidirectional"], correct:1, exp:"Direct communication requires send(P,msg)/receive(Q,msg) naming the other process; indirect goes through a shared mailbox/port instead." },
+    { q:"If both send() and receive() are blocking, what is this combination called?", opts:["A deadlock", "A rendezvous", "An orphan", "A zombie link"], correct:1, exp:"When both operations block until the other side is ready, the meeting is called a rendezvous." },
+    { q:"What is the special IP address 127.0.0.1 used for?", opts:["The default gateway of every network","A loopback address referring to the local system itself","The address reserved for all RPC matchmakers","A broadcast address for the entire subnet"], correct:1, exp:"127.0.0.1 is the loopback address, referring a process back to the very system it's running on." }
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  let correctCount = 0;
+
+  QUIZ.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q';
+    qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+    const optsWrap = document.createElement('div');
+    item.opts.forEach((optText, oi) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.type = 'button';
+      b.textContent = optText;
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        const allOpts = optsWrap.querySelectorAll('.opt');
+        allOpts.forEach(o => o.disabled = true);
+        if (oi === item.correct){
+          b.classList.add('correct');
+          correctCount++;
+        } else {
+          b.classList.add('wrong');
+          allOpts[item.correct].classList.add('correct');
+        }
+        quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+        const ex = qDiv.querySelector('.explain');
+        ex.classList.add('show');
+      });
+      optsWrap.appendChild(b);
+    });
+    qDiv.appendChild(optsWrap);
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.textContent = item.exp;
+    qDiv.appendChild(explain);
+    quizRoot.appendChild(qDiv);
+  });
+</script>
+</body>
+</html>
