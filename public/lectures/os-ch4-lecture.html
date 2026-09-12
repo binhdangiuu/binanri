@@ -1,0 +1,1464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2017 · Chapter 4 — Threads &amp; Concurrency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#2E7FC1; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar-wrap{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); padding:12px 14px 11px; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ position:relative; font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 14px 7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper); color:#fff; border-color:var(--copper); }
+  .tab-btn.visited:not(.active){ box-shadow: inset 0 -2px 0 0 #ffffff55; }
+
+  .progress-row{ display:flex; align-items:center; gap:11px; margin-top:10px; }
+  .progress-track{ flex:1; height:7px; border-radius:999px; background:#ffffff1f; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--copper) 0%, #FFB454 50%, var(--teal) 100%); transition:width .4s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:#ffffffb0; white-space:nowrap; min-width:96px; text-align:right; }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:18ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:20px; margin:36px 0 10px; }
+
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:440px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; max-width:560px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:10px; padding:14px 10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:18px 20px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 20px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  p.en .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  p.en .term:hover, p.en .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  p.en .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .rings-wrap{ display:flex; align-items:center; gap:28px; margin:10px 0 24px; flex-wrap:wrap; }
+  .rings{ position:relative; width:210px; height:210px; flex-shrink:0; }
+  .rings .ring{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:1px solid var(--grid); display:flex; align-items:center; justify-content:center; }
+  .rings .r4{ width:210px; height:210px; background:var(--paper-deep); }
+  .rings .r3{ width:158px; height:158px; background:#FFE0EE; }
+  .rings .r2{ width:106px; height:106px; background:var(--teal-tint); }
+  .rings .r1{ width:54px; height:54px; background:var(--teal); }
+  .rings .r1 span{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:#fff; text-align:center; font-weight:600; line-height:1.2; }
+  .rings-legend{ display:flex; flex-direction:column; gap:9px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .rl-item{ display:flex; align-items:center; gap:8px; }
+  .rl-item .sw{ width:14px; height:14px; border-radius:50%; border:1px solid var(--grid); flex-shrink:0; }
+  .rl-item .sw.r4{ background:var(--paper-deep); } .rl-item .sw.r3{ background:#FFE0EE; } .rl-item .sw.r2{ background:var(--teal-tint); } .rl-item .sw.r1{ background:var(--teal); }
+
+  .seqlist{ margin:6px 0 24px; max-width:540px; counter-reset:seq; }
+  .seqlist .sitem{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px dashed var(--grid); }
+  .seqlist .sitem:first-child{ border-top:none; }
+  .seqlist .snum{ counter-increment:seq; flex-shrink:0; width:23px; height:23px; border-radius:50%; background:var(--copper); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:11.5px; display:flex; align-items:center; justify-content:center; font-weight:700; margin-top:1px; }
+  .seqlist .snum::before{ content: counter(seq); }
+  .seqlist .stext{ font-family:"IBM Plex Mono",monospace; font-size:12.8px; color:var(--ink); padding-top:2px; line-height:1.5; }
+
+  .term-mock{ max-width:460px; margin:6px 0 24px; border-radius:10px; overflow:hidden; box-shadow:0 12px 28px -16px rgba(74,46,64,.45); }
+  .term-mock .tm-bar{ background:#2b2530; padding:8px 12px; display:flex; gap:6px; }
+  .term-mock .tm-dot{ width:10px; height:10px; border-radius:50%; }
+  .term-mock .tm-dot.r{ background:#ff5f56; } .term-mock .tm-dot.y{ background:#ffbd2e; } .term-mock .tm-dot.g{ background:#27c93f; }
+  .term-mock .tm-body{ background:#241f29; color:#e8dce3; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:14px 16px; line-height:1.75; white-space:pre-wrap; }
+  .term-mock .tm-prompt{ color:#7FC4F0; }
+  .term-mock .tm-out{ color:#c7a8bb; }
+  .term-mock .tm-com{ color:#7bd88f; }
+
+  .phone-mock{ max-width:220px; margin:6px auto 24px; border:8px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--paper-deep); }
+  .phone-mock .pm-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .phone-mock .pm-icon{ aspect-ratio:1; border-radius:12px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .phone-mock .pm-icon:nth-child(3n+2){ background:var(--copper-tint); }
+
+  table.cmp-table{ width:100%; max-width:600px; border-collapse:collapse; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .tree{ display:flex; flex-direction:column; align-items:center; gap:6px; margin:10px 0 24px; }
+  .tree .trow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .tree .tnode{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:8px 12px; border-radius:8px; border:1px solid var(--grid); background:var(--paper-deep); text-align:center; }
+  .tree .tnode.root{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .tree .tconn{ color:var(--ink-soft); font-size:12px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar-wrap{ position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 12px 6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .rings-wrap{ justify-content:center; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2017 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="threads">Threads &amp; Benefits</button>
+    <button class="tab-btn" data-tab="multicore">Multicore &amp; Amdahl</button>
+    <button class="tab-btn" data-tab="models">Threading Models</button>
+    <button class="tab-btn" data-tab="libraries">Thread Libraries</button>
+    <button class="tab-btn" data-tab="implicit">Implicit Threading</button>
+    <button class="tab-btn" data-tab="issues">Threading Issues</button>
+    <button class="tab-btn" data-tab="examples">OS Examples</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/9 tab · 0%</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 4 · Threads &amp; Concurrency</span>
+    <h1>A process is heavy. A <em>thread</em> is how it stays light on its feet</h1>
+    <p class="lede">Chapter 3 gave a process its own address space, PCB, and lifecycle. This chapter cracks that single process open and lets many lightweight threads of control run inside it — sharing code and data, but each keeping its own stack and registers.</p>
+    <span class="vi">Chương 3 cho 1 tiến trình không gian địa chỉ, PCB và vòng đời riêng. Chương này mở tiến trình đó ra và để nhiều luồng điều khiển nhẹ (thread) chạy bên trong nó — dùng chung code và data, nhưng mỗi luồng giữ stack và thanh ghi riêng.</span>
+    <div class="tagrow">
+      <span class="tag user">Thread = program counter + stack + registers, riêng cho từng luồng</span>
+      <span class="tag kernel">Shared: code, data, open files — chung cho cả process</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="threads"><div class="kicker">01 · Concept</div><h3>Threads &amp; Benefits</h3><p>Motivation, single vs multithreaded process, responsiveness/sharing/economy/scalability, process vs thread.</p></div>
+    <div class="card kernel" data-goto="multicore"><div class="kicker">02 · Performance</div><h3>Multicore &amp; Amdahl's Law</h3><p>Concurrency vs parallelism, data vs task parallelism, the math behind speedup.</p></div>
+    <div class="card user" data-goto="models"><div class="kicker">03 · Mapping</div><h3>Multithreading Models</h3><p>Many-to-one, one-to-one, many-to-many, two-level, and LWPs.</p></div>
+    <div class="card kernel" data-goto="libraries"><div class="kicker">04 · APIs</div><h3>Thread Libraries</h3><p>Pthreads, Windows threads, Java threads &amp; the Executor framework.</p></div>
+    <div class="card user" data-goto="implicit"><div class="kicker">05 · Automation</div><h3>Implicit Threading</h3><p>Thread pools, fork-join, OpenMP, Grand Central Dispatch, Intel TBB.</p></div>
+    <div class="card kernel" data-goto="issues"><div class="kicker">06 · Gotchas</div><h3>Threading Issues</h3><p>fork()/exec() semantics, signal handling, cancellation, TLS, scheduler activations.</p></div>
+    <div class="card user" data-goto="examples"><div class="kicker">07 · Case studies</div><h3>OS Examples</h3><p>Windows ETHREAD/KTHREAD/TEB and Linux's clone()-based tasks.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.4</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Threads vs processes</h4><p>Identify a thread's basic components and contrast them with a process.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Multithreaded design</h4><p>Describe the real benefits and real challenges of writing multithreaded applications.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Implicit threading</h4><p>Illustrate thread pools, fork-join, and Grand Central Dispatch.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 4</div><div><h4>Real threading APIs</h4><p>Design multithreaded applications with Pthreads, Java, and Windows threading.</p></div></div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: THREADS & BENEFITS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-threads" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧵</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Concept</div>
+        <h2>What is a thread, really?</h2>
+        <span class="vi">Thread thực sự là cái gì?</span>
+      </div>
+    </div>
+    <p class="intro">Most modern applications are multithreaded — separate tasks within one app can each be handled by their own thread.</p>
+    <span class="vi">Hầu hết ứng dụng hiện đại đều đa luồng — các tác vụ riêng biệt trong 1 app có thể mỗi cái do 1 thread đảm nhiệm.</span>
+
+    <div class="hook">
+      <b>Trước khi đọc tiếp — thử đoán:</b> 1 trình soạn thảo văn bản vừa kiểm tra chính tả, vừa vẽ lại màn hình khi bạn gõ, vừa tự động lưu file. Nếu chỉ có <em>1 thread duy nhất</em>, chuyện gì xảy ra khi kiểm tra chính tả bị chậm?
+      <span class="vi">Gợi ý: cả ứng dụng "đứng hình" — vì chỉ 1 luồng điều khiển phải làm tuần tự từng việc.</span>
+    </div>
+
+    <svg viewBox="0 0 560 170" style="max-width:560px;width:100%;margin:6px 0 8px;font-family:'IBM Plex Mono',monospace;">
+      <text x="100" y="18" text-anchor="middle" font-size="11.5" fill="#4A2E40" font-weight="600">tạo process mới</text>
+      <rect x="20" y="28" width="160" height="100" rx="10" fill="#FF6FA51f" stroke="#E8407F" stroke-width="2"/>
+      <text x="100" y="55" text-anchor="middle" font-size="9.5" fill="#C22A63">address space mới</text>
+      <text x="100" y="72" text-anchor="middle" font-size="9.5" fill="#C22A63">PCB mới</text>
+      <text x="100" y="89" text-anchor="middle" font-size="9.5" fill="#C22A63">tài nguyên nhân bản</text>
+      <text x="100" y="113" text-anchor="middle" font-size="10" fill="#C22A63" font-weight="600">→ NẶNG</text>
+
+      <line x1="210" y1="78" x2="280" y2="78" stroke="#8A5F78" stroke-dasharray="3,3"/>
+      <text x="245" y="71" text-anchor="middle" font-size="9" fill="#8A5F78">so với</text>
+
+      <text x="400" y="18" text-anchor="middle" font-size="11.5" fill="#4A2E40" font-weight="600">tạo thread mới</text>
+      <rect x="330" y="35" width="140" height="46" rx="8" fill="#7FC4F026" stroke="#4FA4DD" stroke-width="2"/>
+      <text x="400" y="54" text-anchor="middle" font-size="9.5" fill="#2E7FC1">PC + registers</text>
+      <text x="400" y="70" text-anchor="middle" font-size="9.5" fill="#2E7FC1">+ stack riêng</text>
+      <text x="400" y="100" text-anchor="middle" font-size="9.5" fill="#2E7FC1">dùng chung code/data cũ</text>
+      <text x="400" y="122" text-anchor="middle" font-size="10" fill="#2E7FC1" font-weight="600">→ NHẸ</text>
+    </svg>
+
+    <div class="boundary-box">
+      <div class="boundary-half user">
+        <div class="role">Single-threaded process</div>
+        <div class="flowchip">code</div><div class="flowchip">data</div><div class="flowchip">files</div>
+        <div class="flowchip" style="background:var(--teal-tint);border-color:var(--teal);color:var(--teal-deep);">registers</div>
+        <div class="flowchip" style="background:var(--teal-tint);border-color:var(--teal);color:var(--teal-deep);">stack</div>
+      </div>
+      <div class="boundary-line"><span>1 luồng duy nhất sở hữu registers + stack riêng</span><span class="rule"></span></div>
+      <div class="boundary-half kernel">
+        <div class="role">Multithreaded process</div>
+        <div class="flowchip">code (chung)</div><div class="flowchip">data (chung)</div><div class="flowchip">files (chung)</div><br>
+        <div class="flowchip" style="background:var(--copper-tint);border-color:var(--copper);color:var(--copper-deep);">T1: registers + stack</div>
+        <div class="flowchip" style="background:var(--copper-tint);border-color:var(--copper);color:var(--copper-deep);">T2: registers + stack</div>
+        <div class="flowchip" style="background:var(--copper-tint);border-color:var(--copper);color:var(--copper-deep);">T3: registers + stack</div>
+      </div>
+    </div>
+    <div class="illus">
+      <div class="emo">🖥️</div>
+      <div class="cap"><b>Ví dụ: web server đa luồng</b>Thay vì fork 1 process/client, thread chính chỉ sinh 1 thread nhẹ/request rồi quay lại lắng nghe tiếp.</div>
+    </div>
+
+    <p class="en">The benefits of threading break down into four pillars — <b>Responsiveness</b>, <b>Resource sharing</b>, <b>Economy</b>, and <b>Scalability</b>.</p>
+    <span class="vi">Lợi ích của threading chia thành 4 trụ cột — <b>Responsiveness</b>, <b>Resource sharing</b>, <b>Economy</b>, và <b>Scalability</b>.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">⚡ Responsiveness</div><p>UI vẫn phản hồi dù 1 phần process bị block (thread nền chờ đĩa, thread UI vẫn sống).</p></div>
+      <div class="res-card"><div class="rk">🤝 Resource sharing</div><p>Thread mặc định chia sẻ tài nguyên process — dễ hơn shared memory/IPC.</p></div>
+      <div class="res-card"><div class="rk">💰 Economy</div><p>Rẻ hơn tạo process, context switch giữa thread nhanh &amp; nhẹ hơn nhiều.</p></div>
+      <div class="res-card"><div class="rk">📈 Scalability</div><p>Chạy các thread trên các nhân khác nhau — tận dụng multicore thật sự.</p></div>
+    </div>
+
+    <table class="cmp-table">
+      <tr><th>Process</th><th>Thread</th></tr>
+      <tr><td>1 chương trình đang được thực thi</td><td>1 đoạn nhẹ của process, do scheduler quản lý riêng</td></tr>
+      <tr><td>Độc lập, không chia sẻ bộ nhớ/tài nguyên</td><td>Phụ thuộc lẫn nhau, chia sẻ bộ nhớ</td></tr>
+      <tr><td>OS coi mỗi process là 1 thực thể mới</td><td>OS coi toàn bộ thread cấp người dùng là 1 process duy nhất</td></tr>
+      <tr><td>1 process block không ảnh hưởng process khác</td><td>1 thread block kéo mọi thread anh em cùng block</td></tr>
+      <tr><td>Context switch chậm, nặng</td><td>Context switch nhanh, nhẹ</td></tr>
+      <tr><td>Code/data segment độc lập</td><td>Chia sẻ code/data segment với thread anh em</td></tr>
+      <tr><td>Tạo/kết thúc tốn nhiều thời gian hơn</td><td>Tạo/kết thúc rất nhanh</td></tr>
+    </table>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Đề hay hỏi ngược: "1 thread trong nhóm bị block, chuyện gì xảy ra với các thread khác trong CÙNG process?" → Với many-to-one hoặc user-level thread, TOÀN BỘ peer thread cũng bị block, vì OS chỉ thấy 1 process.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">thread = PC + registers + stack riêng</span><span class="rchip">code/data/files chung</span>
+        <span class="rchip">responsiveness</span><span class="rchip">resource sharing</span><span class="rchip">economy</span><span class="rchip">scalability</span>
+      </div>
+      <p class="rline">Process nặng vì có không gian địa chỉ riêng hoàn toàn; thread nhẹ vì chỉ thêm 1 luồng chạy bên trong không gian đã có sẵn.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: MULTICORE & AMDAHL -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-multicore" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">⚡</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Performance</div>
+        <h2>More cores, more problems (for the programmer)</h2>
+        <span class="vi">Nhiều nhân hơn, nhiều vấn đề hơn (cho người lập trình)</span>
+      </div>
+    </div>
+    <p class="intro">Multicore or multiprocessor systems put real pressure on programmers, who now have to think in parallel instead of in a straight line.</p>
+    <span class="vi">Hệ đa nhân hay đa xử lý đặt áp lực thật sự lên lập trình viên, giờ phải nghĩ theo hướng song song thay vì theo 1 đường thẳng.</span>
+
+    <p class="en">Multicore programming brings five recurring challenges.</p>
+    <span class="vi">Lập trình đa nhân mang lại 5 thách thức hay lặp lại.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">🔪 Dividing activities</div><p>Tìm vùng có thể tách thành tác vụ song song riêng biệt.</p></div>
+      <div class="res-card"><div class="rk">⚖️ Balance</div><p>Mỗi tác vụ đã chia phải có khối lượng công việc tương đương.</p></div>
+      <div class="res-card"><div class="rk">✂️ Data splitting</div><p>Chia dữ liệu khớp với cách các tác vụ đã được chia.</p></div>
+      <div class="res-card"><div class="rk">🔗 Data dependency</div><p>Tác vụ phụ thuộc dữ liệu tác vụ khác → phải đồng bộ.</p></div>
+      <div class="res-card"><div class="rk">🐞 Testing &amp; debugging</div><p>Khó hơn nhiều — nhiều đường thực thi có thể xảy ra.</p></div>
+    </div>
+
+    <p class="en"><b>Parallelism</b> implies a system can perform more than one task simultaneously — this genuinely requires multiple cores. <b>Concurrency</b> only supports more than one task making progress; on a single processor/core, the scheduler provides concurrency by rapidly switching between tasks, creating the illusion of simultaneity without ever truly running two things at once.</p>
+    <span class="vi"><b>Parallelism (song song)</b> ngụ ý hệ thống có thể thực hiện hơn 1 tác vụ cùng lúc — điều này thực sự cần nhiều nhân. <b>Concurrency (đồng thời)</b> chỉ hỗ trợ hơn 1 tác vụ cùng tiến triển; trên 1 CPU/nhân duy nhất, scheduler tạo ra concurrency bằng cách chuyển đổi nhanh giữa các tác vụ, tạo ảo giác đồng thời chứ không thực sự chạy 2 việc cùng lúc.</span>
+
+    <svg viewBox="0 0 560 180" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="20" font-size="12" fill="#4A2E40" font-weight="600">Concurrent — single core</text>
+      <rect x="10" y="30" width="60" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="40" y="47" text-anchor="middle" font-size="10" fill="#C22A63">T1</text>
+      <rect x="75" y="30" width="60" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="105" y="47" text-anchor="middle" font-size="10" fill="#2E7FC1">T2</text>
+      <rect x="140" y="30" width="60" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="170" y="47" text-anchor="middle" font-size="10" fill="#C22A63">T1</text>
+      <rect x="205" y="30" width="60" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="235" y="47" text-anchor="middle" font-size="10" fill="#2E7FC1">T2</text>
+      <rect x="270" y="30" width="60" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="300" y="47" text-anchor="middle" font-size="10" fill="#C22A63">T1</text>
+      <text x="345" y="47" font-size="10.5" fill="#8A5F78">← 1 core, đan xen theo thời gian</text>
+
+      <text x="10" y="95" font-size="12" fill="#4A2E40" font-weight="600">Parallel — multi-core</text>
+      <text x="10" y="115" font-size="10" fill="#8A5F78">core 0</text>
+      <rect x="70" y="105" width="330" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="235" y="122" text-anchor="middle" font-size="10" fill="#C22A63">T1 chạy liên tục</text>
+      <text x="10" y="150" font-size="10" fill="#8A5F78">core 1</text>
+      <rect x="70" y="140" width="330" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="235" y="157" text-anchor="middle" font-size="10" fill="#2E7FC1">T2 chạy liên tục — cùng lúc với T1</text>
+    </svg>
+
+    <p class="en">There are two types of parallelism: <b>Data parallelism</b> and <b>Task parallelism</b>.</p>
+    <span class="vi">Có 2 loại parallelism: <b>Data parallelism</b> và <b>Task parallelism</b>.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Data parallelism</div>
+        <svg viewBox="0 0 220 90" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="200" height="20" rx="4" fill="#FFF6FB" stroke="#FFD3E8"/><text x="110" y="24" text-anchor="middle" font-size="9" fill="#8A5F78">data[0..99]</text>
+          <line x1="60" y1="30" x2="35" y2="50" stroke="#8A5F78"/><line x1="110" y1="30" x2="110" y2="50" stroke="#8A5F78"/><line x1="160" y1="30" x2="185" y2="50" stroke="#8A5F78"/>
+          <rect x="10" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="35" y="67" text-anchor="middle" font-size="8" fill="#2E7FC1">core0</text><text x="35" y="77" text-anchor="middle" font-size="7.5" fill="#2E7FC1">op(0-32)</text>
+          <rect x="85" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="110" y="67" text-anchor="middle" font-size="8" fill="#2E7FC1">core1</text><text x="110" y="77" text-anchor="middle" font-size="7.5" fill="#2E7FC1">op(33-65)</text>
+          <rect x="160" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="185" y="67" text-anchor="middle" font-size="8" fill="#2E7FC1">core2</text><text x="185" y="77" text-anchor="middle" font-size="7.5" fill="#2E7FC1">op(66-99)</text>
+        </svg>
+        <p>Cùng 1 phép toán <b>op</b>, chia dữ liệu ra nhiều nhân.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Task parallelism</div>
+        <svg viewBox="0 0 220 90" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="200" height="20" rx="4" fill="#FFF6FB" stroke="#FFD3E8"/><text x="110" y="24" text-anchor="middle" font-size="9" fill="#8A5F78">1 tập dữ liệu chung</text>
+          <line x1="60" y1="30" x2="35" y2="50" stroke="#8A5F78"/><line x1="110" y1="30" x2="110" y2="50" stroke="#8A5F78"/><line x1="160" y1="30" x2="185" y2="50" stroke="#8A5F78"/>
+          <rect x="10" y="50" width="50" height="30" rx="5" fill="#FF6FA51f" stroke="#E8407F"/><text x="35" y="67" text-anchor="middle" font-size="8" fill="#C22A63">T1</text><text x="35" y="77" text-anchor="middle" font-size="7.5" fill="#C22A63">tính tổng</text>
+          <rect x="85" y="50" width="50" height="30" rx="5" fill="#FF6FA51f" stroke="#E8407F"/><text x="110" y="67" text-anchor="middle" font-size="8" fill="#C22A63">T2</text><text x="110" y="77" text-anchor="middle" font-size="7.5" fill="#C22A63">sắp xếp</text>
+          <rect x="160" y="50" width="50" height="30" rx="5" fill="#FF6FA51f" stroke="#E8407F"/><text x="185" y="67" text-anchor="middle" font-size="8" fill="#C22A63">T3</text><text x="185" y="77" text-anchor="middle" font-size="7.5" fill="#C22A63">ghi log</text>
+        </svg>
+        <p>Mỗi thread làm 1 việc <b>khác nhau</b>, trên cùng dữ liệu.</p>
+      </div>
+    </div>
+
+    <p class="en"><b>Amdahl's Law</b> identifies the speedup from adding cores to an app with serial portion <span class="mono">S</span>: <span class="mono">speedup ≤ 1 / (S + (1-S)/N)</span>. As <span class="mono">N → ∞</span>, speedup caps at <span class="mono">1/S</span> — the serial portion has a disproportionate effect on gains.</p>
+    <span class="vi"><b>Định luật Amdahl</b> xác định tốc độ tăng khi thêm nhân vào 1 ứng dụng có phần tuần tự <span class="mono">S</span>: <span class="mono">speedup ≤ 1 / (S + (1-S)/N)</span>. Khi <span class="mono">N → ∞</span>, tốc độ tăng chạm trần <span class="mono">1/S</span> — phần tuần tự ảnh hưởng không cân xứng lên mức tăng đạt được.</span>
+
+    <svg viewBox="0 0 500 220" style="max-width:500px;width:100%;margin:6px 0 8px;font-family:'IBM Plex Mono',monospace;">
+      <line x1="50" y1="190" x2="480" y2="190" stroke="#8A5F78"/><line x1="50" y1="10" x2="50" y2="190" stroke="#8A5F78"/>
+      <text x="20" y="15" font-size="9" fill="#8A5F78">speedup</text><text x="440" y="208" font-size="9" fill="#8A5F78">N (cores)</text>
+      <text x="35" y="194" font-size="8" fill="#8A5F78" text-anchor="end">0</text>
+      <line x1="46" y1="70" x2="480" y2="70" stroke="#FFD3E8" stroke-dasharray="3,3"/><text x="485" y="74" font-size="8.5" fill="#C22A63">1/S=4 (S=25%)</text>
+      <line x1="46" y1="130" x2="480" y2="130" stroke="#FFD3E8" stroke-dasharray="3,3"/><text x="485" y="134" font-size="8.5" fill="#2E7FC1">1/S=2 (S=50%)</text>
+      <path d="M50,190 Q90,110 160,80 T300,72 T480,70" fill="none" stroke="#E8407F" stroke-width="2.5"/>
+      <path d="M50,190 Q90,150 160,135 T300,131 T480,130" fill="none" stroke="#4FA4DD" stroke-width="2.5"/>
+      <text x="60" y="203" font-size="8" fill="#8A5F78">1</text><text x="150" y="203" font-size="8" fill="#8A5F78">2</text><text x="250" y="203" font-size="8" fill="#8A5F78">4</text><text x="380" y="203" font-size="8" fill="#8A5F78">8</text><text x="460" y="203" font-size="8" fill="#8A5F78">16+</text>
+    </svg>
+    <div class="illus">
+      <div class="emo">📉</div>
+      <div class="cap"><b>Đọc biểu đồ</b>Dù N tăng vô hạn, tốc độ tăng KHÔNG BAO GIỜ vượt trần 1/S — S càng nhỏ (song song càng nhiều) thì trần càng cao.</div>
+    </div>
+
+    <table class="cmp-table">
+      <tr><th>Ứng dụng 75% song song / 25% tuần tự (S=0.25)</th><th>Speedup</th></tr>
+      <tr><td>N = 1 core</td><td>1.00×</td></tr>
+      <tr><td>N = 2 cores</td><td>≈ 1.60×</td></tr>
+      <tr><td>N = 4 cores</td><td>≈ 2.28×</td></tr>
+      <tr><td>N → ∞</td><td>→ 1/S = 4.00× (trần tuyệt đối)</td></tr>
+    </table>
+
+    <div class="note teal">
+      <b>Mẹo thi</b>
+      Công thức Amdahl: speedup = 1 / (S + (1−S)/N). Học thuộc: phần tuần tự S càng lớn thì trần tốc độ tăng (1/S) càng thấp, dù N có lớn cỡ nào — đây là ý chính "serial portion has disproportionate effect."
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">concurrency ≠ parallelism</span><span class="rchip">data parallelism</span><span class="rchip">task parallelism</span>
+        <span class="rchip">Amdahl's Law</span><span class="rchip">1/(S+(1−S)/N)</span><span class="rchip">trần 1/S</span>
+      </div>
+      <p class="rline">Concurrency: nhiều tác vụ cùng tiến triển (có thể trên 1 core). Parallelism: nhiều tác vụ THỰC SỰ chạy cùng lúc (cần nhiều core).</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: MULTITHREADING MODELS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-models" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🗺️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Mapping</div>
+        <h2>User threads meet kernel threads</h2>
+        <span class="vi">Thread cấp người dùng gặp thread cấp kernel</span>
+      </div>
+    </div>
+    <p class="intro">User threads are managed by a user-level threads library — think POSIX Pthreads, Windows threads, Java threads. Kernel threads are supported directly by the kernel, in virtually every general-purpose OS (Windows, Linux, macOS, iOS, Android). The question this section answers: how do the two get mapped onto each other?</p>
+    <span class="vi">Thread cấp người dùng được quản lý bởi 1 thư viện thread cấp người dùng — như POSIX Pthreads, Windows threads, Java threads. Thread cấp kernel được chính kernel hỗ trợ trực tiếp, trong hầu như mọi OS đa dụng (Windows, Linux, macOS, iOS, Android). Câu hỏi phần này trả lời: 2 loại đó được ánh xạ vào nhau ra sao?</span>
+
+    <p class="en">In the <b>Many-to-One</b> model, many user-level threads map to a single kernel thread. If one thread makes a blocking system call, the entire process blocks — and because only one thread may ever be in the kernel at a time, multiple threads can never truly run in parallel on a multicore system. Few systems use this today; examples include Solaris Green Threads and GNU Portable Threads.</p>
+    <span class="vi">Trong mô hình <b>Many-to-One</b>, nhiều thread cấp người dùng ánh xạ vào 1 thread kernel duy nhất. Nếu 1 thread gọi system call blocking, cả tiến trình bị chặn — và vì chỉ 1 thread được ở trong kernel tại 1 thời điểm, nhiều thread không bao giờ thực sự chạy song song được trên hệ đa nhân. Ít hệ thống dùng mô hình này ngày nay; ví dụ gồm Solaris Green Threads và GNU Portable Threads.</span>
+
+    <svg viewBox="0 0 300 200" style="max-width:300px;width:100%;margin:6px 0 8px;font-family:'IBM Plex Mono',monospace;">
+      <circle cx="60" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="60" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U1</text>
+      <circle cx="120" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="120" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U2</text>
+      <circle cx="180" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="180" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U3</text>
+      <circle cx="240" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="240" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U4</text>
+      <line x1="60" y1="46" x2="150" y2="110" stroke="#8A5F78"/><line x1="120" y1="46" x2="150" y2="110" stroke="#8A5F78"/>
+      <line x1="180" y1="46" x2="150" y2="110" stroke="#8A5F78"/><line x1="240" y1="46" x2="150" y2="110" stroke="#8A5F78"/>
+      <line x1="0" y1="70" x2="300" y2="70" stroke="#FFD3E8" stroke-dasharray="4,3"/><text x="252" y="65" font-size="9" fill="#8A5F78">user</text><text x="252" y="82" font-size="9" fill="#8A5F78">kernel</text>
+      <circle cx="150" cy="130" r="20" fill="#7FC4F026" stroke="#4FA4DD"/><text x="150" y="134" text-anchor="middle" font-size="10" fill="#2E7FC1">K1</text>
+      <text x="150" y="180" text-anchor="middle" font-size="11" fill="#4A2E40" font-weight="600">Many-to-One</text>
+    </svg>
+
+    <p class="en">In the <b>One-to-One</b> model, each user-level thread maps to its own kernel thread — creating a user thread creates a kernel thread. This gives more concurrency than many-to-one, but the number of threads per process is sometimes restricted due to the overhead of managing that many kernel threads. Examples: Windows, Linux.</p>
+    <span class="vi">Trong mô hình <b>One-to-One</b>, mỗi thread cấp người dùng ánh xạ vào chính thread kernel riêng của nó — tạo 1 thread người dùng thì tạo luôn 1 thread kernel. Cho concurrency cao hơn many-to-one, nhưng số thread mỗi process đôi khi bị giới hạn vì overhead quản lý nhiều thread kernel như vậy. Ví dụ: Windows, Linux.</span>
+
+    <svg viewBox="0 0 300 200" style="max-width:300px;width:100%;margin:6px 0 8px;font-family:'IBM Plex Mono',monospace;">
+      <circle cx="70" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="70" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U1</text>
+      <circle cx="150" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="150" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U2</text>
+      <circle cx="230" cy="30" r="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="230" y="34" text-anchor="middle" font-size="9" fill="#C22A63">U3</text>
+      <line x1="70" y1="46" x2="70" y2="110" stroke="#8A5F78"/><line x1="150" y1="46" x2="150" y2="110" stroke="#8A5F78"/><line x1="230" y1="46" x2="230" y2="110" stroke="#8A5F78"/>
+      <line x1="0" y1="70" x2="300" y2="70" stroke="#FFD3E8" stroke-dasharray="4,3"/><text x="252" y="65" font-size="9" fill="#8A5F78">user</text><text x="252" y="82" font-size="9" fill="#8A5F78">kernel</text>
+      <circle cx="70" cy="130" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="70" y="134" text-anchor="middle" font-size="9" fill="#2E7FC1">K1</text>
+      <circle cx="150" cy="130" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="150" y="134" text-anchor="middle" font-size="9" fill="#2E7FC1">K2</text>
+      <circle cx="230" cy="130" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="230" y="134" text-anchor="middle" font-size="9" fill="#2E7FC1">K3</text>
+      <text x="150" y="180" text-anchor="middle" font-size="11" fill="#4A2E40" font-weight="600">One-to-One</text>
+    </svg>
+
+    <p class="en">The <b>Many-to-Many</b> model allows many user-level threads to be mapped to many kernel threads — the OS creates as many kernel threads as it judges sufficient. Windows offered this at one point with its ThreadFiber package, but otherwise it isn't very common. A close variant, the <b>Two-level model</b>, works like many-to-many except it additionally allows one specific user thread to be bound directly to its own kernel thread.</p>
+    <span class="vi">Mô hình <b>Many-to-Many</b> cho phép nhiều thread cấp người dùng ánh xạ vào nhiều thread kernel — OS tạo ra số thread kernel mà nó cho là đủ. Windows từng có mô hình này qua gói ThreadFiber, nhưng ngoài ra không phổ biến lắm. 1 biến thể gần giống, mô hình <b>Two-level</b>, hoạt động như many-to-many nhưng còn cho phép 1 thread người dùng cụ thể được gắn trực tiếp (bound) vào thread kernel riêng của nó.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Many-to-Many</div>
+        <svg viewBox="0 0 260 170" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <circle cx="40" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="40" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U1</text>
+          <circle cx="90" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="90" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U2</text>
+          <circle cx="140" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="140" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U3</text>
+          <circle cx="190" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="190" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U4</text>
+          <line x1="40" y1="38" x2="80" y2="95" stroke="#8A5F78"/><line x1="90" y1="38" x2="80" y2="95" stroke="#8A5F78"/>
+          <line x1="140" y1="38" x2="170" y2="95" stroke="#8A5F78"/><line x1="190" y1="38" x2="170" y2="95" stroke="#8A5F78"/>
+          <line x1="90" y1="38" x2="170" y2="95" stroke="#8A5F78" opacity="0.5"/>
+          <line x1="0" y1="58" x2="260" y2="58" stroke="#FFD3E8" stroke-dasharray="4,3"/>
+          <circle cx="80" cy="105" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="80" y="109" text-anchor="middle" font-size="9" fill="#2E7FC1">K1</text>
+          <circle cx="170" cy="105" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="170" y="109" text-anchor="middle" font-size="9" fill="#2E7FC1">K2</text>
+        </svg>
+        <p>4 user thread → 2 kernel thread, ánh xạ linh hoạt.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Two-level</div>
+        <svg viewBox="0 0 260 170" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <circle cx="40" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="40" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U1</text>
+          <circle cx="90" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="90" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U2</text>
+          <circle cx="140" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="140" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U3</text>
+          <circle cx="200" cy="25" r="13" fill="#FF6FA51f" stroke="#E8407F"/><text x="200" y="29" text-anchor="middle" font-size="8" fill="#C22A63">U4 (bound)</text>
+          <line x1="40" y1="38" x2="80" y2="95" stroke="#8A5F78"/><line x1="90" y1="38" x2="80" y2="95" stroke="#8A5F78"/>
+          <line x1="140" y1="38" x2="170" y2="95" stroke="#8A5F78"/>
+          <line x1="200" y1="38" x2="220" y2="95" stroke="#C22A63" stroke-width="2"/>
+          <line x1="0" y1="58" x2="260" y2="58" stroke="#FFD3E8" stroke-dasharray="4,3"/>
+          <circle cx="80" cy="105" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="80" y="109" text-anchor="middle" font-size="9" fill="#2E7FC1">K1</text>
+          <circle cx="170" cy="105" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="170" y="109" text-anchor="middle" font-size="9" fill="#2E7FC1">K2</text>
+          <circle cx="220" cy="105" r="16" fill="#7FC4F026" stroke="#4FA4DD"/><text x="220" y="109" text-anchor="middle" font-size="9" fill="#2E7FC1">K3</text>
+        </svg>
+        <p>Giống many-to-many, cộng thêm 1 user thread được "bound" riêng 1:1.</p>
+      </div>
+    </div>
+
+    <p class="en">Both Many-to-Many and Two-level need real user/kernel communication to keep the right number of kernel threads allocated. They use an intermediate structure, the <b>lightweight process (LWP)</b> — a virtual processor a user thread can be scheduled onto, each attached to one kernel thread.</p>
+    <span class="vi">Cả Many-to-Many và Two-level đều cần giao tiếp user/kernel thật sự để duy trì đúng số thread kernel. Chúng dùng 1 cấu trúc trung gian, <b>lightweight process (LWP)</b> — 1 bộ xử lý ảo mà user thread có thể lập lịch lên đó, mỗi LWP gắn với 1 kernel thread.</span>
+
+    <div class="illus">
+      <div class="emo">🧩</div>
+      <div class="cap"><b>LWP = "bộ xử lý ảo"</b>User thread ⇄ LWP ⇄ kernel thread — LWP là lớp trung gian giúp OS thêm/bớt kernel thread khi cần.</div>
+    </div>
+
+    <p class="en"><b>Scheduler activations</b> provide <b>upcalls</b> — kernel-to-thread-library communication — letting the application maintain the correct number of kernel threads.</p>
+    <span class="vi"><b>Scheduler activations</b> cung cấp <b>upcall</b> — giao tiếp từ kernel tới thread library — để ứng dụng duy trì đúng số thread kernel.</span>
+
+    <div class="flow-row">
+      <div class="flow-box hi">kernel thread sắp block <br><small>sự kiện xảy ra</small></div>
+      <div class="flow-arrow">↑ upcall</div>
+      <div class="flow-box mid">thread library <br><small>nhận thông báo, tạo thread kernel mới nếu cần</small></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Many-to-One: 1 thread block → CẢ process block, không bao giờ song song thật trên đa nhân. One-to-One: mỗi user thread có kernel thread riêng, song song thật được, nhưng tạo nhiều thread tốn overhead. Many-to-Many/Two-level: cân bằng giữa 2 cái trên, cần LWP + scheduler activations.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Many-to-One</span><span class="rchip">One-to-One</span><span class="rchip">Many-to-Many</span><span class="rchip">Two-level</span>
+        <span class="rchip">LWP</span><span class="rchip">scheduler activations / upcall</span>
+      </div>
+      <p class="rline">Many-to-One = 1 kernel thread gánh hết (rẻ nhưng không song song thật). One-to-One = mỗi user thread 1 kernel thread (song song thật, nhưng đắt).</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: THREAD LIBRARIES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-libraries" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📚</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · APIs</div>
+        <h2>Three ways to actually write threaded code</h2>
+        <span class="vi">3 cách để thực sự viết code đa luồng</span>
+      </div>
+    </div>
+    <p class="intro">A thread library gives programmers an API to create/manage threads — implemented in user space, or as a kernel-level library.</p>
+    <span class="vi">1 thread library cho lập trình viên API để tạo/quản lý thread — cài đặt ở user space, hoặc là kernel-level library.</span>
+
+    <p class="en"><b>Pthreads</b> is a POSIX standard (IEEE 1003.1c) API — a <b>specification, not an implementation</b>: it only specifies behavior, and it's up to the library developer to actually implement it. Common on UNIX (Linux &amp; macOS).</p>
+    <span class="vi"><b>Pthreads</b> là 1 API chuẩn POSIX (IEEE 1003.1c) — 1 <b>đặc tả (specification), không phải cài đặt (implementation)</b>: chỉ quy định hành vi, còn ai phát triển library mới thực sự cài đặt nó. Phổ biến trên UNIX (Linux &amp; macOS).</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Asynchronous threading</div>
+        <svg viewBox="0 0 220 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <text x="5" y="15" font-size="8.5" fill="#8A5F78">parent</text><rect x="45" y="8" width="165" height="14" fill="#7FC4F026" stroke="#4FA4DD"/>
+          <text x="5" y="40" font-size="8.5" fill="#8A5F78">child</text><rect x="70" y="33" width="90" height="14" fill="#FF6FA51f" stroke="#E8407F"/>
+          <text x="20" y="62" font-size="8" fill="#8A5F78">chạy độc lập, không chờ nhau</text>
+        </svg>
+        <p>Cha, con chạy độc lập — hợp cho UI đáp ứng nhanh.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Synchronous threading</div>
+        <svg viewBox="0 0 220 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <text x="5" y="15" font-size="8.5" fill="#8A5F78">parent</text><rect x="45" y="8" width="30" height="14" fill="#7FC4F026" stroke="#4FA4DD"/>
+          <rect x="130" y="8" width="80" height="14" fill="#7FC4F026" stroke="#4FA4DD"/><text x="90" y="18" font-size="7" fill="#8A5F78">wait (join)</text>
+          <text x="5" y="40" font-size="8.5" fill="#8A5F78">child</text><rect x="75" y="33" width="55" height="14" fill="#FF6FA51f" stroke="#E8407F"/>
+          <text x="20" y="62" font-size="8" fill="#8A5F78">cha chờ con xong mới chạy tiếp</text>
+        </svg>
+        <p>Cha CHỜ con — thường để gộp kết quả từ con.</p>
+      </div>
+    </div>
+
+    <p class="en">The core Pthreads calls always travel together: <span class="mono">pthread_create()</span> spins up a new thread running a given function; <span class="mono">pthread_join()</span> makes the parent wait for it; <span class="mono">pthread_exit()</span> is what the child calls to end itself.</p>
+    <span class="vi">Bộ lời gọi Pthreads cốt lõi luôn đi cùng nhau: <span class="mono">pthread_create()</span> dựng 1 thread mới chạy 1 hàm cho trước; <span class="mono">pthread_join()</span> khiến cha chờ nó; <span class="mono">pthread_exit()</span> là thứ con gọi để tự kết thúc.</span>
+
+    <div class="flow-row">
+      <div class="flow-box hi">pthread_create() <br><small>tạo thread chạy hàm runner()</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">runner() chạy <br><small>rồi tự pthread_exit()</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">pthread_join() <br><small>cha chờ tại đây, rồi chạy tiếp</small></div>
+    </div>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Pthreads — create and join */</span>
+#include &lt;pthread.h&gt;
+
+int sum;   <span class="tm-out">/* shared by thread(s) */</span>
+
+void *runner(void *param) {
+    int upper = atoi(param);
+    sum = 0;
+    for (int i = 1; i &lt;= upper; i++) sum += i;
+    pthread_exit(0);
+}
+
+int main(int argc, char *argv[]) {
+    pthread_t tid;
+    pthread_attr_t attr;
+
+    pthread_attr_init(&amp;attr);
+    pthread_create(&amp;tid, &amp;attr, runner, argv[1]);
+    pthread_join(tid, NULL);
+
+    printf("sum = %d\n", sum);
+}</div>
+    </div>
+
+    <p class="en">Since the single <span class="mono">void*</span> argument can't carry much, real data is usually passed via a small struct pointer instead.</p>
+    <span class="vi">Vì đối số <span class="mono">void*</span> duy nhất không tải được nhiều, dữ liệu thật thường được truyền qua 1 con trỏ struct nhỏ thay vào đó.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Passing data to threads via a struct */</span>
+struct char_print_parms {
+    char character;
+    int  count;
+};
+
+pthread_t thread1_id;
+struct char_print_parms thread1_args;
+thread1_args.character = 'A';
+thread1_args.count = 100;
+
+pthread_create(&amp;thread1_id, NULL, &amp;char_print, &amp;thread1_args);</div>
+    </div>
+
+    <p class="en">On <b>Windows</b>, the same job is done by <span class="mono">CreateThread()</span> + <span class="mono">WaitForSingleObject()</span> — the same wait call already seen for processes in Chapter 3.</p>
+    <span class="vi">Bên <b>Windows</b>, việc tương tự làm bằng <span class="mono">CreateThread()</span> + <span class="mono">WaitForSingleObject()</span> — đúng lời gọi chờ đã thấy với process ở Chương 3.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Windows Multithreaded C Program */</span>
+DWORD Sum;   <span class="tm-out">/* data shared by threads */</span>
+
+DWORD WINAPI Summation(LPVOID Param) {
+    DWORD Upper = *(DWORD*)Param;
+    for (DWORD i = 1; i &lt;= Upper; i++) Sum += i;
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    DWORD ThreadId;
+    HANDLE ThreadHandle;
+    int Param = atoi(argv[1]);
+
+    ThreadHandle = CreateThread(
+        NULL, 0, Summation, &amp;Param, 0, &amp;ThreadId);
+
+    WaitForSingleObject(ThreadHandle, INFINITE);
+    CloseHandle(ThreadHandle);
+    printf("sum = %d\n", Sum);
+}</div>
+    </div>
+
+    <p class="en"><b>Java threads</b> are managed by the JVM. Standard practice: implement <span class="mono">Runnable</span> rather than extend <span class="mono">Thread</span> (keeps the class free to extend something else); wait on it with <span class="mono">join()</span>.</p>
+    <span class="vi"><b>Java threads</b> do JVM quản lý. Thông lệ chuẩn: implement <span class="mono">Runnable</span> thay vì extend <span class="mono">Thread</span> (để lớp còn rảnh kế thừa thứ khác); chờ bằng <span class="mono">join()</span>.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">// Implementing Runnable, creating &amp; waiting</span>
+class Sum implements Runnable {
+    public void run() {
+        int total = 0;
+        for (int i = 1; i &lt;= upper; i++) total += i;
+        System.out.println("sum = " + total);
+    }
+}
+
+Thread worker = new Thread(new Sum());
+worker.start();
+worker.join();   <span class="tm-out">// waiting on the thread</span></div>
+    </div>
+
+    <p class="en">Java also lets you skip raw <span class="mono">Thread</span> objects entirely: submit tasks to an <b>Executor</b>, and it decides how/when they run.</p>
+    <span class="vi">Java cũng cho bỏ qua đối tượng <span class="mono">Thread</span> thô hoàn toàn: nộp tác vụ cho 1 <b>Executor</b>, nó tự quyết định chạy ra sao/khi nào.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">// Java Executor Framework</span>
+ExecutorService pool = Executors.newCachedThreadPool();
+
+pool.execute(new Sum());        <span class="tm-out">// submit a Runnable task</span>
+pool.shutdown();                <span class="tm-out">// no new tasks accepted</span></div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Ghi nhớ 3 lời gọi Pthreads đi cùng nhau: pthread_create() (tạo), pthread_join() (cha chờ con), pthread_exit() (con tự kết thúc) — song song với join() trong Java và WaitForSingleObject() trong Windows.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Pthreads = specification</span><span class="rchip">pthread_create/join/exit</span><span class="rchip">async vs sync threading</span>
+        <span class="rchip">CreateThread() (Windows)</span><span class="rchip">Runnable interface</span><span class="rchip">Executor / ExecutorService</span>
+      </div>
+      <p class="rline">Pthreads chỉ là ĐẶC TẢ hành vi — implementation tùy thư viện. UNIX: pthread_create/join/exit. Windows: CreateThread + WaitForSingleObject. Java: implement Runnable, rồi start()/join() hoặc nộp cho Executor.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: IMPLICIT THREADING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-implicit" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🤖</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · Automation</div>
+        <h2>Let the compiler manage the threads</h2>
+        <span class="vi">Để trình biên dịch tự quản lý thread</span>
+      </div>
+    </div>
+    <p class="intro">As thread counts grow, program correctness gets harder with explicit threading. Implicit threading pushes the creation and management of threads onto compilers and run-time libraries instead of programmers.</p>
+    <span class="vi">Khi số lượng thread tăng, tính đúng đắn của chương trình càng khó với threading tường minh. Implicit threading đẩy việc tạo và quản lý thread cho trình biên dịch và thư viện run-time, thay vì lập trình viên.</span>
+
+    <p class="en"><b>Thread pools</b> create threads at start-up; they sit and wait for work. Faster than creating new ones each time, and caps the app's total thread count. Windows API and Java's <span class="mono">Executors</span> (fixed/cached/single-thread factories) support this directly.</p>
+    <span class="vi"><b>Thread pool</b> tạo sẵn thread lúc khởi động; chúng ngồi chờ có việc. Nhanh hơn tạo mới mỗi lần, và giới hạn tổng số thread của app. Windows API và <span class="mono">Executors</span> của Java (fixed/cached/single-thread) hỗ trợ trực tiếp.</span>
+
+    <svg viewBox="0 0 460 130" style="max-width:460px;width:100%;margin:6px 0 8px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="18" font-size="10.5" fill="#8A5F78">requests đến →</text>
+      <rect x="10" y="28" width="30" height="24" fill="#FF6FA51f" stroke="#E8407F"/><rect x="45" y="28" width="30" height="24" fill="#FF6FA51f" stroke="#E8407F"/><rect x="80" y="28" width="30" height="24" fill="#FF6FA51f" stroke="#E8407F"/>
+      <line x1="115" y1="40" x2="160" y2="40" stroke="#8A5F78" marker-end="url(#a1)"/>
+      <defs><marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8A5F78"/></marker></defs>
+      <text x="170" y="20" font-size="10" fill="#4A2E40" font-weight="600">thread pool (sẵn có)</text>
+      <rect x="170" y="28" width="45" height="24" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="192" y="44" text-anchor="middle" font-size="8" fill="#2E7FC1">T1 rảnh</text>
+      <rect x="222" y="28" width="45" height="24" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="244" y="44" text-anchor="middle" font-size="8" fill="#2E7FC1">T2 bận</text>
+      <rect x="274" y="28" width="45" height="24" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="296" y="44" text-anchor="middle" font-size="8" fill="#2E7FC1">T3 rảnh</text>
+      <rect x="326" y="28" width="45" height="24" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="348" y="44" text-anchor="middle" font-size="8" fill="#2E7FC1">T4 bận</text>
+      <text x="20" y="85" font-size="9.5" fill="#8A5F78">→ request mới lấy 1 thread RẢNH trong pool, không cần tạo mới</text>
+    </svg>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">// Java thread pool factory methods (Executors class)</span>
+ExecutorService fixedPool  = Executors.newFixedThreadPool(4);
+ExecutorService cachedPool = Executors.newCachedThreadPool();
+ExecutorService singlePool = Executors.newSingleThreadExecutor();</div>
+    </div>
+
+    <p class="en">In <b>Fork-Join parallelism</b>, a task recursively splits itself in half (fork) until pieces are small enough to compute directly, then joins the partial results back together going up the recursion.</p>
+    <span class="vi">Trong <b>Fork-Join parallelism</b>, 1 tác vụ đệ quy chia đôi chính nó (fork) tới khi mảnh đủ nhỏ để tính trực tiếp, rồi join kết quả từng phần lại khi đi ngược lên đệ quy.</span>
+
+    <svg viewBox="0 0 480 220" style="max-width:480px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <defs><marker id="fj1" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8A5F78"/></marker>
+      <marker id="fj2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#2E7FC1"/></marker></defs>
+      <rect x="200" y="8" width="80" height="26" rx="6" fill="#FF6FA51f" stroke="#E8407F"/><text x="240" y="25" text-anchor="middle" font-size="9.5" fill="#C22A63">task(N)</text>
+      <line x1="220" y1="34" x2="120" y2="64" stroke="#8A5F78" marker-end="url(#fj1)"/><line x1="260" y1="34" x2="360" y2="64" stroke="#8A5F78" marker-end="url(#fj1)"/>
+      <text x="150" y="48" font-size="8" fill="#8A5F78">fork</text><text x="330" y="48" font-size="8" fill="#8A5F78">fork</text>
+
+      <rect x="80" y="66" width="80" height="24" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/><text x="120" y="82" text-anchor="middle" font-size="9" fill="#2E7FC1">task(N/2)</text>
+      <rect x="320" y="66" width="80" height="24" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/><text x="360" y="82" text-anchor="middle" font-size="9" fill="#2E7FC1">task(N/2)</text>
+
+      <line x1="100" y1="90" x2="55" y2="120" stroke="#8A5F78" marker-end="url(#fj1)"/><line x1="140" y1="90" x2="185" y2="120" stroke="#8A5F78" marker-end="url(#fj1)"/>
+      <line x1="340" y1="90" x2="295" y2="120" stroke="#8A5F78" marker-end="url(#fj1)"/><line x1="380" y1="90" x2="425" y2="120" stroke="#8A5F78" marker-end="url(#fj1)"/>
+      <text x="60" y="105" font-size="7.5" fill="#8A5F78">fork</text><text x="190" y="105" font-size="7.5" fill="#8A5F78">fork</text>
+      <text x="300" y="105" font-size="7.5" fill="#8A5F78">fork</text><text x="430" y="105" font-size="7.5" fill="#8A5F78">fork</text>
+
+      <rect x="25" y="122" width="60" height="22" rx="5" fill="#FFF6FB" stroke="#FFD3E8"/><text x="55" y="137" text-anchor="middle" font-size="8.5" fill="#4A2E40">compute</text>
+      <rect x="155" y="122" width="60" height="22" rx="5" fill="#FFF6FB" stroke="#FFD3E8"/><text x="185" y="137" text-anchor="middle" font-size="8.5" fill="#4A2E40">compute</text>
+      <rect x="265" y="122" width="60" height="22" rx="5" fill="#FFF6FB" stroke="#FFD3E8"/><text x="295" y="137" text-anchor="middle" font-size="8.5" fill="#4A2E40">compute</text>
+      <rect x="395" y="122" width="60" height="22" rx="5" fill="#FFF6FB" stroke="#FFD3E8"/><text x="425" y="137" text-anchor="middle" font-size="8.5" fill="#4A2E40">compute</text>
+
+      <path d="M55,122 Q90,155 120,95" fill="none" stroke="#4FA4DD" stroke-dasharray="3,2" marker-end="url(#fj2)"/>
+      <path d="M185,122 Q150,155 120,95" fill="none" stroke="#4FA4DD" stroke-dasharray="3,2" marker-end="url(#fj2)"/>
+      <path d="M295,122 Q330,155 360,95" fill="none" stroke="#4FA4DD" stroke-dasharray="3,2" marker-end="url(#fj2)"/>
+      <path d="M425,122 Q390,155 360,95" fill="none" stroke="#4FA4DD" stroke-dasharray="3,2" marker-end="url(#fj2)"/>
+      <text x="120" y="162" text-anchor="middle" font-size="7.5" fill="#2E7FC1">join</text>
+      <text x="360" y="162" text-anchor="middle" font-size="7.5" fill="#2E7FC1">join</text>
+
+      <path d="M120,66 Q180,30 220,38" fill="none" stroke="#4FA4DD" stroke-dasharray="3,2" marker-end="url(#fj2)"/>
+      <path d="M360,66 Q300,30 260,38" fill="none" stroke="#4FA4DD" stroke-dasharray="3,2" marker-end="url(#fj2)"/>
+      <text x="240" y="200" text-anchor="middle" font-size="10.5" fill="#8A5F78">nét liền = fork (chia nhỏ) · nét đứt xanh = join (gộp kết quả ngược lên)</text>
+    </svg>
+
+    <p class="en"><b>OpenMP</b> is compiler directives + API for C/C++/FORTRAN, for shared-memory parallel programming. <span class="mono">#pragma omp parallel</span> creates as many threads as there are cores.</p>
+    <span class="vi"><b>OpenMP</b> là chỉ thị biên dịch + API cho C/C++/FORTRAN, cho lập trình song song shared-memory. <span class="mono">#pragma omp parallel</span> tạo ra số thread bằng đúng số nhân có sẵn.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* OpenMP — run this for loop in parallel */</span>
+#pragma omp parallel for
+for (int i = 0; i &lt; N; i++) {
+    c[i] = a[i] + b[i];
+}</div>
+    </div>
+
+    <p class="en"><b>Grand Central Dispatch (GCD)</b> — Apple's tech for macOS/iOS — manages threading for the programmer. A unit of work is a <b>block</b>, written <span class="mono">^{ ... }</span>.</p>
+    <span class="vi"><b>Grand Central Dispatch (GCD)</b> — công nghệ Apple cho macOS/iOS — tự quản lý threading cho lập trình viên. 1 đơn vị công việc là 1 <b>block</b>, viết dạng <span class="mono">^{ ... }</span>.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">block <br><small>^{ printf("hi"); }</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">dispatch queue <br><small>serial hoặc concurrent</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">thread pool <br><small>thread rảnh nhận block</small></div>
+    </div>
+
+    <p class="en">Blocks are placed on a <b>dispatch queue</b>: <b>serial</b> queues run blocks one at a time (FIFO); <b>concurrent</b> queues may run several at once.</p>
+    <span class="vi">Block được đặt vào 1 <b>dispatch queue</b>: queue <b>serial</b> chạy từng block 1 (FIFO); queue <b>concurrent</b> có thể chạy nhiều block cùng lúc.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Serial queue</div>
+        <svg viewBox="0 0 200 50" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="5" y="15" width="30" height="20" fill="#FF6FA51f" stroke="#E8407F"/><text x="20" y="28" text-anchor="middle" font-size="8" fill="#C22A63">B1</text>
+          <rect x="40" y="15" width="30" height="20" fill="#FF6FA51f" stroke="#E8407F" opacity="0.5"/><text x="55" y="28" text-anchor="middle" font-size="8" fill="#C22A63">B2</text>
+          <rect x="75" y="15" width="30" height="20" fill="#FF6FA51f" stroke="#E8407F" opacity="0.3"/><text x="90" y="28" text-anchor="middle" font-size="8" fill="#C22A63">B3</text>
+          <text x="140" y="28" font-size="8.5" fill="#8A5F78">← chạy TỪNG block 1</text>
+        </svg>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Concurrent queue</div>
+        <svg viewBox="0 0 200 50" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="5" y="5" width="30" height="14" fill="#7FC4F026" stroke="#4FA4DD"/><text x="20" y="15" text-anchor="middle" font-size="7" fill="#2E7FC1">B1</text>
+          <rect x="5" y="22" width="30" height="14" fill="#7FC4F026" stroke="#4FA4DD"/><text x="20" y="32" text-anchor="middle" font-size="7" fill="#2E7FC1">B2</text>
+          <rect x="5" y="39" width="30" height="8" fill="#7FC4F026" stroke="#4FA4DD" opacity="0.4"/>
+          <text x="140" y="28" font-size="8.5" fill="#8A5F78">← chạy NHIỀU block cùng lúc</text>
+        </svg>
+      </div>
+    </div>
+
+    <p class="en">One serial queue is special: the per-process <b>main queue</b> — programmers can create additional serial queues alongside it. Concurrent queues, meanwhile, are provided by the system: four of them, divided by <b>quality of service (QoS)</b>.</p>
+    <span class="vi">1 serial queue đặc biệt: <b>main queue</b> của mỗi process — lập trình viên có thể tạo thêm serial queue khác bên cạnh nó. Còn concurrent queue thì do hệ thống cung cấp sẵn: có 4 hàng, chia theo <b>quality of service (QoS)</b>.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">QOS_CLASS_USER_INTERACTIVE</div><p>Việc cần phản hồi ngay để giữ UI mượt (vd đang animate).</p></div>
+      <div class="res-card"><div class="rk">QOS_CLASS_USER_INITIATED</div><p>Người dùng vừa yêu cầu, cần kết quả sớm (vd mở file).</p></div>
+      <div class="res-card"><div class="rk">QOS_CLASS_USER_UTILITY</div><p>Việc chạy lâu hơn, không cần xong ngay (vd tải file).</p></div>
+      <div class="res-card"><div class="rk">QOS_CLASS_USER_BACKGROUND</div><p>Việc người dùng không thấy (vd đánh index, sao lưu).</p></div>
+    </div>
+
+    <p class="en">Swift's equivalent unit of work is a <b>closure</b> — like a block, minus the caret — submitted via <span class="mono">dispatch_async()</span>.</p>
+    <span class="vi">Bên Swift, đơn vị công việc tương đương là 1 <b>closure</b> — giống block, trừ dấu mũ — nộp qua <span class="mono">dispatch_async()</span>.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">// Swift closure submitted to a queue</span>
+queue.async {
+    print("hi from a closure")
+}</div>
+    </div>
+
+    <p class="en">Finally, <b>Intel Threading Building Blocks (TBB)</b> is a C++ template library — a serial <span class="mono">for</span> loop becomes <span class="mono">parallel_for</span>, and the library decides how to split the range across cores.</p>
+    <span class="vi">Cuối cùng, <b>Intel Threading Building Blocks (TBB)</b> là 1 thư viện template C++ — vòng lặp <span class="mono">for</span> tuần tự trở thành <span class="mono">parallel_for</span>, thư viện tự quyết định cách chia khoảng lặp ra các nhân.</span>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">// serial version</span>
+for (int i = 0; i &lt; n; i++)
+    apply(v[i]);
+
+<span class="tm-com">// same loop with Intel TBB</span>
+parallel_for(size_t(0), n, [=](size_t i) {
+    apply(v[i]);
+});</div>
+    </div>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      5 kỹ thuật implicit threading cần nhớ tên: Thread Pools, Fork-Join, OpenMP, Grand Central Dispatch, Intel TBB. Điểm chung: LẬP TRÌNH VIÊN không tự tạo/quản lý thread tường minh — compiler/run-time library lo việc đó.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">thread pool</span><span class="rchip">fork-join</span><span class="rchip">OpenMP #pragma</span>
+        <span class="rchip">GCD block/queue</span><span class="rchip">main queue</span><span class="rchip">4 QoS class</span><span class="rchip">Intel TBB parallel_for</span>
+      </div>
+      <p class="rline">Implicit threading = để compiler/run-time lo việc tạo &amp; quản lý thread, lập trình viên chỉ khai báo "cái gì chạy song song được".</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: THREADING ISSUES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-issues" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">⚠️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Gotchas</div>
+        <h2>Where multithreading gets genuinely tricky</h2>
+        <span class="vi">Chỗ đa luồng thực sự trở nên rắc rối</span>
+      </div>
+    </div>
+    <p class="intro">Five recurring issues show up once threads enter the picture: fork()/exec() semantics, signal handling, thread cancellation, thread-local storage, and scheduler activations.</p>
+    <span class="vi">5 vấn đề hay lặp lại xuất hiện ngay khi thread bước vào bức tranh: ngữ nghĩa fork()/exec(), xử lý signal, hủy thread, thread-local storage, và scheduler activations.</span>
+
+    <p class="en">The first question is subtle: does <span class="mono">fork()</span> duplicate only the calling thread, or every thread? Some UNIXes provide both versions. <span class="mono">exec()</span> works as normal — it replaces the whole process, all threads included, with the new program.</p>
+    <span class="vi">Câu hỏi đầu tiên khá tinh tế: <span class="mono">fork()</span> chỉ nhân bản thread đang gọi, hay mọi thread? Vài UNIX cung cấp cả 2 phiên bản. <span class="mono">exec()</span> hoạt động bình thường — thay thế cả process, kể cả mọi thread, bằng chương trình mới.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">fork() — chỉ nhân bản thread gọi nó</div>
+        <svg viewBox="0 0 200 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="8" width="26" height="20" fill="#FF6FA51f" stroke="#E8407F"/><rect x="42" y="8" width="26" height="20" fill="#7FC4F026" stroke="#4FA4DD"/><rect x="74" y="8" width="26" height="20" fill="#7FC4F026" stroke="#4FA4DD"/>
+          <text x="55" y="45" font-size="8" fill="#8A5F78">parent (3 thread)</text>
+          <line x1="55" y1="30" x2="150" y2="55" stroke="#8A5F78"/>
+          <rect x="135" y="55" width="26" height="20" fill="#FF6FA51f" stroke="#E8407F"/><text x="148" y="90" font-size="7.5" fill="#8A5F78">child: 1 thread</text>
+        </svg>
+      </div>
+      <div class="compare-box">
+        <div class="ck">fork() — nhân bản TẤT CẢ thread</div>
+        <svg viewBox="0 0 200 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="8" width="26" height="20" fill="#FF6FA51f" stroke="#E8407F"/><rect x="42" y="8" width="26" height="20" fill="#7FC4F026" stroke="#4FA4DD"/><rect x="74" y="8" width="26" height="20" fill="#7FC4F026" stroke="#4FA4DD"/>
+          <text x="55" y="45" font-size="8" fill="#8A5F78">parent (3 thread)</text>
+          <line x1="55" y1="30" x2="130" y2="55" stroke="#8A5F78"/>
+          <rect x="118" y="55" width="20" height="16" fill="#FF6FA51f" stroke="#E8407F"/><rect x="142" y="55" width="20" height="16" fill="#7FC4F026" stroke="#4FA4DD"/><rect x="166" y="55" width="20" height="16" fill="#7FC4F026" stroke="#4FA4DD"/>
+          <text x="148" y="90" font-size="7.5" fill="#8A5F78">child: cả 3 thread</text>
+        </svg>
+      </div>
+    </div>
+
+    <p class="en"><b>Signals</b> notify a process an event occurred, handled by a <b>default</b> or <b>user-defined</b> handler.</p>
+    <span class="vi"><b>Signal</b> báo cho process biết 1 sự kiện đã xảy ra, xử lý bởi handler <b>mặc định</b> hoặc <b>do người dùng định nghĩa</b>.</span>
+
+    <div class="illus">
+      <div class="emo">📶</div>
+      <div class="cap"><b>Signal → handler</b>Sự kiện sinh ra 1 signal → gửi tới process → kernel chạy handler mặc định, HOẶC handler do người dùng viết ghi đè.</div>
+    </div>
+
+    <p class="en">In a <b>multithreaded</b> process, though, where should a signal actually go?</p>
+    <span class="vi">Nhưng trong process <b>đa luồng</b>, signal thật sự nên đi đâu?</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">1. Đúng thread liên quan</div><p>Chỉ thread mà signal thực sự áp dụng mới nhận.</p></div>
+      <div class="res-card"><div class="rk">2. Mọi thread</div><p>Gửi broadcast tới toàn bộ thread trong process.</p></div>
+      <div class="res-card"><div class="rk">3. Một số thread</div><p>Chỉ định 1 tập con thread cụ thể nhận.</p></div>
+      <div class="res-card"><div class="rk">4. Thread chuyên trách</div><p>1 thread riêng được gán nhận TẤT CẢ signal của process.</p></div>
+    </div>
+
+    <p class="en"><b>Thread cancellation</b> terminates a <b>target thread</b> before it finishes.</p>
+    <span class="vi"><b>Thread cancellation</b> kết thúc 1 <b>target thread</b> trước khi nó chạy xong.</span>
+
+    <div class="illus">
+      <div class="emo">🎯</div>
+      <div class="cap"><b>Target thread</b>Là chính thread bị nhắm tới để hủy — thuật ngữ dùng xuyên suốt phần này.</div>
+    </div>
+
+    <p class="en"><b>Asynchronous</b> cancellation kills it immediately; <b>deferred</b> (the default) lets it check periodically and cancel itself at a safe <b>cancellation point</b> (e.g. <span class="mono">pthread_testcancel()</span>).</p>
+    <span class="vi">Kiểu <b>asynchronous</b> giết ngay lập tức; kiểu <b>deferred</b> (mặc định) cho thread tự kiểm tra định kỳ và tự hủy ở 1 <b>cancellation point</b> an toàn (vd <span class="mono">pthread_testcancel()</span>).</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Asynchronous cancellation</div>
+        <svg viewBox="0 0 200 45" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="15" width="90" height="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="115" y="27" font-size="14" fill="#C22A63">✕</text>
+          <text x="10" y="42" font-size="8" fill="#8A5F78">hủy NGAY, bất kể đang làm gì — nguy hiểm nếu đang giữ khóa</text>
+        </svg>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Deferred cancellation (mặc định)</div>
+        <svg viewBox="0 0 200 45" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="15" width="30" height="16" fill="#7FC4F026" stroke="#4FA4DD"/><rect x="42" y="15" width="30" height="16" fill="#7FC4F026" stroke="#4FA4DD"/>
+          <text x="76" y="27" font-size="9" fill="#8A5F78">?</text>
+          <rect x="86" y="15" width="30" height="16" fill="#FF6FA51f" stroke="#E8407F"/><text x="122" y="27" font-size="12" fill="#C22A63">✕</text>
+          <text x="10" y="42" font-size="7.5" fill="#8A5F78">tự kiểm tra ở từng điểm, chỉ hủy khi an toàn</text>
+        </svg>
+      </div>
+    </div>
+
+    <p class="en"><b>Thread-local storage (TLS)</b> gives each thread its own copy of data — visible across function calls like static data, but <em>unique per thread</em> instead of shared.</p>
+    <span class="vi"><b>Thread-local storage (TLS)</b> cho mỗi thread bản sao dữ liệu riêng — hiển thị xuyên các lần gọi hàm giống static, nhưng <em>riêng theo từng thread</em> thay vì dùng chung.</span>
+
+    <p class="en">Finally, <b>Scheduler activations</b> solve the Many-to-Many/Two-level communication problem via <b>upcalls</b>: the kernel proactively tells the thread library when something needs a reaction, like a kernel thread about to block.</p>
+    <span class="vi">Cuối cùng, <b>Scheduler activations</b> giải quyết vấn đề giao tiếp của Many-to-Many/Two-level qua <b>upcall</b>: kernel chủ động báo cho thread library khi có gì cần phản ứng, như 1 thread kernel sắp block.</span>
+
+    <div class="note teal">
+      <b>Mẹo thi</b>
+      Nhớ default của Pthreads cancellation là DEFERRED, không phải asynchronous — thread chỉ thực sự bị hủy khi chạm cancellation point (vd pthread_testcancel()). Đừng nhầm TLS với biến static: TLS riêng theo TỪNG thread, static dùng chung.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">fork() 1 thread hay tất cả?</span><span class="rchip">signal handling — 4 lựa chọn</span>
+        <span class="rchip">target thread</span><span class="rchip">async vs deferred cancellation</span><span class="rchip">TLS</span><span class="rchip">scheduler activations / upcall</span>
+      </div>
+      <p class="rline">5 vấn đề: fork/exec semantics, signal handling, thread cancellation, TLS, scheduler activations — mỗi cái đều là hệ quả trực tiếp của việc nhiều thread giờ dùng chung 1 process.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OS EXAMPLES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-examples" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧪</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Case studies</div>
+        <h2>How Windows and Linux actually implement threads</h2>
+        <span class="vi">Windows và Linux thực sự cài đặt thread ra sao</span>
+      </div>
+    </div>
+    <p class="intro">Both take a one-to-one, kernel-level approach — but structure the underlying data very differently.</p>
+    <span class="vi">Cả hai đều theo cách tiếp cận one-to-one, cấp kernel — nhưng cấu trúc dữ liệu bên dưới rất khác nhau.</span>
+
+    <p class="en">The <b>Windows API</b> implements <b>one-to-one</b> mapping — every user thread gets its own kernel thread.</p>
+    <span class="vi"><b>Windows API</b> cài đặt ánh xạ <b>one-to-one</b> — mỗi user thread có 1 kernel thread riêng của nó.</span>
+
+    <p class="en">Each thread carries a <b>thread id</b> and a <b>register set</b>, plus separate <b>user-mode and kernel-mode stacks</b> depending on which mode it's running in.</p>
+    <span class="vi">Mỗi thread mang 1 <b>thread id</b> và 1 <b>tập thanh ghi</b>, cộng thêm <b>stack chế độ người dùng và chế độ kernel</b> riêng biệt tùy đang chạy ở chế độ nào.</span>
+
+    <div class="core-grid">
+      <div class="core-box"><div class="core-label">thread id</div>định danh</div>
+      <div class="core-box"><div class="core-label">register set</div>trạng thái CPU</div>
+      <div class="core-box"><div class="core-label">user stack</div>chế độ người dùng</div>
+      <div class="core-box"><div class="core-label">kernel stack</div>chế độ kernel</div>
+    </div>
+
+    <p class="en">It also gets a <b>private data storage area</b> for run-time libraries and DLLs. All of this together — registers, stacks, private storage — is the thread's <b>context</b>.</p>
+    <span class="vi">Nó còn có 1 <b>vùng lưu trữ dữ liệu riêng</b> cho thư viện run-time và DLL. Tất cả gộp lại — thanh ghi, stack, vùng lưu trữ riêng — chính là <b>context</b> của thread.</span>
+
+    <div class="labeled-box">
+      <span class="lb-tag">Windows thread data structures</span>
+      <div class="stack">
+        <div class="layer hi">ETHREAD <small>kernel space</small> — con trỏ tới process, con trỏ tới KTHREAD</div>
+        <div class="arrow">↓</div>
+        <div class="layer os">KTHREAD <small>kernel space</small> — lập lịch, đồng bộ, kernel-mode stack, con trỏ tới TEB</div>
+        <div class="arrow">↓</div>
+        <div class="layer">TEB <small>user space</small> — thread id, user-mode stack, TLS</div>
+      </div>
+    </div>
+
+    <p class="en">On <b>Linux</b>, threads are called <b>tasks</b>, created via <span class="mono">clone()</span> — controlled by <b>flags</b> deciding exactly what's shared with the parent.</p>
+    <span class="vi">Trên <b>Linux</b>, thread gọi là <b>task</b>, tạo qua <span class="mono">clone()</span> — điều khiển bởi <b>flag</b> quyết định chính xác cái gì được chia sẻ với cha.</span>
+
+    <svg viewBox="0 0 480 150" style="max-width:480px;width:100%;margin:6px 0 8px;font-family:'IBM Plex Mono',monospace;">
+      <rect x="20" y="15" width="150" height="110" rx="10" fill="#FFF6FB" stroke="#FFD3E8"/><text x="95" y="32" text-anchor="middle" font-size="10" fill="#4A2E40" font-weight="600">parent task</text>
+      <rect x="310" y="15" width="150" height="110" rx="10" fill="#FFF6FB" stroke="#FFD3E8"/><text x="385" y="32" text-anchor="middle" font-size="10" fill="#4A2E40" font-weight="600">child task (clone)</text>
+      <rect x="175" y="45" width="130" height="55" rx="8" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="240" y="60" text-anchor="middle" font-size="8.5" fill="#2E7FC1">CLONE_VM (memory)</text>
+      <text x="240" y="74" text-anchor="middle" font-size="8.5" fill="#2E7FC1">CLONE_FS, CLONE_FILES</text>
+      <text x="240" y="88" text-anchor="middle" font-size="8.5" fill="#2E7FC1">CLONE_SIGHAND</text>
+      <text x="240" y="115" text-anchor="middle" font-size="8" fill="#8A5F78">← bật cờ = DÙNG CHUNG (giống thread thật)</text>
+      <text x="95" y="55" text-anchor="middle" font-size="8" fill="#8A5F78">riêng: PID, stack</text>
+      <text x="385" y="55" text-anchor="middle" font-size="8" fill="#8A5F78">riêng: PID, stack</text>
+    </svg>
+
+    <div class="term-mock">
+      <div class="tm-bar"><span class="tm-dot r"></span><span class="tm-dot y"></span><span class="tm-dot g"></span></div>
+      <div class="tm-body"><span class="tm-com">/* Linux clone() — key flags */</span>
+clone(fn, stack, flags, arg);
+
+CLONE_FS      <span class="tm-out">/* chia sẻ filesystem info */</span>
+CLONE_VM      <span class="tm-out">/* chia sẻ address space (vùng nhớ) */</span>
+CLONE_SIGHAND <span class="tm-out">/* chia sẻ signal handler table */</span>
+CLONE_FILES   <span class="tm-out">/* chia sẻ bảng file descriptor */</span></div>
+    </div>
+
+    <p class="en">The same <span class="mono">struct task_struct</span> from Chapter 3 represents each task — parent and child alike.</p>
+    <span class="vi">Cùng <span class="mono">struct task_struct</span> ở Chương 3 dùng để biểu diễn mỗi task — cả cha lẫn con.</span>
+
+    <table class="cmp-table">
+      <tr><th>clone() flag</th><th>Ý nghĩa khi bật</th></tr>
+      <tr><td>CLONE_VM</td><td>Task con dùng chung không gian địa chỉ (memory) với cha</td></tr>
+      <tr><td>CLONE_FS</td><td>Dùng chung thông tin filesystem (thư mục hiện tại, umask...)</td></tr>
+      <tr><td>CLONE_FILES</td><td>Dùng chung bảng file descriptor đang mở</td></tr>
+      <tr><td>CLONE_SIGHAND</td><td>Dùng chung bảng xử lý signal</td></tr>
+    </table>
+
+    <div class="note">
+      <b>Mẹo thi</b>
+      Windows: ETHREAD → KTHREAD (kernel space) → TEB (user space) — nhớ đúng thứ tự và không gian của từng cấu trúc. Linux: KHÔNG gọi là "thread" mà gọi "task"; tạo qua clone(), không phải fork() thường; bật CLONE_VM là điểm mấu chốt biến 1 "task" thành giống hệt 1 thread thật (chia sẻ vùng nhớ).
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Windows: one-to-one</span><span class="rchip">ETHREAD/KTHREAD/TEB</span><span class="rchip">context = registers+stacks+storage</span>
+        <span class="rchip">Linux: task, không phải "thread"</span><span class="rchip">clone()</span><span class="rchip">CLONE_VM/FS/FILES/SIGHAND</span>
+      </div>
+      <p class="rline">Cả Windows và Linux đều one-to-one, cấp kernel — khác nhau ở tên gọi và cấu trúc dữ liệu bên dưới (ETHREAD/KTHREAD/TEB vs task_struct + clone() flags).</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: QUIZ -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 4</h2>
+    <p class="intro">15 câu, đủ chủ đề trong chương. Bấm vào đáp án để xem đúng/sai và giải thích ngay.</p>
+    <div class="quiz-score" id="quizScore">0 / 15 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+  </section>
+
+  <footer>CO2017 · Operating Systems — HCMUT · Chapter 4 built from Silberschatz, Galvin &amp; Gagne, "Operating System Concepts," 10th ed.</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','threads','multicore','models','libraries','implicit','issues','examples','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const PROGRESS_KEY = 'os-ch4-visited';
+  let visitedSet = new Set();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    if (Array.isArray(saved)) visitedSet = new Set(saved.filter(t => panelIds.includes(t)));
+  } catch(e) {}
+
+  function updateProgress(){
+    const total = panelIds.length;
+    const done = visitedSet.size;
+    const pct = Math.round((done / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = done + '/' + total + ' tab · ' + pct + '%';
+  }
+
+  function markVisited(name){
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+    if (!visitedSet.has(name)){
+      visitedSet.add(name);
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(visitedSet))); } catch(e) {}
+    }
+    updateProgress();
+  }
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    markVisited(name);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+  // restore visited styling from a previous visit, then mark the current tab
+  visitedSet.forEach(name => {
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+  });
+  updateProgress();
+  markVisited('overview');
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch4-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "process creation is heavy-weight": ["Creating a whole new process needs a new address space, PCB, and duplicated resources.", "Tạo 1 tiến trình mới cần không gian địa chỉ mới, PCB mới, tài nguyên nhân bản."],
+      "thread creation is light-weight": ["Creating a thread just adds a new flow of control inside an existing process.", "Tạo thread chỉ thêm 1 luồng điều khiển mới bên trong tiến trình đã có sẵn."],
+      "multithreaded process": ["A process with multiple threads of control sharing its code, data, and files.", "1 tiến trình có nhiều luồng điều khiển, dùng chung code, data, file."],
+      "Responsiveness": ["The application keeps running even if part of it is blocked.", "Ứng dụng vẫn chạy tiếp dù 1 phần bị chặn (block)."],
+      "Resource sharing": ["Threads share their process's resources by default, unlike separate processes.", "Thread mặc định dùng chung tài nguyên của process, khác với các process riêng biệt."],
+      "Economy": ["Threads are cheaper to create and switch between than processes.", "Thread rẻ hơn để tạo và chuyển đổi so với process."],
+      "Scalability": ["A multithreaded process can exploit a multicore architecture.", "1 tiến trình đa luồng có thể tận dụng kiến trúc đa nhân."],
+      "process": ["An instance of a program being executed; independent, doesn't share memory.", "1 thực thể của chương trình đang thực thi; độc lập, không chia sẻ bộ nhớ."],
+      "thread": ["A lightweight segment of a process, managed independently by the scheduler.", "1 đoạn nhẹ của process, được scheduler quản lý độc lập."],
+      "dividing activities": ["Finding areas of a program that can be split into concurrent tasks.", "Tìm những vùng của chương trình có thể tách thành tác vụ song song."],
+      "balance": ["Ensuring divided tasks perform equal work of equal value.", "Đảm bảo các tác vụ đã chia làm khối lượng công việc giá trị tương đương."],
+      "data splitting": ["Dividing the data tasks access, matching how the tasks were split.", "Chia dữ liệu mà tác vụ truy cập, khớp với cách tác vụ đã chia."],
+      "data dependency": ["When one task's execution must be synchronized around data from another.", "Khi việc thực thi 1 tác vụ phải đồng bộ quanh dữ liệu từ tác vụ khác."],
+      "Parallelism": ["A system genuinely performing more than one task at the exact same time.", "Hệ thống thực sự làm hơn 1 tác vụ đúng cùng 1 thời điểm."],
+      "Concurrency": ["More than one task making progress, even via rapid switching on one core.", "Hơn 1 tác vụ cùng tiến triển, kể cả qua chuyển đổi nhanh trên 1 core."],
+      "Data parallelism": ["Distributing subsets of the same data across cores, same operation on each.", "Chia các tập con của cùng 1 dữ liệu ra nhiều nhân, cùng 1 phép toán trên mỗi tập."],
+      "Task parallelism": ["Distributing threads across cores, each performing a unique operation.", "Chia thread ra nhiều nhân, mỗi thread làm 1 phép toán riêng."],
+      "Amdahl's Law": ["Formula identifying the speedup gained from adding cores, given a serial portion.", "Công thức xác định tốc độ tăng khi thêm nhân, dựa trên phần tuần tự."],
+      "Many-to-One": ["Many user threads map to a single kernel thread; one block, blocks all.", "Nhiều thread người dùng ánh xạ vào 1 thread kernel; 1 cái block, cả nhóm block."],
+      "One-to-One": ["Each user thread maps to its own kernel thread.", "Mỗi thread người dùng ánh xạ vào 1 thread kernel riêng của nó."],
+      "Many-to-Many": ["Many user threads map to many kernel threads, flexibly.", "Nhiều thread người dùng ánh xạ vào nhiều thread kernel, linh hoạt."],
+      "Two-level model": ["Like many-to-many, but also allows one user thread to bind 1:1 to a kernel thread.", "Giống many-to-many, nhưng còn cho 1 thread người dùng gắn 1:1 vào thread kernel."],
+      "lightweight process (LWP)": ["An intermediate structure appearing as a virtual processor for a user thread.", "Cấu trúc trung gian xuất hiện như 1 bộ xử lý ảo cho 1 thread người dùng."],
+      "Scheduler activations": ["A mechanism using upcalls to keep the right number of kernel threads allocated.", "Cơ chế dùng upcall để giữ đúng số thread kernel được cấp."],
+      "upcalls": ["Kernel-to-thread-library communication used by scheduler activations.", "Giao tiếp từ kernel tới thread library, dùng bởi scheduler activations."],
+      "Pthreads": ["A POSIX specification (not implementation) for thread creation and sync.", "1 đặc tả POSIX (không phải cài đặt) để tạo và đồng bộ thread."],
+      "Asynchronous threading": ["Parent and child threads execute concurrently and independently.", "Thread cha và con chạy song song, độc lập với nhau."],
+      "Synchronous threading": ["The parent waits for all its child threads to terminate before resuming.", "Cha chờ tất cả thread con kết thúc trước khi chạy tiếp."],
+      "pthread_create()": ["Creates a new separate thread.", "Tạo 1 thread riêng mới."],
+      "pthread_join()": ["Makes the parent thread wait for a specific child thread to terminate.", "Khiến thread cha chờ 1 thread con cụ thể kết thúc."],
+      "pthread_exit()": ["Called by a thread itself to terminate.", "Được chính 1 thread gọi để tự kết thúc."],
+      "Runnable": ["The standard Java interface implemented to define a thread's work.", "Interface Java chuẩn, cài đặt để định nghĩa công việc của 1 thread."],
+      "Executor": ["A Java interface for submitting tasks without managing raw Thread objects.", "1 interface Java để nộp tác vụ mà không tự quản lý đối tượng Thread thô."],
+      "Thread pools": ["Pre-created threads sitting ready, waiting to service incoming work.", "Các thread tạo sẵn, ngồi chờ để phục vụ công việc đến."],
+      "Fork-Join parallelism": ["Tasks recursively split (fork), compute, then combine results (join).", "Tác vụ đệ quy chia nhỏ (fork), tính toán, rồi gộp kết quả (join)."],
+      "OpenMP": ["Compiler directives and an API for shared-memory parallel programming in C/C++/FORTRAN.", "Chỉ thị biên dịch và API cho lập trình song song shared-memory trong C/C++/FORTRAN."],
+      "parallel regions": ["Blocks of code identified as able to run in parallel.", "Khối mã được xác định là có thể chạy song song."],
+      "Grand Central Dispatch (GCD)": ["Apple's technology managing thread details via blocks and dispatch queues.", "Công nghệ của Apple tự quản lý chi tiết thread qua block và dispatch queue."],
+      "block": ["A GCD unit of work, written as ^{ ... }.", "1 đơn vị công việc trong GCD, viết dạng ^{ ... }."],
+      "dispatch queue": ["Where GCD blocks wait before being assigned to an available thread.", "Nơi block GCD chờ trước khi được gán cho 1 thread rảnh."],
+      "closure": ["Swift's equivalent of a GCD block, submitted via dispatch_async().", "Tương đương block GCD bên Swift, nộp qua dispatch_async()."],
+      "Intel Threading Building Blocks (TBB)": ["A C++ template library for parallel programming, e.g. parallel_for.", "1 thư viện template C++ cho lập trình song song, vd parallel_for."],
+      "target thread": ["The thread being cancelled.", "Thread đang bị hủy."],
+      "Asynchronous cancellation": ["Terminates the target thread immediately.", "Kết thúc target thread ngay lập tức."],
+      "Deferred cancellation": ["Lets the target thread periodically check whether it should cancel itself.", "Cho target thread định kỳ tự kiểm tra xem có nên tự hủy không."],
+      "cancellation point": ["A spot (e.g. pthread_testcancel()) where deferred cancellation actually occurs.", "1 điểm (vd pthread_testcancel()) nơi deferred cancellation thực sự xảy ra."],
+      "Thread-local storage (TLS)": ["Data unique to each thread, visible across that thread's function calls.", "Dữ liệu riêng cho từng thread, hiển thị xuyên suốt các lần gọi hàm của thread đó."],
+      "Windows API": ["The primary API for Windows apps, implementing one-to-one kernel threading.", "API chính cho ứng dụng Windows, cài đặt threading kernel one-to-one."],
+      "context": ["A thread's register set, stacks, and private storage area together.", "Tập thanh ghi, các stack, và vùng lưu trữ riêng của 1 thread, gộp lại."],
+      "ETHREAD": ["Windows executive thread block, in kernel space, pointing to process and KTHREAD.", "Khối thread điều hành của Windows, trong kernel space, trỏ tới process và KTHREAD."],
+      "KTHREAD": ["Windows kernel thread block: scheduling info, kernel stack, pointer to TEB.", "Khối thread kernel của Windows: thông tin lập lịch, stack kernel, con trỏ tới TEB."],
+      "TEB": ["Windows thread environment block, in user space: id, user stack, TLS.", "Khối môi trường thread của Windows, trong user space: id, stack người dùng, TLS."],
+      "tasks": ["Linux's term for threads.", "Thuật ngữ Linux dùng để gọi thread."],
+      "clone()": ["The Linux system call used to create a thread (task), controlled by flags.", "System call Linux dùng để tạo thread (task), điều khiển bằng các cờ (flags)."]
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    document.querySelectorAll('p.en b').forEach(el => {
+      const text = el.textContent.trim();
+      if (!G[text]) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = text;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+    { q:"What does a thread add to a process that a process didn't already have on its own?", opts:["A new address space","A new program counter, register set, and stack","A new set of open files","A new Process ID"], correct:1, exp:"A thread is an extra flow of control — its own program counter, registers, and stack — inside a process's existing address space." },
+    { q:"If one user-level thread blocks under the Many-to-One model, what happens to its peer threads?", opts:["Nothing — they keep running normally","They all block too, since the OS sees one process","They are automatically promoted to kernel threads","They are cancelled asynchronously"], correct:1, exp:"Many-to-One maps everything onto a single kernel thread, so the OS only sees one process — one block, blocks all." },
+    { q:"Which threading benefit specifically means a UI stays alive while part of the app is blocked?", opts:["Economy","Scalability","Responsiveness","Resource sharing"], correct:2, exp:"Responsiveness is exactly this: the app can keep running even if part of the process is blocked." },
+    { q:"Parallelism genuinely requires which of the following?", opts:["A single-core CPU with a good scheduler","Multiple cores actually executing simultaneously","A thread pool","Deferred cancellation"], correct:1, exp:"Parallelism means truly running more than one task at the exact same time — this needs multiple cores, unlike concurrency." },
+    { q:"Data parallelism and task parallelism differ in what way?", opts:["Data parallelism uses more cores than task parallelism","Data parallelism runs the same operation on split data; task parallelism runs different operations","They are exactly the same technique","Task parallelism only works in Java"], correct:1, exp:"Data parallelism splits the same data across cores doing the same op; task parallelism spreads distinct operations across cores." },
+    { q:"Under Amdahl's Law, as the number of cores N approaches infinity, speedup approaches what?", opts:["Infinity","N itself","1/S, where S is the serial portion","0"], correct:2, exp:"Speedup is bounded by 1/S as N → ∞ — the serial fraction of the program caps how much adding cores can help." },
+    { q:"In the One-to-One threading model, what happens when a user-level thread is created?", opts:["Nothing happens in the kernel","A corresponding kernel thread is also created","It gets queued behind a single shared kernel thread","It's mapped to a randomly chosen existing kernel thread"], correct:1, exp:"One-to-One creates a matching kernel thread for every user thread created, giving true concurrency but adding overhead." },
+    { q:"What is a lightweight process (LWP) used for in the Many-to-Many and Two-level models?", opts:["Replacing kernel threads entirely","Acting as an intermediate virtual processor a user thread can be scheduled onto","Storing thread-local storage","Handling only asynchronous cancellation"], correct:1, exp:"An LWP appears as a virtual processor, letting the application schedule a user thread onto it; each LWP attaches to one kernel thread." },
+    { q:"In Pthreads, which call does a parent thread use to wait for a specific child thread to terminate?", opts:["pthread_create()", "pthread_exit()", "pthread_join()", "pthread_cancel()"], correct:2, exp:"pthread_join() blocks the calling (parent) thread until the specified target thread terminates." },
+    { q:"What is the standard, recommended way to create a thread's work in Java?", opts:["Always extend the Thread class directly","Implement the Runnable interface","Use only the Executor framework, never Thread or Runnable","Call pthread_create() from Java"], correct:1, exp:"Standard practice is implementing Runnable rather than extending Thread, since a class can only extend one class but implement many interfaces." },
+    { q:"In Fork-Join parallelism, what happens after the recursive splitting bottoms out?", opts:["The program terminates","Results are computed at the base cases and then joined back together going up the recursion","Nothing — fork-join has no join step","All threads are cancelled asynchronously"], correct:1, exp:"Fork-Join splits (forks) recursively, computes base cases, then joins partial results back together on the way back up." },
+    { q:"In Grand Central Dispatch, what's the key difference between a serial and a concurrent dispatch queue?", opts:["Serial queues run on macOS only; concurrent queues run on iOS only","A serial queue removes one block at a time (FIFO); a concurrent queue may remove several at once","Concurrent queues never use FIFO order","Serial queues are for Swift, concurrent queues are for Objective-C"], correct:1, exp:"Both use FIFO order, but a serial queue removes blocks one at a time, while a concurrent queue can remove — and run — several at once." },
+    { q:"What is the default type of Pthreads cancellation, and when does it actually take effect?", opts:["Asynchronous — immediately upon request","Deferred — only once the thread reaches a cancellation point","Deferred — immediately upon request, ignoring thread state","Asynchronous — only at the next context switch"], correct:1, exp:"The default is deferred cancellation: the request stays pending until the target thread reaches a cancellation point, e.g. pthread_testcancel()." },
+    { q:"On Windows, which thread data structure lives in user space rather than kernel space?", opts:["ETHREAD", "KTHREAD", "TEB", "PCB"], correct:2, exp:"The TEB (thread environment block) — holding thread id, user-mode stack, and TLS — lives in user space; ETHREAD and KTHREAD live in kernel space." },
+    { q:"What does Linux call its threads, and which system call creates one?", opts:["'Fibers', created with CreateFiber()","'Tasks', created with clone()","'Green threads', created with spawn()","'LWPs', created with lwp_create()"], correct:1, exp:"Linux refers to threads as tasks and creates them with clone(), whose flags decide exactly what gets shared with the parent." }
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  let correctCount = 0;
+
+  QUIZ.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q';
+    qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+    const optsWrap = document.createElement('div');
+    item.opts.forEach((optText, oi) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.type = 'button';
+      b.textContent = optText;
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        const allOpts = optsWrap.querySelectorAll('.opt');
+        allOpts.forEach(o => o.disabled = true);
+        if (oi === item.correct){
+          b.classList.add('correct');
+          correctCount++;
+        } else {
+          b.classList.add('wrong');
+          allOpts[item.correct].classList.add('correct');
+        }
+        quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+        const ex = qDiv.querySelector('.explain');
+        ex.classList.add('show');
+      });
+      optsWrap.appendChild(b);
+    });
+    qDiv.appendChild(optsWrap);
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.textContent = item.exp;
+    qDiv.appendChild(explain);
+    quizRoot.appendChild(qDiv);
+  });
+</script>
+</body>
+</html>
