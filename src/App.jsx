@@ -158,7 +158,7 @@ const subjects = [
   { id: "ch2", title: "Chapter 2 - Operating System Structures", file: "/lectures/os-ch2-lecture.html" },
   { id: "ch3", title: "Chapter 3 - Process", file: "/lectures/os-ch3-lecture.html" },
   { id: "ch4", title: "Chapter 4 - Threads", file: "/lectures/os-ch4-lecture.html" },
-  { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: null },
+  { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: "/lectures/os-ch5-lecture.html" },
   { id: "ch6", title: "Chapter 6 - Synchronization 1", file: null },
   { id: "ch7", title: "Chapter 7 - Synchronization 2", file: null },
   { id: "ch8", title: "Chapter 8 - Main Memory", file: null },
@@ -511,7 +511,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 12/09/2026 • 11:09:33 (Lecture Notes 04 added)
+            Last Updated: 16/09/2026 • 21:40:25 (Lecture Notes 05 added)
           </p>
         </div>
 

@@ -1,0 +1,1830 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2017 · Chapter 5 — CPU Scheduling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#2E7FC1; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar-wrap{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); padding:12px 14px 11px; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ position:relative; font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 14px 7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper); color:#fff; border-color:var(--copper); }
+  .tab-btn.visited:not(.active){ box-shadow: inset 0 -2px 0 0 #ffffff55; }
+
+  .progress-row{ display:flex; align-items:center; gap:11px; margin-top:10px; }
+  .progress-track{ flex:1; height:7px; border-radius:999px; background:#ffffff1f; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--copper) 0%, #FFB454 50%, var(--teal) 100%); transition:width .4s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:#ffffffb0; white-space:nowrap; min-width:96px; text-align:right; }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:18ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:20px; margin:36px 0 10px; }
+
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .codeblock{ background:var(--ink); color:#F3E6EF; border-radius:12px; padding:16px 20px; margin:16px 0 24px; overflow-x:auto; }
+  .codeblock .clabel{ display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#FFB4D6; margin-bottom:8px; }
+  .codeblock pre{ margin:0; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.65; white-space:pre; }
+  .codeblock .kw{ color:#7FD3FF; } .codeblock .fn{ color:#FFD37F; } .codeblock .cm{ color:#8A9BA8; font-style:italic; } .codeblock .tp{ color:#B3F0C0; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:440px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; max-width:560px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:10px; padding:14px 10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:18px 20px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 20px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  .term:hover, .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .rings-wrap{ display:flex; align-items:center; gap:28px; margin:10px 0 24px; flex-wrap:wrap; }
+  .rings{ position:relative; width:210px; height:210px; flex-shrink:0; }
+  .rings .ring{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:1px solid var(--grid); display:flex; align-items:center; justify-content:center; }
+  .rings .r4{ width:210px; height:210px; background:var(--paper-deep); }
+  .rings .r3{ width:158px; height:158px; background:#FFE0EE; }
+  .rings .r2{ width:106px; height:106px; background:var(--teal-tint); }
+  .rings .r1{ width:54px; height:54px; background:var(--teal); }
+  .rings .r1 span{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:#fff; text-align:center; font-weight:600; line-height:1.2; }
+  .rings-legend{ display:flex; flex-direction:column; gap:9px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .rl-item{ display:flex; align-items:center; gap:8px; }
+  .rl-item .sw{ width:14px; height:14px; border-radius:50%; border:1px solid var(--grid); flex-shrink:0; }
+  .rl-item .sw.r4{ background:var(--paper-deep); } .rl-item .sw.r3{ background:#FFE0EE; } .rl-item .sw.r2{ background:var(--teal-tint); } .rl-item .sw.r1{ background:var(--teal); }
+
+  .seqlist{ margin:6px 0 24px; max-width:540px; counter-reset:seq; }
+  .seqlist .sitem{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px dashed var(--grid); }
+  .seqlist .sitem:first-child{ border-top:none; }
+  .seqlist .snum{ counter-increment:seq; flex-shrink:0; width:23px; height:23px; border-radius:50%; background:var(--copper); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:11.5px; display:flex; align-items:center; justify-content:center; font-weight:700; margin-top:1px; }
+  .seqlist .snum::before{ content: counter(seq); }
+  .seqlist .stext{ font-family:"IBM Plex Mono",monospace; font-size:12.8px; color:var(--ink); padding-top:2px; line-height:1.5; }
+
+  .term-mock{ max-width:460px; margin:6px 0 24px; border-radius:10px; overflow:hidden; box-shadow:0 12px 28px -16px rgba(74,46,64,.45); }
+  .term-mock .tm-bar{ background:#2b2530; padding:8px 12px; display:flex; gap:6px; }
+  .term-mock .tm-dot{ width:10px; height:10px; border-radius:50%; }
+  .term-mock .tm-dot.r{ background:#ff5f56; } .term-mock .tm-dot.y{ background:#ffbd2e; } .term-mock .tm-dot.g{ background:#27c93f; }
+  .term-mock .tm-body{ background:#241f29; color:#e8dce3; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:14px 16px; line-height:1.75; white-space:pre-wrap; }
+  .term-mock .tm-prompt{ color:#7FC4F0; }
+  .term-mock .tm-out{ color:#c7a8bb; }
+  .term-mock .tm-com{ color:#7bd88f; }
+
+  .phone-mock{ max-width:220px; margin:6px auto 24px; border:8px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--paper-deep); }
+  .phone-mock .pm-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .phone-mock .pm-icon{ aspect-ratio:1; border-radius:12px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .phone-mock .pm-icon:nth-child(3n+2){ background:var(--copper-tint); }
+
+  table.cmp-table{ width:100%; max-width:600px; border-collapse:collapse; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+  .table-scroll{ overflow-x:auto; margin:6px 0 24px; }
+  .table-scroll table.cmp-table{ margin:0; min-width:520px; }
+  .exercise{ background:var(--paper-deep); border:1px solid var(--grid); border-left:4px solid var(--copper); border-radius:12px; padding:20px 22px; margin:22px 0; }
+  .exercise h4{ margin:0 0 10px; font-size:16.5px; color:var(--copper-deep); }
+  .exercise table.cmp-table{ margin:10px 0 14px; font-size:13px; }
+  .exercise details{ margin-top:12px; border-top:1px dashed var(--grid); padding-top:10px; }
+  .exercise summary{ cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--teal-deep); font-weight:600; }
+  .exercise summary:hover{ color:var(--copper-deep); }
+  .exercise .ans-table{ margin-top:10px; }
+  .exercise .ans-note{ font-size:13px; color:var(--ink-soft); margin-top:8px; }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .tree{ display:flex; flex-direction:column; align-items:center; gap:6px; margin:10px 0 24px; }
+  .tree .trow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .tree .tnode{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:8px 12px; border-radius:8px; border:1px solid var(--grid); background:var(--paper-deep); text-align:center; }
+  .tree .tnode.root{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .tree .tconn{ color:var(--ink-soft); font-size:12px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar-wrap{ position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 12px 6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .rings-wrap{ justify-content:center; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2018 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="basics">Basic Concepts</button>
+    <button class="tab-btn" data-tab="algorithms">Scheduling Algorithms</button>
+    <button class="tab-btn" data-tab="multilevel">Multilevel Queues</button>
+    <button class="tab-btn" data-tab="multicore">Threads &amp; Multiprocessors</button>
+    <button class="tab-btn" data-tab="realtime">Real-Time Scheduling</button>
+    <button class="tab-btn" data-tab="examples">OS Examples &amp; Evaluation</button>
+    <button class="tab-btn" data-tab="exercises">Exercises</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/8 tab · 0%</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 5 · CPU Scheduling</span>
+    <h1>Every core is idle time waiting to be <em>scheduled</em> away</h1>
+    <p class="lede">Chapter 4 gave a process many threads of control. This chapter decides which of all those runnable threads actually gets the CPU next — the single decision that turns a pile of waiting processes into a responsive, efficient system.</p>
+    <span class="vi">Chương 4 cho 1 tiến trình nhiều luồng điều khiển. Chương này quyết định trong tất cả các luồng đang sẵn sàng đó, luồng nào thực sự được cấp CPU tiếp theo — quyết định duy nhất biến 1 đống tiến trình đang chờ thành 1 hệ thống phản hồi nhanh, hiệu quả.</span>
+    <div class="tagrow">
+      <span class="tag user">CPU–I/O burst cycle: xen kẽ tính toán và chờ I/O</span>
+      <span class="tag kernel">Dispatcher: mô-đun thực sự trao CPU cho tiến trình được chọn</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="basics"><div class="kicker">01 · Foundations</div><h3>Basic Concepts</h3><p>CPU–I/O burst cycle, CPU scheduler, dispatcher, preemptive vs nonpreemptive, scheduling criteria.</p></div>
+    <div class="card kernel" data-goto="algorithms"><div class="kicker">02 · Core algorithms</div><h3>Scheduling Algorithms</h3><p>FCFS, SJF/SRTF, Round Robin, Priority scheduling — with worked Gantt charts.</p></div>
+    <div class="card user" data-goto="multilevel"><div class="kicker">03 · Queues</div><h3>Multilevel Queues</h3><p>Multilevel queue scheduling and multilevel feedback queues.</p></div>
+    <div class="card kernel" data-goto="multicore"><div class="kicker">04 · Parallel hardware</div><h3>Threads &amp; Multiprocessors</h3><p>Thread scheduling (PCS/SCS), SMP, multicore, load balancing, processor affinity.</p></div>
+    <div class="card user" data-goto="realtime"><div class="kicker">05 · Deadlines</div><h3>Real-Time Scheduling</h3><p>Latencies, priority-based scheduling, rate-monotonic, EDF, proportional share, POSIX.</p></div>
+    <div class="card kernel" data-goto="examples"><div class="kicker">06 · Case studies</div><h3>OS Examples &amp; Evaluation</h3><p>Linux CFS, Windows priorities, and how to evaluate a scheduling algorithm.</p></div>
+    <div class="card user" data-goto="exercises"><div class="kicker">07 · Practice</div><h3>Exercises</h3><p>4 bài tập tính avg waiting/turnaround time — tự luyện vẽ Gantt chart, có đáp án đối chiếu.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.5</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Scheduling algorithms</h4><p>Describe various CPU scheduling algorithms used in modern operating systems.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Scheduling criteria</h4><p>Assess CPU scheduling algorithms based on utilization, throughput, turnaround, waiting, and response time.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Multiprocessor &amp; real-time</h4><p>Explain the issues in multiprocessor/multicore scheduling and describe real-time scheduling algorithms.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 4</div><div><h4>OS examples &amp; evaluation</h4><p>Describe Windows, Linux, and Solaris scheduling, and apply modeling/simulation to evaluate an algorithm.</p></div></div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: BASIC CONCEPTS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-basics" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🔄</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Foundations</div>
+        <h2>Bursts, schedulers, and dispatchers</h2>
+        <span class="vi">Burst, scheduler, và dispatcher</span>
+      </div>
+    </div>
+    <p class="intro">Almost every computer resource is scheduled before use — but the CPU is the one resource every process absolutely needs, so its scheduling is central to OS design.</p>
+    <span class="vi">Gần như mọi tài nguyên máy tính đều được lập lịch trước khi dùng — nhưng CPU là tài nguyên mọi tiến trình đều cần, nên việc lập lịch CPU là trọng tâm của thiết kế HĐH.</span>
+
+    <p class="en">Process execution consists of a cycle of <b>CPU burst</b> and <b>I/O burst</b>. Maximum CPU utilization is obtained through multiprogramming — while one process waits on I/O, another can use the CPU.</p>
+    <span class="vi">Việc thực thi 1 tiến trình gồm 1 chu kỳ luân phiên giữa <b>CPU burst</b> và <b>I/O burst</b>. Tận dụng CPU tối đa đạt được nhờ đa chương trình — khi 1 tiến trình chờ I/O, tiến trình khác có thể dùng CPU.</span>
+
+    <svg viewBox="0 0 560 210" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="16" font-size="11" fill="#4A2E40" font-weight="600">process execution — CPU/I-O burst cycle</text>
+      <rect x="10" y="26" width="120" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="70" y="43" text-anchor="middle" font-size="9.5" fill="#C22A63">CPU burst</text>
+      <rect x="130" y="26" width="90" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="175" y="43" text-anchor="middle" font-size="9.5" fill="#2E7FC1">wait I/O</text>
+      <rect x="220" y="26" width="150" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="295" y="43" text-anchor="middle" font-size="9.5" fill="#C22A63">CPU burst</text>
+      <rect x="370" y="26" width="60" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="400" y="43" text-anchor="middle" font-size="9.5" fill="#2E7FC1">wait I/O</text>
+      <rect x="430" y="26" width="120" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="490" y="43" text-anchor="middle" font-size="9.5" fill="#C22A63">CPU burst</text>
+      <text x="10" y="80" font-size="10" fill="#8A5F78">Histogram of CPU-burst times:</text>
+      <path d="M10 190 Q 60 90 120 130 T 260 175 L 550 178" fill="none" stroke="#2E7FC1" stroke-width="2"/>
+      <line x1="10" y1="190" x2="550" y2="190" stroke="#8A5F78"/>
+      <text x="30" y="205" font-size="9" fill="#8A5F78">many SHORT bursts</text>
+      <text x="440" y="205" font-size="9" fill="#8A5F78">few LONG bursts</text>
+    </svg>
+
+    <div class="illus">
+      <div class="emo">📊</div>
+      <div class="cap"><b>Quan trọng cho toàn chương</b>Vì có rất nhiều burst ngắn và ít burst dài, các thuật toán ưu tiên burst ngắn (SJF) thường cho waiting time trung bình thấp.</div>
+    </div>
+
+    <p class="en">The <b>CPU scheduler</b> selects one process from the ready queue and allocates the CPU core to it. The queue itself may be a FIFO list, a priority queue, a tree, or an unordered linked list.</p>
+    <span class="vi"><b>CPU scheduler</b> chọn 1 tiến trình từ ready queue và cấp 1 nhân CPU cho nó. Bản thân hàng đợi có thể là danh sách FIFO, hàng đợi ưu tiên, cây, hoặc danh sách liên kết không thứ tự.</span>
+
+    <svg viewBox="0 0 560 90" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="16" font-size="10" fill="#4A2E40" font-weight="600">ví dụ: ready queue → CPU scheduler → 1 core</text>
+      <rect x="10" y="26" width="46" height="26" rx="5" fill="#FFE0EE" stroke="#8A5F78"/><text x="33" y="43" text-anchor="middle" font-size="8.5" fill="#4A2E40">P5</text>
+      <rect x="60" y="26" width="46" height="26" rx="5" fill="#FFE0EE" stroke="#8A5F78"/><text x="83" y="43" text-anchor="middle" font-size="8.5" fill="#4A2E40">P2</text>
+      <rect x="110" y="26" width="46" height="26" rx="5" fill="#FFE0EE" stroke="#8A5F78"/><text x="133" y="43" text-anchor="middle" font-size="8.5" fill="#4A2E40">P7</text>
+      <text x="170" y="43" font-size="9" fill="#8A5F78">... ready queue</text>
+      <path d="M280 39 h60" stroke="#8A5F78" marker-end="url(#ah0)"/>
+      <defs><marker id="ah0" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+      <rect x="345" y="20" width="110" height="38" rx="8" fill="#7FC4F026" stroke="#4FA4DD"/><text x="400" y="43" text-anchor="middle" font-size="9" fill="#2E7FC1" font-weight="600">CPU scheduler</text>
+      <path d="M455 39 h35" stroke="#8A5F78" marker-end="url(#ah0)"/>
+      <rect x="490" y="26" width="46" height="26" rx="5" fill="#FF6FA51f" stroke="#E8407F"/><text x="513" y="43" text-anchor="middle" font-size="8.5" fill="#C22A63">core</text>
+      <text x="10" y="72" font-size="9" fill="#8A5F78">Ví dụ: chọn P2 (giả sử ưu tiên cao nhất) → cấp cho core</text>
+    </svg>
+
+    <p class="en">Scheduling decisions may occur when a process: (1) switches from running to waiting, (2) switches from running to ready, (3) switches from waiting to ready, or (4) terminates.</p>
+    <span class="vi">Quyết định lập lịch có thể xảy ra khi 1 tiến trình: (1) chuyển từ running sang waiting, (2) chuyển từ running sang ready, (3) chuyển từ waiting sang ready, hoặc (4) kết thúc.</span>
+
+    <svg viewBox="0 0 560 230" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <rect x="225" y="15" width="110" height="42" rx="8" fill="#FF6FA51f" stroke="#E8407F" stroke-width="1.5"/>
+      <text x="280" y="41" text-anchor="middle" font-size="11" fill="#C22A63" font-weight="600">running</text>
+
+      <rect x="15" y="94" width="110" height="42" rx="8" fill="#7FC4F026" stroke="#4FA4DD" stroke-width="1.5"/>
+      <text x="70" y="120" text-anchor="middle" font-size="11" fill="#2E7FC1" font-weight="600">ready</text>
+
+      <rect x="435" y="94" width="110" height="42" rx="8" fill="#7FC4F026" stroke="#4FA4DD" stroke-width="1.5"/>
+      <text x="490" y="120" text-anchor="middle" font-size="11" fill="#2E7FC1" font-weight="600">waiting</text>
+
+      <rect x="225" y="173" width="110" height="42" rx="8" fill="#FFE0EE" stroke="#8A5F78" stroke-width="1.5"/>
+      <text x="280" y="199" text-anchor="middle" font-size="11" fill="#4A2E40" font-weight="600">terminated</text>
+
+      <defs>
+        <marker id="ahCop" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#E8407F"/></marker>
+        <marker id="ahTeal" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#4FA4DD"/></marker>
+      </defs>
+
+      <path d="M335,44 Q 400,60 438,98" fill="none" stroke="#E8407F" stroke-width="2" marker-end="url(#ahCop)"/>
+      <circle cx="378" cy="55" r="9" fill="#FFF6FB" stroke="#E8407F"/><text x="378" y="59" text-anchor="middle" font-size="9.5" fill="#C22A63" font-weight="600">1</text>
+
+      <path d="M235,42 Q 150,60 100,92" fill="none" stroke="#4FA4DD" stroke-width="2" marker-end="url(#ahTeal)"/>
+      <circle cx="165" cy="55" r="9" fill="#FFF6FB" stroke="#4FA4DD"/><text x="165" y="59" text-anchor="middle" font-size="9.5" fill="#2E7FC1" font-weight="600">2</text>
+
+      <path d="M448,136 Q 260,180 128,138" fill="none" stroke="#4FA4DD" stroke-width="2" marker-end="url(#ahTeal)"/>
+      <circle cx="285" cy="172" r="9" fill="#FFF6FB" stroke="#4FA4DD"/><text x="285" y="176" text-anchor="middle" font-size="9.5" fill="#2E7FC1" font-weight="600">3</text>
+
+      <path d="M280,57 L 280,171" fill="none" stroke="#E8407F" stroke-width="2" marker-end="url(#ahCop)"/>
+      <circle cx="280" cy="115" r="9" fill="#FFF6FB" stroke="#E8407F"/><text x="280" y="119" text-anchor="middle" font-size="9.5" fill="#C22A63" font-weight="600">4</text>
+
+      <line x1="15" y1="8" x2="35" y2="8" stroke="#E8407F" stroke-width="2.5"/>
+      <text x="40" y="11" font-size="9" fill="#8A5F78">nonpreemptive (1, 4)</text>
+      <line x1="185" y1="8" x2="205" y2="8" stroke="#4FA4DD" stroke-width="2.5"/>
+      <text x="210" y="11" font-size="9" fill="#8A5F78">preemptive (2, 3)</text>
+    </svg>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">🔒 Nonpreemptive — case 1 &amp; 4</div>
+        <p>Tiến trình tự nguyện nhả CPU (chờ I/O hoặc kết thúc). Không có lựa chọn nào khác để lập lịch tại thời điểm đó.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">⚡ Preemptive — mọi trường hợp còn lại</div>
+        <p>OS có thể lấy lại CPU bất cứ lúc nào — nhưng phải cẩn thận với <b>race condition</b>: truy cập dữ liệu chung, preemption khi đang ở kernel mode, ngắt xảy ra giữa các thao tác quan trọng của OS.</p>
+      </div>
+    </div>
+
+    <p class="en">The <b>dispatcher</b> is the module that actually gives control of the CPU to the process chosen by the scheduler: it switches context, switches to user mode, and jumps to the right location to resume the program.</p>
+    <span class="vi"><b>Dispatcher</b> là mô-đun thực sự trao quyền điều khiển CPU cho tiến trình được scheduler chọn: chuyển ngữ cảnh, chuyển sang user mode, và nhảy tới đúng vị trí để tiếp tục chương trình.</span>
+
+    <div class="seqlist">
+      <div class="sitem"><div class="snum"></div><div class="stext">Save state of the currently running process into its PCB</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Restore the state of the next process from its PCB</div></div>
+      <div class="sitem"><div class="snum"></div><div class="stext">Switch to user mode and jump to resume that program</div></div>
+    </div>
+
+    <div class="note">
+      <b>Dispatch latency</b>
+      Thời gian để dispatcher dừng 1 tiến trình và bắt đầu chạy tiến trình khác — càng nhỏ càng tốt, đặc biệt quan trọng cho hệ thống real-time.
+    </div>
+
+    <p class="en">Scheduling algorithms are compared with five criteria: <b>CPU utilization</b>, <b>throughput</b>, <b>turnaround time</b>, <b>waiting time</b>, and <b>response time</b>.</p>
+    <span class="vi">Các thuật toán lập lịch được so sánh bằng 5 tiêu chí: <b>CPU utilization</b>, <b>throughput</b>, <b>turnaround time</b>, <b>waiting time</b>, và <b>response time</b>.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">🔋 CPU utilization</div><p>Giữ CPU bận càng nhiều càng tốt. <b>Max.</b></p></div>
+      <div class="res-card"><div class="rk">🏭 Throughput</div><p>Số tiến trình hoàn thành trên 1 đơn vị thời gian. <b>Max.</b></p></div>
+      <div class="res-card"><div class="rk">⏱️ Turnaround time</div><p>Tổng thời gian để thực thi xong 1 tiến trình. <b>Min.</b></p></div>
+      <div class="res-card"><div class="rk">⌛ Waiting time</div><p>Thời gian tiến trình nằm chờ trong ready queue. <b>Min.</b></p></div>
+      <div class="res-card"><div class="rk">💬 Response time</div><p>Từ lúc gửi yêu cầu tới lúc có phản hồi đầu tiên (hệ tương tác). <b>Min.</b></p></div>
+    </div>
+
+    <p class="en">In most cases it's the <em>average</em> measure that gets optimized. But for interactive systems — a PC desktop or laptop — it's often more important to <b>minimize the variance</b> in response time than to minimize its average.</p>
+    <span class="vi">Trong hầu hết trường hợp, thứ được tối ưu là <em>giá trị trung bình</em>. Nhưng với hệ thống tương tác — PC desktop hay laptop — việc <b>tối thiểu hóa độ lệch (variance)</b> của response time thường quan trọng hơn là tối thiểu hóa giá trị trung bình của nó.</span>
+
+    <div class="illus">
+      <div class="emo">📉</div>
+      <div class="cap"><b>Vì sao variance quan trọng hơn?</b>1 hệ thống có response time trung bình 50ms nhưng dao động 10–200ms sẽ CẢM GIÁC ì hơn 1 hệ thống luôn ổn định ở 60ms — người dùng ghét sự khó đoán hơn ghét độ trễ nhỏ ổn định.</div>
+    </div>
+
+    <div class="hook">
+      <b>Trước khi qua phần thuật toán — ghi nhớ quy ước:</b> mọi ví dụ Gantt chart trong chương này chỉ xét 1 CPU burst mỗi tiến trình, và thước đo so sánh là <em>average waiting time</em>.
+      <span class="vi">Đây là quy ước dùng xuyên suốt để so sánh FCFS, SJF, RR, Priority một cách công bằng.</span>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">CPU-I/O burst cycle</span><span class="rchip">scheduler chọn, dispatcher thi hành</span>
+        <span class="rchip">nonpreemptive: case 1 &amp; 4</span><span class="rchip">5 tiêu chí: utilization/throughput/turnaround/waiting/response</span>
+      </div>
+      <p class="rline">Scheduler quyết định AI chạy tiếp theo; dispatcher là người THỰC SỰ đưa CPU cho tiến trình đó.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: SCHEDULING ALGORITHMS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-algorithms" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📋</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Core algorithms</div>
+        <h2>FCFS, SJF, Round Robin, Priority</h2>
+        <span class="vi">FCFS, SJF, Round Robin, Priority</span>
+      </div>
+    </div>
+    <p class="intro">Four classic algorithms cover most of what you need: simplicity (FCFS), optimality (SJF), fairness (RR), and importance ranking (Priority).</p>
+    <span class="vi">4 thuật toán kinh điển bao trùm phần lớn nhu cầu: đơn giản (FCFS), tối ưu (SJF), công bằng (RR), và xếp hạng mức độ quan trọng (Priority).</span>
+
+    <p class="en"><b>First-Come, First-Served (FCFS)</b> runs processes strictly in arrival order — the simplest possible policy, implemented with a plain FIFO queue.</p>
+    <span class="vi"><b>First-Come, First-Served (FCFS)</b> chạy tiến trình đúng theo thứ tự đến — chính sách đơn giản nhất, cài đặt bằng 1 hàng đợi FIFO thuần túy.</span>
+
+    <svg viewBox="0 0 560 130" style="max-width:560px;width:100%;margin:6px 0 6px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="16" font-size="10.5" fill="#4A2E40" font-weight="600">Order: P1, P2, P3  (burst 24, 3, 3)</text>
+      <rect x="10" y="24" width="380" height="28" fill="#FF6FA51f" stroke="#E8407F"/><text x="200" y="42" text-anchor="middle" font-size="10" fill="#C22A63">P1 (24)</text>
+      <rect x="390" y="24" width="48" height="28" fill="#7FC4F026" stroke="#4FA4DD"/><text x="414" y="42" text-anchor="middle" font-size="9" fill="#2E7FC1">P2</text>
+      <rect x="438" y="24" width="48" height="28" fill="#FFE0EE" stroke="#8A5F78"/><text x="462" y="42" text-anchor="middle" font-size="9" fill="#4A2E40">P3</text>
+      <text x="10" y="66" font-size="9" fill="#8A5F78">0</text><text x="386" y="66" font-size="9" fill="#8A5F78">24</text><text x="482" y="66" font-size="9" fill="#8A5F78">30</text>
+      <text x="10" y="90" font-size="10.5" fill="#4A2E40" font-weight="600">Average waiting time = (0+24+27)/3 = 17 ms → convoy effect!</text>
+      <text x="10" y="112" font-size="9.5" fill="#8A5F78">Order P2,P3,P1 instead → avg wait = (6+0+3)/3 = 3 ms — same processes, huge difference.</text>
+    </svg>
+
+    <div class="illus">
+      <div class="emo">🚂</div>
+      <div class="cap"><b>Convoy effect</b>1 tiến trình CPU-bound dài chạy trước khiến rất nhiều tiến trình I/O-bound ngắn phải xếp hàng chờ — CPU và thiết bị I/O đều bị lãng phí.</div>
+    </div>
+
+    <p class="en"><b>Shortest-Job-First (SJF)</b> — sometimes called shortest-next-CPU-burst — always picks the process with the smallest next CPU burst. SJF is <em>provably optimal</em>: it minimizes average waiting time for a given set of processes.</p>
+    <span class="vi"><b>Shortest-Job-First (SJF)</b> — còn gọi shortest-next-CPU-burst — luôn chọn tiến trình có CPU burst kế tiếp nhỏ nhất. SJF <em>được chứng minh là tối ưu</em>: cho waiting time trung bình nhỏ nhất với 1 tập tiến trình cho trước.</span>
+
+    <svg viewBox="0 0 560 90" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">P1=6, P2=8, P3=7, P4=3 (all arrive at 0) → run shortest first</text>
+      <rect x="10" y="22" width="60" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="40" y="39" text-anchor="middle" font-size="9.5" fill="#2E7FC1">P4 (3)</text>
+      <rect x="70" y="22" width="120" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="130" y="39" text-anchor="middle" font-size="9.5" fill="#C22A63">P1 (6)</text>
+      <rect x="190" y="22" width="140" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="260" y="39" text-anchor="middle" font-size="9.5" fill="#4A2E40">P3 (7)</text>
+      <rect x="330" y="22" width="160" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="410" y="39" text-anchor="middle" font-size="9.5" fill="#2E7FC1">P2 (8)</text>
+      <text x="10" y="65" font-size="10" fill="#4A2E40" font-weight="600">Average waiting time = (3+16+9+0)/4 = 7 ms</text>
+    </svg>
+
+    <p class="en">The catch: SJF needs to know the length of the <em>next</em> CPU burst, which can only be estimated — typically via <b>exponential averaging</b> of past bursts: τₙ₊₁ = α·tₙ + (1−α)·τₙ, with α commonly set to ½.</p>
+    <span class="vi">Vấn đề: SJF cần biết độ dài CPU burst <em>tiếp theo</em>, điều này chỉ có thể ước lượng — thường bằng <b>exponential averaging</b> các burst trước đó: τₙ₊₁ = α·tₙ + (1−α)·τₙ, với α thường chọn = ½.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">α = 0</div>
+        <p>τₙ₊₁ = τₙ — lịch sử gần đây <b>không tính</b>, chỉ dùng giá trị dự đoán ban đầu.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">α = 1</div>
+        <p>τₙ₊₁ = tₙ — chỉ CPU burst <b>thực tế gần nhất</b> được tính, bỏ hết lịch sử cũ.</p>
+      </div>
+    </div>
+
+    <p class="en">Worked example with α = ½ and an initial guess τ₀ = 10: watch how the predicted burst (blue curve) chases the actual bursts (black steps) over time, converging toward the new pattern each time it shifts.</p>
+    <span class="vi">Ví dụ cụ thể với α = ½ và dự đoán ban đầu τ₀ = 10: quan sát cách giá trị dự đoán (đường xanh) đuổi theo các burst thực tế (bậc thang đen) theo thời gian, hội tụ dần về mẫu hình mới mỗi khi nó thay đổi.</span>
+
+    <svg viewBox="0 0 560 175" style="max-width:560px;width:100%;margin:6px 0 10px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="9.5" fill="#4A2E40" font-weight="600">Exponential averaging: α=½, τ₀=10 — τ hội tụ dần theo tᵢ thực tế</text>
+      <line x1="45" y1="20" x2="45" y2="130" stroke="#8A5F78"/>
+      <line x1="45" y1="130" x2="530" y2="130" stroke="#8A5F78"/>
+      <rect x="65" y="99" width="30" height="31" fill="#FFE0EE" stroke="#8A5F78"/>
+      <rect x="125" y="115" width="30" height="15" fill="#FFE0EE" stroke="#8A5F78"/>
+      <rect x="185" y="99" width="30" height="31" fill="#FFE0EE" stroke="#8A5F78"/>
+      <rect x="245" y="115" width="30" height="15" fill="#FFE0EE" stroke="#8A5F78"/>
+      <rect x="305" y="28" width="30" height="102" fill="#FFE0EE" stroke="#8A5F78"/>
+      <rect x="365" y="28" width="30" height="102" fill="#FFE0EE" stroke="#8A5F78"/>
+      <rect x="425" y="28" width="30" height="102" fill="#FFE0EE" stroke="#8A5F78"/>
+      <polyline points="45,51 80,67 140,83 200,83 260,91 320,59 380,44 440,36" fill="none" stroke="#2E7FC1" stroke-width="2.2"/>
+      <circle cx="45" cy="51" r="3" fill="#2E7FC1"/><circle cx="80" cy="67" r="3" fill="#2E7FC1"/><circle cx="140" cy="83" r="3" fill="#2E7FC1"/><circle cx="200" cy="83" r="3" fill="#2E7FC1"/><circle cx="260" cy="91" r="3" fill="#2E7FC1"/><circle cx="320" cy="59" r="3" fill="#2E7FC1"/><circle cx="380" cy="44" r="3" fill="#2E7FC1"/><circle cx="440" cy="36" r="3" fill="#2E7FC1"/>
+      <text x="12" y="54" font-size="7.5" fill="#2E7FC1" text-anchor="end">τᵢ</text>
+      <text x="500" y="24" font-size="8" fill="#8A5F78">tᵢ (thực tế)</text>
+      <line x1="465" y1="20" x2="495" y2="20" stroke="#2E7FC1" stroke-width="2.2"/><text x="500" y="40" font-size="8" fill="#2E7FC1">τᵢ (dự đoán)</text>
+
+      <text x="80" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">6</text>
+      <text x="140" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">4</text>
+      <text x="200" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">6</text>
+      <text x="260" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">4</text>
+      <text x="320" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">13</text>
+      <text x="380" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">13</text>
+      <text x="440" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">13</text>
+      <text x="10" y="145" font-size="8" fill="#8A5F78" text-anchor="start">tᵢ:</text>
+
+      <text x="45" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">10</text>
+      <text x="80" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">8</text>
+      <text x="140" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">6</text>
+      <text x="200" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">6</text>
+      <text x="260" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">5</text>
+      <text x="320" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">9</text>
+      <text x="380" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">11</text>
+      <text x="440" y="160" text-anchor="middle" font-size="8" fill="#2E7FC1">12</text>
+      <text x="10" y="160" font-size="8" fill="#2E7FC1" text-anchor="start">τᵢ:</text>
+    </svg>
+
+    <p class="en">Expanding the recurrence shows exactly why this works: τₙ₊₁ = α·tₙ + (1−α)·α·tₙ₋₁ + … + (1−α)ʲ·α·tₙ₋ⱼ + … + (1−α)ⁿ⁺¹·τ₀. Since both α and (1−α) are ≤ 1, each older term carries strictly less weight than the one after it.</p>
+    <span class="vi">Khai triển công thức truy hồi cho thấy chính xác vì sao nó hoạt động: τₙ₊₁ = α·tₙ + (1−α)·α·tₙ₋₁ + … + (1−α)ʲ·α·tₙ₋ⱼ + … + (1−α)ⁿ⁺¹·τ₀. Vì cả α và (1−α) đều ≤ 1, mỗi số hạng càng cũ càng mang trọng số nhỏ hơn số hạng liền sau nó.</span>
+
+    <div class="illus">
+      <div class="emo">🪶</div>
+      <div class="cap"><b>Trọng số giảm dần theo cấp số nhân</b>Burst gần nhất (tₙ) có trọng số α; burst trước đó có trọng số (1−α)α; xa hơn nữa là (1−α)²α... — lịch sử càng xa càng bị "quên" dần, đó là lý do gọi là exponential averaging.</div>
+    </div>
+
+    <div class="note teal">
+      <b>Preemptive hay không?</b>
+      Non-preemptive SJF để tiến trình đang chạy hoàn tất burst của nó. Preemptive SJF — gọi là <b>Shortest-Remaining-Time-First</b> (SRTF) — sẽ preempt ngay khi 1 tiến trình mới đến có burst còn lại ngắn hơn tiến trình đang chạy.
+    </div>
+
+    <p class="en">Worked SRTF example — this time processes arrive at <em>different</em> times, so preemption actually kicks in: P1 (arrival 0, burst 8), P2 (arrival 1, burst 4), P3 (arrival 2, burst 9), P4 (arrival 3, burst 5).</p>
+    <span class="vi">Ví dụ SRTF cụ thể — lần này các tiến trình đến ở <em>thời điểm khác nhau</em>, nên preemption thực sự xảy ra: P1 (đến lúc 0, burst 8), P2 (đến lúc 1, burst 4), P3 (đến lúc 2, burst 9), P4 (đến lúc 3, burst 5).</span>
+
+    <svg viewBox="0 0 560 95" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">Preemptive SJF (SRTF) Gantt chart</text>
+      <rect x="10" y="24" width="19" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="19" y="41" text-anchor="middle" font-size="7" fill="#C22A63">P1</text>
+      <rect x="29" y="24" width="76" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="67" y="41" text-anchor="middle" font-size="8.5" fill="#2E7FC1">P2</text>
+      <rect x="105" y="24" width="95" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="152" y="41" text-anchor="middle" font-size="8.5" fill="#4A2E40">P4</text>
+      <rect x="200" y="24" width="133" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="266" y="41" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="333" y="24" width="171" height="26" fill="#FFF6FB" stroke="#8A5F78"/><text x="418" y="41" text-anchor="middle" font-size="8.5" fill="#4A2E40">P3</text>
+      <text x="10" y="62" font-size="8" fill="#8A5F78">0</text>
+      <text x="29" y="62" font-size="8" fill="#8A5F78" text-anchor="middle">1</text>
+      <text x="105" y="62" font-size="8" fill="#8A5F78" text-anchor="middle">5</text>
+      <text x="200" y="62" font-size="8" fill="#8A5F78" text-anchor="middle">10</text>
+      <text x="333" y="62" font-size="8" fill="#8A5F78" text-anchor="middle">17</text>
+      <text x="504" y="62" font-size="8" fill="#8A5F78" text-anchor="middle">26</text>
+      <text x="10" y="82" font-size="10" fill="#4A2E40" font-weight="600">Average waiting time = [(10−1)+(1−1)+(17−2)+(5−3)]/4 = 6.5 ms</text>
+    </svg>
+
+    <p class="en"><b>Round Robin (RR)</b> is FCFS plus preemption: each process gets a small <b>time quantum</b> q (10–100 ms); if it hasn't finished by then, it's preempted and sent to the back of the ready queue.</p>
+    <span class="vi"><b>Round Robin (RR)</b> là FCFS cộng thêm preemption: mỗi tiến trình được cấp 1 <b>time quantum</b> q nhỏ (10–100 ms); nếu chưa xong, nó bị preempt và đưa xuống cuối ready queue.</span>
+
+    <svg viewBox="0 0 560 95" style="max-width:560px;width:100%;margin:6px 0 6px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">P1=24, P2=3, P3=3 — quantum q=4</text>
+      <rect x="10" y="22" width="53" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="36" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="63" y="22" width="40" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="83" y="39" text-anchor="middle" font-size="8.5" fill="#2E7FC1">P2</text>
+      <rect x="103" y="22" width="40" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="123" y="39" text-anchor="middle" font-size="8.5" fill="#4A2E40">P3</text>
+      <rect x="143" y="22" width="53" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="169" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="196" y="22" width="53" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="222" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="249" y="22" width="53" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="275" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="302" y="22" width="53" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="328" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="355" y="22" width="53" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="381" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <text x="10" y="60" font-size="8" fill="#8A5F78">0</text>
+      <text x="63" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">4</text>
+      <text x="103" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">7</text>
+      <text x="143" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">10</text>
+      <text x="196" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">14</text>
+      <text x="249" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">18</text>
+      <text x="302" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">22</text>
+      <text x="355" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">26</text>
+      <text x="408" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">30</text>
+      <text x="10" y="82" font-size="10" fill="#4A2E40" font-weight="600">Higher turnaround than SJF, but much better response time.</text>
+    </svg>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">q too large</div>
+        <p>RR ⟶ biến thành FCFS. Mất tính công bằng/phản hồi nhanh.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">q too small</div>
+        <p>Quá nhiều context switch → overhead lớn. Quy tắc: q phải lớn so với thời gian context switch (thường &lt;10μs) — và 80% CPU burst nên ngắn hơn q.</p>
+      </div>
+    </div>
+
+    <p class="en">Concretely: for a single process needing 10 ms of CPU time, a larger quantum means far fewer <b>context switches</b> — the trade-off is entirely about how finely you're willing to slice that 10 ms.</p>
+    <span class="vi">Cụ thể: với 1 tiến trình cần 10 ms CPU, quantum càng lớn thì càng ít context switch — sự đánh đổi hoàn toàn nằm ở việc bạn sẵn sàng cắt nhỏ 10ms đó tới mức nào.</span>
+
+    <svg viewBox="0 0 560 135" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">process time = 10 ms — cùng 1 tiến trình, 3 độ lớn quantum khác nhau</text>
+      <text x="10" y="34" font-size="9" fill="#8A5F78">q=12</text>
+      <rect x="70" y="24" width="300" height="18" fill="#FFF6FB" stroke="#8A5F78"/>
+      <text x="380" y="37" font-size="9" fill="#4A2E40" font-weight="600">0 context switches</text>
+      <text x="10" y="64" font-size="9" fill="#8A5F78">q=6</text>
+      <rect x="70" y="54" width="180" height="18" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <rect x="250" y="54" width="120" height="18" fill="#FFE0EE" stroke="#8A5F78"/>
+      <line x1="250" y1="54" x2="250" y2="72" stroke="#4A2E40"/>
+      <text x="380" y="67" font-size="9" fill="#4A2E40" font-weight="600">1 context switch</text>
+      <text x="10" y="94" font-size="9" fill="#8A5F78">q=1</text>
+      <g id="q1row">
+        <rect x="70" y="84" width="30" height="18" fill="#FF6FA51f" stroke="#E8407F"/>
+        <rect x="100" y="84" width="30" height="18" fill="#FFE0EE" stroke="#E8407F"/>
+        <rect x="130" y="84" width="30" height="18" fill="#FF6FA51f" stroke="#E8407F"/>
+        <rect x="160" y="84" width="30" height="18" fill="#FFE0EE" stroke="#E8407F"/>
+        <rect x="190" y="84" width="30" height="18" fill="#FF6FA51f" stroke="#E8407F"/>
+        <rect x="220" y="84" width="30" height="18" fill="#FFE0EE" stroke="#E8407F"/>
+        <rect x="250" y="84" width="30" height="18" fill="#FF6FA51f" stroke="#E8407F"/>
+        <rect x="280" y="84" width="30" height="18" fill="#FFE0EE" stroke="#E8407F"/>
+        <rect x="310" y="84" width="30" height="18" fill="#FF6FA51f" stroke="#E8407F"/>
+        <rect x="340" y="84" width="30" height="18" fill="#FFE0EE" stroke="#E8407F"/>
+      </g>
+      <text x="380" y="97" font-size="9" fill="#4A2E40" font-weight="600">9 context switches</text>
+      <text x="10" y="120" font-size="9" fill="#8A5F78">q nhỏ hơn → cùng khối lượng việc bị cắt vụn hơn → tổng chi phí chuyển ngữ cảnh tăng vọt.</text>
+    </svg>
+
+    <p class="en">Zooming out, average turnaround time doesn't fall monotonically as q grows — it wobbles, because a quantum that happens to split a burst awkwardly can momentarily make things worse. The rule of thumb: 80% of CPU bursts should be shorter than q.</p>
+    <span class="vi">Nhìn rộng ra, turnaround time trung bình không giảm đơn điệu khi q tăng — nó dao động lên xuống, vì 1 quantum vô tình cắt 1 burst không hợp lý có thể tạm thời làm mọi thứ tệ hơn. Quy tắc chung: 80% CPU burst nên ngắn hơn q.</span>
+
+    <svg viewBox="0 0 460 170" style="max-width:460px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">Turnaround Time Varies With The Time Quantum</text>
+      <line x1="55" y1="20" x2="55" y2="130" stroke="#8A5F78"/>
+      <line x1="55" y1="130" x2="400" y2="130" stroke="#8A5F78"/>
+      <text x="20" y="30" font-size="7.5" fill="#8A5F78">avg</text>
+      <text x="20" y="128" font-size="7.5" fill="#8A5F78">turnaround</text>
+      <polyline points="60,63 110,49 160,69 210,49 260,29 310,77 360,77" fill="none" stroke="#2E7FC1" stroke-width="2.2"/>
+      <circle cx="60" cy="63" r="3" fill="#2E7FC1"/><circle cx="110" cy="49" r="3" fill="#2E7FC1"/><circle cx="160" cy="69" r="3" fill="#2E7FC1"/><circle cx="210" cy="49" r="3" fill="#2E7FC1"/><circle cx="260" cy="29" r="3" fill="#2E7FC1"/><circle cx="310" cy="77" r="3" fill="#2E7FC1"/><circle cx="360" cy="77" r="3" fill="#2E7FC1"/>
+      <text x="60" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">1</text>
+      <text x="110" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">2</text>
+      <text x="160" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">3</text>
+      <text x="210" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">4</text>
+      <text x="260" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">5</text>
+      <text x="310" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">6</text>
+      <text x="360" y="145" text-anchor="middle" font-size="8" fill="#8A5F78">7</text>
+      <text x="210" y="160" text-anchor="middle" font-size="8.5" fill="#8A5F78">time quantum</text>
+      <text x="410" y="45" font-size="7.5" fill="#8A5F78">P1=6</text>
+      <text x="410" y="55" font-size="7.5" fill="#8A5F78">P2=3</text>
+      <text x="410" y="65" font-size="7.5" fill="#8A5F78">P3=1</text>
+      <text x="410" y="75" font-size="7.5" fill="#8A5F78">P4=7</text>
+    </svg>
+
+    <p class="en"><b>Priority scheduling</b> assigns a priority number to each process; the CPU goes to the process with the highest priority (by convention, the smallest integer). Equal-priority processes fall back to FCFS or RR.</p>
+    <span class="vi"><b>Priority scheduling</b> gán 1 số ưu tiên cho mỗi tiến trình; CPU được cấp cho tiến trình có priority cao nhất (theo quy ước, số nguyên nhỏ nhất). Tiến trình cùng priority thì dùng lại FCFS hoặc RR.</span>
+
+    <div class="illus">
+      <div class="emo">🕰️</div>
+      <div class="cap"><b>SJF is a special case</b>SJF chính là priority scheduling, với priority = nghịch đảo của độ dài CPU burst kế tiếp được dự đoán.</div>
+    </div>
+
+    <div class="note">
+      <b>Starvation &amp; Aging</b>
+      Vấn đề: tiến trình priority thấp có thể <b>không bao giờ</b> được chạy (<b>starvation</b>). Giải pháp: <b>aging</b> — tăng dần priority của tiến trình theo thời gian nó chờ, để cuối cùng nó cũng sẽ chạy.
+    </div>
+
+    <p class="en">Worked example: P1 (burst 10, priority 3), P2 (burst 1, priority 1), P3 (burst 2, priority 4), P4 (burst 1, priority 5), P5 (burst 5, priority 2) — all arrive at time 0, smallest number = highest priority.</p>
+    <span class="vi">Ví dụ cụ thể: P1 (burst 10, priority 3), P2 (burst 1, priority 1), P3 (burst 2, priority 4), P4 (burst 1, priority 5), P5 (burst 5, priority 2) — đều đến lúc 0, số càng nhỏ priority càng cao.</span>
+
+    <svg viewBox="0 0 560 85" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">Priority scheduling Gantt chart</text>
+      <rect x="10" y="22" width="27" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="23" y="39" text-anchor="middle" font-size="7.5" fill="#2E7FC1">P2</text>
+      <rect x="37" y="22" width="137" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="105" y="39" text-anchor="middle" font-size="8.5" fill="#4A2E40">P5</text>
+      <rect x="174" y="22" width="275" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="311" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="449" y="22" width="55" height="26" fill="#FFF6FB" stroke="#8A5F78"/><text x="476" y="39" text-anchor="middle" font-size="8" fill="#4A2E40">P3</text>
+      <rect x="504" y="22" width="28" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="518" y="39" text-anchor="middle" font-size="7" fill="#2E7FC1">P4</text>
+      <text x="10" y="60" font-size="8" fill="#8A5F78">0</text>
+      <text x="37" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">1</text>
+      <text x="174" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">6</text>
+      <text x="449" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">16</text>
+      <text x="504" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">18</text>
+      <text x="532" y="60" font-size="8" fill="#8A5F78" text-anchor="middle">19</text>
+      <text x="10" y="78" font-size="10" fill="#4A2E40" font-weight="600">Average waiting time = 8.2 ms</text>
+    </svg>
+
+    <p class="en">Priority scheduling is often combined with Round Robin: processes with the same priority run RR against each other, while a higher-priority process always preempts a lower one. Example with quantum q = 2 ms:</p>
+    <span class="vi">Priority scheduling thường kết hợp với Round Robin: các tiến trình cùng priority chạy RR với nhau, còn tiến trình priority cao hơn luôn preempt tiến trình thấp hơn. Ví dụ với quantum q = 2 ms:</span>
+
+    <svg viewBox="0 0 560 95" style="max-width:560px;width:100%;margin:6px 0 6px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="9.5" fill="#4A2E40" font-weight="600">P1(4,pri3) P2(5,pri2) P3(8,pri2) P4(7,pri1) P5(3,pri3) — same priority runs RR</text>
+      <rect x="10" y="22" width="136" height="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="78" y="39" text-anchor="middle" font-size="8.5" fill="#C22A63">P4</text>
+      <rect x="146" y="22" width="39" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="165" y="39" text-anchor="middle" font-size="7.5" fill="#2E7FC1">P2</text>
+      <rect x="185" y="22" width="39" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="204" y="39" text-anchor="middle" font-size="7.5" fill="#4A2E40">P3</text>
+      <rect x="224" y="22" width="39" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="243" y="39" text-anchor="middle" font-size="7.5" fill="#2E7FC1">P2</text>
+      <rect x="263" y="22" width="39" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="282" y="39" text-anchor="middle" font-size="7.5" fill="#4A2E40">P3</text>
+      <rect x="302" y="22" width="20" height="26" fill="#7FC4F026" stroke="#4FA4DD"/><text x="312" y="39" text-anchor="middle" font-size="6.5" fill="#2E7FC1">P2</text>
+      <rect x="322" y="22" width="78" height="26" fill="#FFE0EE" stroke="#8A5F78"/><text x="361" y="39" text-anchor="middle" font-size="8" fill="#4A2E40">P3</text>
+      <rect x="400" y="22" width="39" height="26" fill="#FFF6FB" stroke="#8A5F78"/><text x="419" y="39" text-anchor="middle" font-size="7.5" fill="#4A2E40">P1</text>
+      <rect x="439" y="22" width="39" height="26" fill="#FFE7F1" stroke="#8A5F78"/><text x="458" y="39" text-anchor="middle" font-size="7.5" fill="#4A2E40">P5</text>
+      <rect x="478" y="22" width="39" height="26" fill="#FFF6FB" stroke="#8A5F78"/><text x="497" y="39" text-anchor="middle" font-size="7.5" fill="#4A2E40">P1</text>
+      <rect x="517" y="22" width="20" height="26" fill="#FFE7F1" stroke="#8A5F78"/><text x="527" y="39" text-anchor="middle" font-size="6.5" fill="#4A2E40">P5</text>
+      <text x="10" y="60" font-size="7.5" fill="#8A5F78">0</text>
+      <text x="146" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">7</text>
+      <text x="185" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">9</text>
+      <text x="224" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">11</text>
+      <text x="263" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">13</text>
+      <text x="302" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">15</text>
+      <text x="322" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">16</text>
+      <text x="400" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">20</text>
+      <text x="439" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">22</text>
+      <text x="478" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">24</text>
+      <text x="517" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">26</text>
+      <text x="537" y="60" font-size="7.5" fill="#8A5F78" text-anchor="middle">27</text>
+      <text x="10" y="80" font-size="9.5" fill="#4A2E40" font-weight="600">P4 (priority 1) chạy trọn trước; P2/P3 (priority 2) xen RR; P1/P5 (priority 3) chạy sau cùng.</text>
+    </svg>
+
+    <table class="cmp-table">
+      <tr><th>Algorithm</th><th>Preemptive?</th><th>Nhược điểm chính</th></tr>
+      <tr><td>FCFS</td><td>Không</td><td>Convoy effect — tiến trình ngắn kẹt sau tiến trình dài</td></tr>
+      <tr><td>SJF / SRTF</td><td>Tùy chọn</td><td>Khó biết trước CPU burst tiếp theo, chỉ ước lượng được</td></tr>
+      <tr><td>Round Robin</td><td>Có (theo quantum)</td><td>Turnaround trung bình cao hơn SJF</td></tr>
+      <tr><td>Priority</td><td>Tùy chọn</td><td>Starvation cho tiến trình priority thấp nếu không aging</td></tr>
+    </table>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">FCFS → convoy effect</span><span class="rchip">SJF tối ưu, cần ước lượng burst</span>
+        <span class="rchip">SRTF = SJF preemptive</span><span class="rchip">RR: q lớn→FCFS, q nhỏ→overhead</span>
+        <span class="rchip">Priority + Aging chống starvation</span>
+      </div>
+      <p class="rline">Không có thuật toán nào thắng tuyệt đối — mỗi cái đánh đổi giữa công bằng, tối ưu, và độ phức tạp cài đặt.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: MULTILEVEL QUEUES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-multilevel" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🗂️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Queues</div>
+        <h2>When one priority queue isn't enough</h2>
+        <span class="vi">Khi 1 hàng đợi ưu tiên là chưa đủ</span>
+      </div>
+    </div>
+    <p class="intro">Priority scheduling naturally suggests a further refinement: keep a completely separate queue for each priority level.</p>
+    <span class="vi">Priority scheduling gợi ý 1 cải tiến tự nhiên: giữ 1 hàng đợi hoàn toàn riêng cho mỗi mức ưu tiên.</span>
+
+    <p class="en">A <b>multilevel queue</b> partitions the ready queue into several separate queues, often grouped by process type — for example real-time, system, interactive, and batch processes, from highest to lowest priority.</p>
+    <span class="vi"><b>Multilevel queue</b> chia ready queue thành nhiều hàng đợi riêng biệt, thường theo loại tiến trình — ví dụ real-time, system, interactive, batch, từ ưu tiên cao nhất tới thấp nhất.</span>
+
+    <div class="tree">
+      <div class="trow"><div class="tnode root">real-time processes (highest priority)</div></div>
+      <div class="tconn">↓</div>
+      <div class="trow"><div class="tnode">system processes</div></div>
+      <div class="tconn">↓</div>
+      <div class="trow"><div class="tnode">interactive processes</div></div>
+      <div class="tconn">↓</div>
+      <div class="trow"><div class="tnode" style="background:var(--copper-tint);border-color:var(--copper);color:var(--copper-deep);">batch processes (lowest priority)</div></div>
+    </div>
+
+    <p class="en">Each queue can even run a different scheduling algorithm internally — say, Round Robin for interactive processes and FCFS for batch. The scheduler always runs the highest-priority queue that has a runnable process.</p>
+    <span class="vi">Mỗi hàng đợi thậm chí có thể chạy 1 thuật toán lập lịch khác bên trong — vd Round Robin cho interactive, FCFS cho batch. Scheduler luôn chạy hàng đợi ưu tiên cao nhất có tiến trình sẵn sàng.</span>
+
+    <div class="illus">
+      <div class="emo">⚠️</div>
+      <div class="cap"><b>Rủi ro</b>Nếu hàng đợi cao nhất luôn có việc, các hàng đợi thấp hơn có thể bị đói (starvation) hoàn toàn — tiến trình không bao giờ di chuyển giữa các hàng đợi.</div>
+    </div>
+
+    <p class="en">A <b>multilevel feedback queue</b> fixes exactly that rigidity: a process can migrate between queues, and this migration is how <b>aging</b> gets implemented in practice.</p>
+    <span class="vi"><b>Multilevel feedback queue</b> khắc phục đúng sự cứng nhắc đó: 1 tiến trình có thể di chuyển giữa các hàng đợi, và việc di chuyển này chính là cách <b>aging</b> được cài đặt trong thực tế.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">🔒 Multilevel queue (cứng)</div>
+        <svg viewBox="0 0 200 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="8" width="180" height="16" rx="3" fill="#FF6FA51f" stroke="#E8407F"/><text x="100" y="20" text-anchor="middle" font-size="8" fill="#C22A63">real-time</text>
+          <rect x="10" y="28" width="180" height="16" rx="3" fill="#FFE0EE" stroke="#8A5F78"/><text x="100" y="40" text-anchor="middle" font-size="8" fill="#4A2E40">interactive</text>
+          <rect x="10" y="48" width="180" height="16" rx="3" fill="#7FC4F026" stroke="#4FA4DD"/><text x="100" y="60" text-anchor="middle" font-size="8" fill="#2E7FC1">batch</text>
+        </svg>
+        <p>1 tiến trình vào hàng nào thì ở nguyên hàng đó mãi mãi.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">🔄 Multilevel feedback (linh hoạt)</div>
+        <svg viewBox="0 0 200 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="8" width="180" height="16" rx="3" fill="#FF6FA51f" stroke="#E8407F"/><text x="100" y="20" text-anchor="middle" font-size="8" fill="#C22A63">Q0</text>
+          <rect x="10" y="28" width="180" height="16" rx="3" fill="#FFE0EE" stroke="#8A5F78"/><text x="100" y="40" text-anchor="middle" font-size="8" fill="#4A2E40">Q1</text>
+          <rect x="10" y="48" width="180" height="16" rx="3" fill="#7FC4F026" stroke="#4FA4DD"/><text x="100" y="60" text-anchor="middle" font-size="8" fill="#2E7FC1">Q2</text>
+          <path d="M150 24 v4" stroke="#8A5F78" marker-end="url(#ah2)"/>
+          <path d="M150 44 v4" stroke="#8A5F78" marker-end="url(#ah2)"/>
+          <defs><marker id="ah2" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#8A5F78"/></marker></defs>
+        </svg>
+        <p>Tiến trình có thể trôi xuống (hoặc lên) hàng khác theo hành vi thực tế.</p>
+      </div>
+    </div>
+
+    <p class="en">The scheduler is fully defined by: the number of queues, the scheduling algorithm for each queue, when to <b>upgrade</b> a process to a higher queue, when to <b>demote</b> it to a lower queue, and which queue a new process enters first.</p>
+    <span class="vi">Scheduler được định nghĩa đầy đủ bởi: số hàng đợi, thuật toán lập lịch cho mỗi hàng đợi, khi nào <b>nâng cấp</b> 1 tiến trình lên hàng đợi cao hơn, khi nào <b>hạ cấp</b> xuống thấp hơn, và tiến trình mới vào hàng đợi nào trước.</span>
+
+    <svg viewBox="0 0 560 200" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="150" y="16" text-anchor="middle" font-size="10.5" fill="#4A2E40" font-weight="600">new job</text>
+      <line x1="150" y1="20" x2="150" y2="35" stroke="#8A5F78" marker-end="url(#ah)"/>
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+
+      <rect x="40" y="36" width="220" height="34" rx="8" fill="#FF6FA51f" stroke="#E8407F"/>
+      <text x="150" y="49" text-anchor="middle" font-size="10" fill="#C22A63" font-weight="600">Q0 — RR, quantum = 8 ms</text>
+      <text x="150" y="63" text-anchor="middle" font-size="8.5" fill="#C22A63">chưa xong trong 8ms → xuống Q1</text>
+      <path d="M260 53 h60" stroke="#8A5F78" marker-end="url(#ah)"/>
+      <text x="290" y="48" text-anchor="middle" font-size="9" fill="#8A5F78">done →</text>
+
+      <line x1="150" y1="70" x2="150" y2="90" stroke="#8A5F78" marker-end="url(#ah)"/>
+      <rect x="40" y="91" width="220" height="34" rx="8" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="150" y="104" text-anchor="middle" font-size="10" fill="#2E7FC1" font-weight="600">Q1 — RR, quantum = 16 ms</text>
+      <text x="150" y="118" text-anchor="middle" font-size="8.5" fill="#2E7FC1">vẫn chưa xong → xuống Q2</text>
+      <path d="M260 108 h60" stroke="#8A5F78" marker-end="url(#ah)"/>
+      <text x="290" y="103" text-anchor="middle" font-size="9" fill="#8A5F78">done →</text>
+
+      <line x1="150" y1="125" x2="150" y2="145" stroke="#8A5F78" marker-end="url(#ah)"/>
+      <rect x="40" y="146" width="220" height="34" rx="8" fill="#FFE0EE" stroke="#8A5F78"/>
+      <text x="150" y="159" text-anchor="middle" font-size="10" fill="#4A2E40" font-weight="600">Q2 — FCFS</text>
+      <text x="150" y="173" text-anchor="middle" font-size="8.5" fill="#4A2E40">chạy tới khi xong (không quantum)</text>
+      <path d="M260 163 h60" stroke="#8A5F78" marker-end="url(#ah)"/>
+      <text x="290" y="158" text-anchor="middle" font-size="9" fill="#8A5F78">done →</text>
+
+      <text x="330" y="100" font-size="9.5" fill="#8A5F78" text-anchor="start">tiến trình I/O-bound / interactive</text>
+      <text x="330" y="114" font-size="9.5" fill="#8A5F78" text-anchor="start">ở lại Q0, Q1 — hoàn thành nhanh</text>
+    </svg>
+
+    <div class="note teal">
+      <b>Vì sao thiết kế này công bằng hơn</b>
+      Các tiến trình I/O-bound và interactive có CPU burst ngắn — thường xong trong Q0 mà không cần xuống thấp hơn, nên vẫn có priority cao. Tiến trình CPU-bound nặng dần dần bị đẩy xuống Q1, Q2 — nhưng vẫn được chạy chứ không bị bỏ đói vĩnh viễn.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Multilevel queue: hàng đợi cố định theo loại</span><span class="rchip">Multilevel feedback: cho phép di chuyển giữa hàng đợi</span>
+        <span class="rchip">5 tham số định nghĩa MLFQ</span><span class="rchip">migration xuống = cách hiện thực aging ngược</span>
+      </div>
+      <p class="rline">Multilevel feedback queue là thuật toán tổng quát nhất — có thể được cấu hình để mô phỏng gần như mọi thuật toán khác trong chương.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: THREADS & MULTIPROCESSORS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-multicore" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧩</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · Parallel hardware</div>
+        <h2>Scheduling threads across many cores</h2>
+        <span class="vi">Lập lịch thread trên nhiều nhân</span>
+      </div>
+    </div>
+    <p class="intro">When threads are supported, it's threads — not whole processes — that actually get scheduled onto a CPU.</p>
+    <span class="vi">Khi thread được hỗ trợ, chính thread — chứ không phải cả tiến trình — mới thực sự được lập lịch lên CPU.</span>
+
+    <p class="en">In many-to-one and many-to-many models, the thread library schedules user-level threads onto a <b>Light-Weight Process (LWP)</b>. Competition among threads inside one process is <b>Process-Contention Scope (PCS)</b>; competition among all threads system-wide is <b>System-Contention Scope (SCS)</b>.</p>
+    <span class="vi">Trong mô hình many-to-one và many-to-many, thread library lập lịch các thread người dùng lên 1 <b>Light-Weight Process (LWP)</b>. Cạnh tranh giữa các thread trong cùng 1 tiến trình gọi là <b>Process-Contention Scope (PCS)</b>; cạnh tranh giữa toàn bộ thread trong hệ thống gọi là <b>System-Contention Scope (SCS)</b>.</span>
+
+    <div class="stack">
+      <div class="layer users">user thread <small>PCS — do thread library lập lịch, ưu tiên do lập trình viên đặt</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer os">LWP (lightweight process) <small>bộ xử lý ảo</small></div>
+      <div class="arrow">↓</div>
+      <div class="layer hi">kernel thread <small>SCS — do OS lập lịch lên CPU thật</small></div>
+    </div>
+
+    <div class="note">
+      <b>Pthreads: PTHREAD_SCOPE_PROCESS vs PTHREAD_SCOPE_SYSTEM</b>
+      API cho phép chọn PCS hay SCS lúc tạo thread — nhưng Linux và macOS chỉ cho phép <span class="mono">PTHREAD_SCOPE_SYSTEM</span>, tức luôn SCS.
+    </div>
+
+    <p class="en">The Pthreads API exposes this directly: <span class="mono">pthread_attr_setscope()</span> sets the scheduling scope before creating threads, and <span class="mono">pthread_attr_getscope()</span> reads it back.</p>
+    <span class="vi">Pthreads API để lộ điều này trực tiếp: <span class="mono">pthread_attr_setscope()</span> đặt scope lập lịch trước khi tạo thread, và <span class="mono">pthread_attr_getscope()</span> đọc lại giá trị đó.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Pthread Scheduling API — C</span>
+      <pre>#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#define NUM_THREADS 5
+
+int main(int argc, char *argv[]) {
+  int i, scope;
+  pthread_t tid[NUM_THREADS];
+  pthread_attr_t attr;
+
+  <span class="cm">/* get the default attributes */</span>
+  pthread_attr_init(&amp;attr);
+
+  <span class="cm">/* set the scheduling algorithm to PCS or SCS */</span>
+  pthread_attr_setscope(&amp;attr, <span class="tp">PTHREAD_SCOPE_SYSTEM</span>);
+
+  <span class="cm">/* create the threads */</span>
+  for (i = 0; i &lt; NUM_THREADS; i++)
+    pthread_create(&amp;tid[i], &amp;attr, runner, NULL);
+
+  <span class="cm">/* now join on each thread */</span>
+  for (i = 0; i &lt; NUM_THREADS; i++)
+    pthread_join(tid[i], NULL);
+}
+
+<span class="cm">/* Each thread will begin control in this function */</span>
+void *runner(void *param) {
+  <span class="cm">/* do some work ... */</span>
+  pthread_exit(0);
+}</pre>
+    </div>
+
+    <p class="en">CPU scheduling gets more complex once multiple CPUs are available — a <b>multiprocessor</b> may be multicore CPUs, multithreaded cores, <b>NUMA</b> systems, or heterogeneous multiprocessing. There is no single best solution.</p>
+    <span class="vi">Lập lịch CPU phức tạp hơn khi có nhiều CPU — <b>multiprocessor</b> có thể là multicore CPU, multithreaded core, hệ NUMA, hoặc heterogeneous multiprocessing. Không có 1 giải pháp tốt nhất duy nhất.</span>
+
+    <div class="env-grid">
+      <div class="env-card"><div class="env-badge">🧠</div><h4>Multicore CPUs</h4><p>Nhiều nhân trên cùng 1 chip vật lý.</p></div>
+      <div class="env-card"><div class="env-badge">🧵</div><h4>Multithreaded cores</h4><p>Mỗi nhân chạy &gt;1 hardware thread.</p></div>
+      <div class="env-card"><div class="env-badge">🗺️</div><h4>NUMA systems</h4><p>Thời gian truy cập bộ nhớ khác nhau tùy vị trí.</p></div>
+      <div class="env-card"><div class="env-badge">⚙️</div><h4>Heterogeneous MP</h4><p>Nhân hiệu năng cao + nhân tiết kiệm điện, khác kiến trúc.</p></div>
+    </div>
+
+    <p class="en">In <b>Symmetric Multiprocessing (SMP)</b>, each processor is self-scheduling. Two strategies exist: one common ready queue shared by all cores, or a private run queue for each core.</p>
+    <span class="vi">Trong <b>Symmetric Multiprocessing (SMP)</b>, mỗi bộ xử lý tự lập lịch cho chính nó. Có 2 chiến lược: 1 hàng đợi chung cho tất cả nhân, hoặc mỗi nhân có 1 hàng đợi riêng.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Common ready queue</div>
+        <svg viewBox="0 0 220 90" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="200" height="20" rx="4" fill="#FFF6FB" stroke="#FFD3E8"/><text x="110" y="24" text-anchor="middle" font-size="9" fill="#8A5F78">T0 T1 T2 ... Tn</text>
+          <line x1="60" y1="30" x2="35" y2="50" stroke="#8A5F78"/><line x1="110" y1="30" x2="110" y2="50" stroke="#8A5F78"/><line x1="160" y1="30" x2="185" y2="50" stroke="#8A5F78"/>
+          <rect x="10" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="35" y="69" text-anchor="middle" font-size="9" fill="#2E7FC1">core0</text>
+          <rect x="85" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="110" y="69" text-anchor="middle" font-size="9" fill="#2E7FC1">core1</text>
+          <rect x="160" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="185" y="69" text-anchor="middle" font-size="9" fill="#2E7FC1">coreN</text>
+        </svg>
+        <p>1 hàng đợi duy nhất, mọi nhân lấy tiến trình từ đó.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Per-core run queues</div>
+        <svg viewBox="0 0 220 90" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="50" height="20" rx="4" fill="#FF6FA51f" stroke="#E8407F"/><text x="35" y="24" text-anchor="middle" font-size="8" fill="#C22A63">T0,T1</text>
+          <rect x="85" y="10" width="50" height="20" rx="4" fill="#FF6FA51f" stroke="#E8407F"/><text x="110" y="24" text-anchor="middle" font-size="8" fill="#C22A63">T2</text>
+          <rect x="160" y="10" width="50" height="20" rx="4" fill="#FF6FA51f" stroke="#E8407F"/><text x="185" y="24" text-anchor="middle" font-size="8" fill="#C22A63">T3,T4</text>
+          <line x1="35" y1="30" x2="35" y2="50" stroke="#8A5F78"/><line x1="110" y1="30" x2="110" y2="50" stroke="#8A5F78"/><line x1="185" y1="30" x2="185" y2="50" stroke="#8A5F78"/>
+          <rect x="10" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="35" y="69" text-anchor="middle" font-size="9" fill="#2E7FC1">core0</text>
+          <rect x="85" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="110" y="69" text-anchor="middle" font-size="9" fill="#2E7FC1">core1</text>
+          <rect x="160" y="50" width="50" height="30" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="185" y="69" text-anchor="middle" font-size="9" fill="#2E7FC1">coreN</text>
+        </svg>
+        <p>Mỗi nhân có hàng đợi riêng — cần load balancing để công bằng.</p>
+      </div>
+    </div>
+
+    <p class="en">Modern chips pack multiple cores per chip (<b>multicore processors</b>), and often multiple hardware threads per core (<b>chip-multithreading / hyperthreading</b>) — a stalled thread's memory-wait time is filled by switching to another hardware thread.</p>
+    <span class="vi">Chip hiện đại nhét nhiều nhân trên 1 chip (<b>multicore processor</b>), và thường nhiều hardware thread trên mỗi nhân (<b>chip-multithreading / hyperthreading</b>) — thời gian chờ bộ nhớ của 1 thread bị stall được lấp đầy bằng cách chuyển sang hardware thread khác.</span>
+
+    <svg viewBox="0 0 560 100" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="16" font-size="10" fill="#4A2E40" font-weight="600">thread₀ (C=compute, M=memory stall)</text>
+      <rect x="10" y="22" width="55" height="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="37" y="37" text-anchor="middle" font-size="9" fill="#C22A63">C</text>
+      <rect x="65" y="22" width="55" height="22" fill="#7FC4F026" stroke="#4FA4DD"/><text x="92" y="37" text-anchor="middle" font-size="9" fill="#2E7FC1">M</text>
+      <rect x="120" y="22" width="55" height="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="147" y="37" text-anchor="middle" font-size="9" fill="#C22A63">C</text>
+      <rect x="175" y="22" width="55" height="22" fill="#7FC4F026" stroke="#4FA4DD"/><text x="202" y="37" text-anchor="middle" font-size="9" fill="#2E7FC1">M</text>
+      <text x="10" y="65" font-size="10" fill="#4A2E40" font-weight="600">thread₁ chạy chèn vào đúng lúc thread₀ bị M (memory stall)</text>
+      <rect x="65" y="71" width="55" height="22" fill="#FFE0EE" stroke="#8A5F78"/><text x="92" y="86" text-anchor="middle" font-size="9" fill="#4A2E40">C</text>
+      <rect x="175" y="71" width="55" height="22" fill="#FFE0EE" stroke="#8A5F78"/><text x="202" y="86" text-anchor="middle" font-size="9" fill="#4A2E40">C</text>
+    </svg>
+
+    <p class="en">Two levels of scheduling now exist: the OS decides which software thread runs on which logical CPU; the core itself decides which hardware thread runs on the physical core.</p>
+    <span class="vi">Giờ có 2 mức lập lịch: OS quyết định thread phần mềm nào chạy trên CPU logic nào; bản thân nhân lại quyết định hardware thread nào chạy trên nhân vật lý.</span>
+
+    <div class="labeled-box">
+      <span class="lb-tag">2 tầng lập lịch</span>
+      <svg viewBox="0 0 500 130" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+        <text x="10" y="16" font-size="9.5" fill="#8A5F78">software threads</text>
+        <rect x="10" y="22" width="70" height="22" rx="4" fill="#FF6FA51f" stroke="#E8407F"/><text x="45" y="37" text-anchor="middle" font-size="8.5" fill="#C22A63">T0</text>
+        <rect x="90" y="22" width="70" height="22" rx="4" fill="#FF6FA51f" stroke="#E8407F"/><text x="125" y="37" text-anchor="middle" font-size="8.5" fill="#C22A63">T1</text>
+        <path d="M45 44 v18" stroke="#8A5F78" marker-end="url(#ah3)"/><path d="M125 44 v18" stroke="#8A5F78" marker-end="url(#ah3)"/>
+        <defs><marker id="ah3" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#8A5F78"/></marker></defs>
+        <text x="200" y="58" font-size="8.5" fill="#8A5F78">← level 1: OS chọn thread chạy trên CPU logic nào</text>
+        <rect x="10" y="64" width="70" height="24" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="45" y="80" text-anchor="middle" font-size="8" fill="#2E7FC1">logical</text>
+        <rect x="90" y="64" width="70" height="24" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="125" y="80" text-anchor="middle" font-size="8" fill="#2E7FC1">logical</text>
+        <path d="M85 100 v20" stroke="#8A5F78" marker-end="url(#ah3)"/>
+        <text x="200" y="108" font-size="8.5" fill="#8A5F78">← level 2: core chọn hardware thread nào chạy tiếp</text>
+        <rect x="20" y="112" width="130" height="16" rx="4" fill="#FFE0EE" stroke="#8A5F78"/><text x="85" y="124" text-anchor="middle" font-size="8" fill="#4A2E40">physical core</text>
+      </svg>
+    </div>
+
+    <p class="en">To keep every core busy, systems perform <b>load balancing</b>: <b>push migration</b> has a periodic task push work from an overloaded CPU to others; <b>pull migration</b> has an idle processor pull waiting work from a busy one.</p>
+    <span class="vi">Để mọi nhân luôn bận, hệ thống thực hiện <b>load balancing</b>: <b>push migration</b> có 1 tác vụ định kỳ đẩy công việc từ CPU quá tải sang nơi khác; <b>pull migration</b> có 1 bộ xử lý rảnh tự kéo công việc từ nơi bận.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">➡️ Push migration</div>
+        <svg viewBox="0 0 200 60" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="70" height="30" rx="6" fill="#FF6FA51f" stroke="#E8407F"/><text x="45" y="27" text-anchor="middle" font-size="8" fill="#C22A63">core0 (đầy)</text>
+          <path d="M85 25 h30" stroke="#8A5F78" marker-end="url(#ah4)"/><defs><marker id="ah4" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#8A5F78"/></marker></defs>
+          <rect x="120" y="10" width="70" height="30" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/><text x="155" y="27" text-anchor="middle" font-size="8" fill="#2E7FC1">core1 (rảnh)</text>
+        </svg>
+        <p>Tác vụ định kỳ chủ động đẩy việc đi.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">⬅️ Pull migration</div>
+        <svg viewBox="0 0 200 60" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="70" height="30" rx="6" fill="#FF6FA51f" stroke="#E8407F"/><text x="45" y="27" text-anchor="middle" font-size="8" fill="#C22A63">core0 (đầy)</text>
+          <path d="M85 25 h30" stroke="#8A5F78" marker-start="url(#ah4)"/>
+          <rect x="120" y="10" width="70" height="30" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/><text x="155" y="27" text-anchor="middle" font-size="8" fill="#2E7FC1">core1 (rảnh)</text>
+        </svg>
+        <p>Bộ xử lý rảnh tự kéo việc về mình.</p>
+      </div>
+    </div>
+
+    <p class="en">But moving a thread has a cost: it loses <b>processor affinity</b> — the warm cache built up from running on one core. <b>Soft affinity</b> just tries to keep it on the same core; <b>hard affinity</b> lets a process pin itself to a specific set of processors.</p>
+    <span class="vi">Nhưng di chuyển 1 thread có cái giá: nó mất <b>processor affinity</b> — cache "ấm" đã được xây dựng khi chạy trên 1 nhân. <b>Soft affinity</b> chỉ cố gắng giữ thread ở cùng 1 nhân; <b>hard affinity</b> cho phép tiến trình tự ghim vào 1 tập nhân cụ thể.</span>
+
+    <div class="illus">
+      <div class="emo">🎯</div>
+      <div class="cap"><b>Đánh đổi kinh điển</b>Load balancing giúp công bằng tải, nhưng lại phá vỡ processor affinity — 2 mục tiêu này luôn kéo co lẫn nhau.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">PCS: trong 1 process</span><span class="rchip">SCS: toàn hệ thống</span>
+        <span class="rchip">SMP: hàng đợi chung hoặc riêng nhân</span><span class="rchip">push/pull migration</span>
+        <span class="rchip">soft/hard affinity</span>
+      </div>
+      <p class="rline">Hardware multithreading cho OS thấy nhiều "CPU logic" hơn số nhân vật lý thật — nhưng lập lịch vẫn phải qua 2 tầng quyết định.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: REAL-TIME SCHEDULING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-realtime" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">⏳</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · Deadlines</div>
+        <h2>When "eventually" isn't good enough</h2>
+        <span class="vi">Khi "sớm muộn gì cũng chạy" là chưa đủ</span>
+      </div>
+    </div>
+    <p class="intro">Real-time systems need scheduling with actual timing guarantees, not just fairness.</p>
+    <span class="vi">Hệ thống real-time cần lập lịch có bảo đảm thời gian thực sự, không chỉ là công bằng.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">🟡 Soft real-time</div>
+        <p>Tác vụ real-time quan trọng được ưu tiên cao nhất, nhưng <b>không đảm bảo</b> chính xác khi nào chúng sẽ được lập lịch.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">🔴 Hard real-time</div>
+        <p>Tác vụ <b>bắt buộc</b> phải được phục vụ trước deadline của nó — vi phạm là lỗi hệ thống.</p>
+      </div>
+    </div>
+
+    <p class="en"><b>Event latency</b> is the time from when an event occurs to when it's serviced. Two latencies matter: <b>interrupt latency</b> (from interrupt arrival to the start of its service routine) and <b>dispatch latency</b> (time for the scheduler to take the current process off the CPU and switch to another).</p>
+    <span class="vi"><b>Event latency</b> là thời gian từ khi 1 sự kiện xảy ra tới khi nó được phục vụ. 2 loại latency quan trọng: <b>interrupt latency</b> (từ lúc ngắt tới lúc bắt đầu routine xử lý ngắt) và <b>dispatch latency</b> (thời gian scheduler đưa tiến trình hiện tại ra khỏi CPU và chuyển sang tiến trình khác).</span>
+
+    <svg viewBox="0 0 560 150" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">event E occurs</text>
+      <line x1="70" y1="10" x2="70" y2="110" stroke="#8A5F78" stroke-dasharray="2,2"/>
+      <line x1="10" y1="30" x2="480" y2="30" stroke="#8A5F78"/>
+      <text x="480" y="24" font-size="9" fill="#8A5F78" text-anchor="end">event latency (t0 → t1)</text>
+      <rect x="70" y="40" width="90" height="30" fill="#FF6FA51f" stroke="#E8407F"/>
+      <text x="115" y="52" text-anchor="middle" font-size="8" fill="#C22A63">interrupt</text>
+      <text x="115" y="63" text-anchor="middle" font-size="8" fill="#C22A63">processing</text>
+      <rect x="160" y="40" width="180" height="30" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="250" y="52" text-anchor="middle" font-size="8" fill="#2E7FC1">dispatch latency</text>
+      <text x="250" y="63" text-anchor="middle" font-size="8" fill="#2E7FC1">(conflict + dispatch)</text>
+      <rect x="340" y="40" width="140" height="30" fill="#FFE0EE" stroke="#8A5F78"/>
+      <text x="410" y="52" text-anchor="middle" font-size="8" fill="#4A2E40">real-time process</text>
+      <text x="410" y="63" text-anchor="middle" font-size="8" fill="#4A2E40">runs</text>
+      <text x="480" y="86" font-size="9" fill="#8A5F78" text-anchor="end">↑ t1 — response to E</text>
+      <text x="10" y="115" font-size="9" fill="#8A5F78">"Conflict phase" inside dispatch latency:</text>
+      <text x="10" y="130" font-size="9" fill="#8A5F78">(1) preempt a kernel-mode process</text>
+      <text x="10" y="145" font-size="9" fill="#8A5F78">(2) release resources held by a low-priority process</text>
+    </svg>
+
+    <p class="en">The scheduler must support <b>preemptive, priority-based scheduling</b> at minimum — enough for soft real-time. Hard real-time additionally needs to guarantee deadlines are met.</p>
+    <span class="vi">Scheduler tối thiểu phải hỗ trợ <b>preemptive, priority-based scheduling</b> — đủ cho soft real-time. Hard real-time cần thêm việc đảm bảo deadline luôn được đáp ứng.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">🟡 Soft real-time — chỉ cần priority cao</div>
+        <p>Đủ để tác vụ real-time thường được ưu tiên, nhưng có thể trễ nếu hệ thống bận.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">🔴 Hard real-time — cần thêm bảo đảm deadline</div>
+        <p>Phải tính toán trước: liệu mọi deadline có luôn được đáp ứng hay không (worst-case).</p>
+      </div>
+    </div>
+
+    <p class="en"><b>Periodic</b> processes have a processing time <em>t</em>, a deadline <em>d</em>, and a period <em>p</em>, with 0 ≤ t ≤ d ≤ p — the rate of the task is 1/p.</p>
+    <span class="vi">Tiến trình <b>periodic</b> có thời gian xử lý <em>t</em>, deadline <em>d</em>, và chu kỳ <em>p</em>, với 0 ≤ t ≤ d ≤ p — tốc độ của tác vụ là 1/p.</span>
+
+    <svg viewBox="0 0 560 130" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="9.5" fill="#4A2E40" font-weight="600">1 chu kỳ (period) của 1 tác vụ periodic</text>
+
+      <text x="185" y="30" text-anchor="middle" font-size="8.5" fill="#8A5F78">p (period) — lặp lại mỗi p</text>
+      <line x1="10" y1="36" x2="360" y2="36" stroke="#8A5F78" stroke-dasharray="3,3"/>
+
+      <text x="95" y="48" text-anchor="middle" font-size="8.5" fill="#2E7FC1">d (deadline)</text>
+      <line x1="10" y1="54" x2="180" y2="54" stroke="#4FA4DD"/>
+
+      <rect x="10" y="66" width="60" height="20" fill="#FF6FA51f" stroke="#E8407F"/><text x="40" y="80" text-anchor="middle" font-size="8.5" fill="#C22A63">t (xử lý)</text>
+
+      <line x1="10" y1="100" x2="540" y2="100" stroke="#8A5F78"/>
+      <line x1="180" y1="26" x2="180" y2="106" stroke="#8A5F78" stroke-dasharray="2,2"/>
+      <line x1="360" y1="26" x2="360" y2="106" stroke="#8A5F78" stroke-dasharray="2,2"/>
+      <rect x="360" y="66" width="60" height="20" fill="#FF6FA51f" stroke="#E8407F" opacity="0.5"/>
+      <text x="390" y="122" text-anchor="middle" font-size="8" fill="#8A5F78">chu kỳ kế tiếp lặp lại...</text>
+    </svg>
+
+    <p class="en"><b>Rate-Monotonic Scheduling</b> assigns priority based purely on the inverse of the period: shorter period ⟶ higher priority. It's a static priority policy with preemption.</p>
+    <span class="vi"><b>Rate-Monotonic Scheduling</b> gán priority hoàn toàn dựa trên nghịch đảo của chu kỳ: chu kỳ ngắn hơn ⟶ priority cao hơn. Đây là chính sách priority tĩnh có preemption.</span>
+
+    <svg viewBox="0 0 560 100" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">Rate-Monotonic: P1 (p=50, shorter) gets higher priority than P2 (p=100)</text>
+      <rect x="10" y="22" width="60" height="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="40" y="37" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="70" y="22" width="90" height="22" fill="#7FC4F026" stroke="#4FA4DD"/><text x="115" y="37" text-anchor="middle" font-size="8.5" fill="#2E7FC1">P2</text>
+      <rect x="160" y="22" width="20" height="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="170" y="37" text-anchor="middle" font-size="7.5" fill="#C22A63">P1</text>
+      <rect x="180" y="22" width="20" height="22" fill="#FFE0EE" stroke="#8A5F78"/><text x="190" y="37" text-anchor="middle" font-size="7.5" fill="#4A2E40">P2✗</text>
+      <text x="10" y="62" font-size="9.5" fill="#8A5F78">P2 misses its deadline at t=80.</text>
+      <text x="10" y="80" font-size="9.5" fill="#8A5F78">Some period pairs simply can't be met by static-priority RM.</text>
+    </svg>
+
+    <p class="en"><b>Earliest-Deadline-First (EDF)</b> instead assigns priority dynamically by deadline — the earlier the deadline, the higher the priority. This is provably better than rate-monotonic at handling variable arrival patterns.</p>
+    <span class="vi"><b>Earliest-Deadline-First (EDF)</b> thay vào đó gán priority động theo deadline — deadline càng sớm, priority càng cao. Điều này được chứng minh xử lý tốt hơn rate-monotonic với các mẫu đến biến thiên.</span>
+
+    <svg viewBox="0 0 560 90" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="10" fill="#4A2E40" font-weight="600">EDF — same P1, P2: priority follows whichever deadline is closer</text>
+      <rect x="10" y="22" width="60" height="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="40" y="37" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="70" y="22" width="90" height="22" fill="#7FC4F026" stroke="#4FA4DD"/><text x="115" y="37" text-anchor="middle" font-size="8.5" fill="#2E7FC1">P2</text>
+      <rect x="160" y="22" width="60" height="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="190" y="37" text-anchor="middle" font-size="8.5" fill="#C22A63">P1</text>
+      <rect x="220" y="22" width="30" height="22" fill="#7FC4F026" stroke="#4FA4DD"/><text x="235" y="37" text-anchor="middle" font-size="8" fill="#2E7FC1">P2</text>
+      <text x="10" y="65" font-size="9.5" fill="#8A5F78">Both P1 and P2 make every deadline — no missed slot this time.</text>
+    </svg>
+
+    <p class="en"><b>Proportional share scheduling</b> allocates T shares among all processes system-wide; an application holding N shares is guaranteed N/T of total CPU time.</p>
+    <span class="vi"><b>Proportional share scheduling</b> phân bổ T phần (share) cho toàn bộ tiến trình trong hệ thống; 1 ứng dụng giữ N phần được đảm bảo N/T tổng thời gian CPU.</span>
+
+    <svg viewBox="0 0 420 70" style="max-width:420px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="9.5" fill="#4A2E40" font-weight="600">T = 20 shares tổng, chia cho 3 app</text>
+      <rect x="10" y="24" width="200" height="24" fill="#FF6FA51f" stroke="#E8407F"/><text x="110" y="40" text-anchor="middle" font-size="9" fill="#C22A63">App A — N=10 (50%)</text>
+      <rect x="210" y="24" width="80" height="24" fill="#7FC4F026" stroke="#4FA4DD"/><text x="250" y="40" text-anchor="middle" font-size="8" fill="#2E7FC1">B — N=4 (20%)</text>
+      <rect x="290" y="24" width="110" height="24" fill="#FFE0EE" stroke="#8A5F78"/><text x="345" y="40" text-anchor="middle" font-size="8" fill="#4A2E40">C — N=6 (30%)</text>
+    </svg>
+
+    <div class="note teal">
+      <b>POSIX.1b real-time API</b>
+      Định nghĩa 2 lớp lập lịch: <span class="mono">SCHED_FIFO</span> (FCFS, không time-slicing giữa các thread cùng priority) và <span class="mono">SCHED_RR</span> (giống FIFO nhưng có time-slicing giữa thread cùng priority). Lấy/đặt bằng <span class="mono">pthread_attr_getschedpolicy()</span> / <span class="mono">pthread_attr_setschedpolicy()</span>.
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">POSIX Real-Time Scheduling API — C</span>
+      <pre>#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#define NUM_THREADS 5
+
+int main(int argc, char *argv[]) {
+  int i, policy;
+  pthread_t tid[NUM_THREADS];
+  pthread_attr_t attr;
+
+  pthread_attr_init(&amp;attr);
+
+  <span class="cm">/* get the current scheduling policy */</span>
+  if (pthread_attr_getschedpolicy(&amp;attr, &amp;policy) != 0)
+    fprintf(stderr, "Unable to get policy.\n");
+  else {
+    if (policy == <span class="tp">SCHED_OTHER</span>) printf("SCHED_OTHER\n");
+    else if (policy == <span class="tp">SCHED_RR</span>)    printf("SCHED_RR\n");
+    else if (policy == <span class="tp">SCHED_FIFO</span>)  printf("SCHED_FIFO\n");
+  }
+
+  <span class="cm">/* set the scheduling policy - FIFO, RR, or OTHER */</span>
+  if (pthread_attr_setschedpolicy(&amp;attr, <span class="tp">SCHED_FIFO</span>) != 0)
+    fprintf(stderr, "Unable to set policy.\n");
+
+  for (i = 0; i &lt; NUM_THREADS; i++)
+    pthread_create(&amp;tid[i], &amp;attr, runner, NULL);
+  for (i = 0; i &lt; NUM_THREADS; i++)
+    pthread_join(tid[i], NULL);
+}</pre>
+    </div>
+
+    <table class="cmp-table">
+      <tr><th>Algorithm</th><th>Priority based on</th><th>Static/Dynamic</th></tr>
+      <tr><td>Rate-Monotonic</td><td>1 / period</td><td>Static</td></tr>
+      <tr><td>Earliest-Deadline-First</td><td>khoảng cách tới deadline</td><td>Dynamic</td></tr>
+      <tr><td>Proportional Share</td><td>số share N/T được cấp</td><td>Static (theo phân bổ)</td></tr>
+    </table>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">soft vs hard real-time</span><span class="rchip">interrupt latency + dispatch latency</span>
+        <span class="rchip">Rate-Monotonic: static, theo 1/p</span><span class="rchip">EDF: dynamic, theo deadline</span>
+        <span class="rchip">SCHED_FIFO / SCHED_RR</span>
+      </div>
+      <p class="rline">Càng gần hard real-time, dispatch latency càng phải nhỏ và có thể dự đoán được — đây là lý do các RTOS thường không dùng kernel Linux/Windows tổng quát.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OS EXAMPLES & EVALUATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-examples" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🐧</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Case studies</div>
+        <h2>Linux CFS, Windows priorities, and picking a winner</h2>
+        <span class="vi">Linux CFS, Windows priority, và cách chọn thuật toán tốt nhất</span>
+      </div>
+    </div>
+    <p class="intro">Real kernels blend the ideas above into concrete schedulers — and picking the right one for a workload needs its own evaluation toolkit.</p>
+    <span class="vi">Kernel thật kết hợp các ý tưởng trên thành scheduler cụ thể — và chọn đúng cái phù hợp với 1 workload cần bộ công cụ đánh giá riêng.</span>
+
+    <p class="en">Before kernel 2.5, Linux ran a variation of the standard UNIX scheduler. Version 2.5 replaced it with a constant-order <b>O(1) scheduler</b>: preemptive, priority-based, with two priority ranges — real-time (0–99) and time-sharing / nice value (100–139) — mapped into one global priority scale where a numerically lower value means higher priority, and a higher priority gets a larger time quantum.</p>
+    <span class="vi">Trước kernel 2.5, Linux chạy 1 biến thể của scheduler UNIX chuẩn. Bản 2.5 thay bằng <b>O(1) scheduler</b> hằng số: preemptive, dựa priority, với 2 khoảng priority — real-time (0–99) và time-sharing/nice value (100–139) — ánh xạ vào 1 thang priority toàn cục, số càng nhỏ priority càng cao, và priority càng cao thì quantum được cấp càng lớn.</span>
+
+    <svg viewBox="0 0 560 90" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="9.5" fill="#4A2E40" font-weight="600">priority càng cao (số càng nhỏ) → quantum được cấp càng lớn</text>
+      <polygon points="10,26 150,26 150,54 10,60" fill="#FF6FA51f" stroke="#E8407F"/>
+      <text x="80" y="46" text-anchor="middle" font-size="8.5" fill="#C22A63">priority 0</text>
+      <polygon points="150,32 300,34 300,52 150,54" fill="#FFD9E9" stroke="#E8407F"/>
+      <text x="225" y="47" text-anchor="middle" font-size="8" fill="#C22A63">real-time 0–99</text>
+      <polygon points="300,38 430,40 430,46 300,52" fill="#FFE9F2" stroke="#8A5F78"/>
+      <text x="365" y="34" text-anchor="middle" font-size="7.5" fill="#8A5F78">nice/time-sharing 100–139</text>
+      <polygon points="430,42 540,43 540,45 430,46" fill="#FFF6FB" stroke="#8A5F78"/>
+      <text x="10" y="80" font-size="8.5" fill="#8A5F78">quantum lớn</text>
+      <line x1="90" y1="77" x2="500" y2="77" stroke="#8A5F78" stroke-dasharray="3,3"/>
+      <text x="550" y="80" font-size="8.5" fill="#8A5F78" text-anchor="end">quantum nhỏ dần</text>
+    </svg>
+
+    <p class="en">Each runnable task stayed <b>active</b> as long as it had time left in its slice; once <b>expired</b>, it became unrunnable until every other task had used up its own slice. All runnable tasks were tracked in a per-CPU run-queue holding two priority arrays — active and expired — indexed by priority; once the active array emptied, the two arrays were simply swapped.</p>
+    <span class="vi">Mỗi tác vụ còn thời gian trong time slice thì ở trạng thái <b>active</b>; hết thời gian (<b>expired</b>) thì không được chạy nữa cho tới khi mọi tác vụ khác dùng hết slice của chúng. Mọi tác vụ runnable được theo dõi trong 1 run-queue riêng cho mỗi CPU, chứa 2 mảng theo priority — active và expired; khi mảng active rỗng, 2 mảng chỉ đơn giản được hoán đổi cho nhau.</span>
+
+    <svg viewBox="0 0 500 110" style="max-width:500px;width:100%;margin:6px 0 10px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="14" font-size="9.5" fill="#4A2E40" font-weight="600">O(1) scheduler — active ⇄ expired array swap</text>
+      <rect x="10" y="26" width="200" height="34" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="110" y="40" text-anchor="middle" font-size="9" fill="#2E7FC1" font-weight="600">active array</text>
+      <text x="110" y="53" text-anchor="middle" font-size="7.5" fill="#2E7FC1">tác vụ còn thời gian slice</text>
+      <path d="M215 43 h60" stroke="#8A5F78" marker-end="url(#ahO1)"/>
+      <defs><marker id="ahO1" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#8A5F78"/></marker></defs>
+      <path d="M275 60 h-60" stroke="#8A5F78" marker-end="url(#ahO1)"/>
+      <rect x="280" y="26" width="200" height="34" rx="6" fill="#FFE0EE" stroke="#8A5F78"/>
+      <text x="380" y="40" text-anchor="middle" font-size="9" fill="#4A2E40" font-weight="600">expired array</text>
+      <text x="380" y="53" text-anchor="middle" font-size="7.5" fill="#4A2E40">tác vụ đã hết slice</text>
+      <text x="245" y="80" text-anchor="middle" font-size="8" fill="#8A5F78">hoán đổi khi active rỗng</text>
+      <text x="10" y="100" font-size="8.5" fill="#8A5F78">Vấn đề: hoạt động tốt, nhưng response time kém cho tiến trình interactive.</text>
+    </svg>
+
+    <p class="en">Since kernel 2.6.23, Linux replaced O(1) with the <b>Completely Fair Scheduler (CFS)</b>: no fixed time-slice quantum — instead each task gets a share of CPU time proportional to its priority (nice value, −20 to +19).</p>
+    <span class="vi">Từ kernel 2.6.23, Linux thay O(1) bằng <b>Completely Fair Scheduler (CFS)</b>: không có quantum cố định — thay vào đó mỗi tác vụ được cấp 1 phần thời gian CPU tỉ lệ với priority của nó (nice value, −20 tới +19).</span>
+
+    <div class="illus">
+      <div class="emo">🐧</div>
+      <div class="cap"><b>Không còn "lượt cố định"</b>Thay vì mỗi tiến trình được đúng 1 quantum như RR, CFS liên tục tính lại "phần CPU công bằng" mỗi tiến trình xứng đáng nhận, dựa trên nice value.</div>
+    </div>
+
+    <p class="en">CFS tracks each task's <span class="mono">vruntime</span> (virtual run time, decayed by priority) and always picks the task with the <em>smallest</em> vruntime next — stored in a <b>red-black tree</b> so the leftmost node (cached as <span class="mono">rb_leftmost</span>) is found in O(1).</p>
+    <span class="vi">CFS theo dõi <span class="mono">vruntime</span> (thời gian chạy ảo, suy giảm theo priority) của mỗi tác vụ và luôn chọn tác vụ có vruntime <em>nhỏ nhất</em> tiếp theo — lưu trong 1 cây red-black nên nút trái nhất (cache lại ở <span class="mono">rb_leftmost</span>) được tìm ra O(1).</span>
+
+    <div class="tree">
+      <div class="trow"><div class="tnode root">T0</div></div>
+      <div class="trow"><div class="tnode">T1</div><div class="tnode">T2</div></div>
+      <div class="trow"><div class="tnode">T3</div><div class="tnode">T4</div><div class="tnode">T5</div><div class="tnode">T6</div></div>
+      <div class="tconn">↑ smallest vruntime = leftmost node = highest priority to run next</div>
+    </div>
+
+    <p class="en">Linux real-time scheduling follows POSIX.1b: real-time and normal tasks share one global priority scale, 0–99 for real-time, 100–139 for normal (nice −20 maps to 100, nice +19 maps to 139).</p>
+    <span class="vi">Lập lịch real-time của Linux theo POSIX.1b: tác vụ real-time và normal dùng chung 1 thang priority toàn cục, 0–99 cho real-time, 100–139 cho normal (nice −20 ánh xạ 100, nice +19 ánh xạ 139).</span>
+
+    <svg viewBox="0 0 400 60" style="max-width:400px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <rect x="10" y="10" width="230" height="24" fill="#7FC4F026" stroke="#4FA4DD"/><text x="125" y="26" text-anchor="middle" font-size="9" fill="#2E7FC1">Real-Time: 0 – 99</text>
+      <rect x="240" y="10" width="150" height="24" fill="#FFE0EE" stroke="#8A5F78"/><text x="315" y="26" text-anchor="middle" font-size="9" fill="#4A2E40">Normal: 100 – 139</text>
+      <text x="10" y="48" font-size="8.5" fill="#8A5F78">← priority cao hơn</text>
+      <text x="390" y="48" font-size="8.5" fill="#8A5F78" text-anchor="end">priority thấp hơn →</text>
+    </svg>
+
+    <div class="note">
+      <b>NUMA-aware load balancing</b>
+      Linux tổ chức nhân theo <b>scheduling domain</b> — nhóm nhân chia sẻ cache — để load balancing tránh di chuyển thread ra khỏi domain, giữ processor affinity càng nhiều càng tốt.
+    </div>
+
+    <p class="en">Windows uses priority-based preemptive scheduling with a 32-level scheme: the <b>dispatcher</b> is its scheduler, levels 1–15 are variable class, 16–31 are real-time class, and level 0 is reserved for the memory-management thread.</p>
+    <span class="vi">Windows dùng lập lịch preemptive theo priority với thang 32 mức: <b>dispatcher</b> là scheduler của nó, mức 1–15 là variable class, 16–31 là real-time class, và mức 0 dành riêng cho thread quản lý bộ nhớ.</span>
+
+    <svg viewBox="0 0 560 60" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <rect x="10" y="10" width="30" height="24" fill="#FFE0EE" stroke="#8A5F78"/><text x="25" y="26" text-anchor="middle" font-size="7.5" fill="#4A2E40">0</text>
+      <rect x="40" y="10" width="255" height="24" fill="#7FC4F026" stroke="#4FA4DD"/><text x="167" y="26" text-anchor="middle" font-size="9" fill="#2E7FC1">variable class — mức 1 – 15</text>
+      <rect x="295" y="10" width="255" height="24" fill="#FF6FA51f" stroke="#E8407F"/><text x="422" y="26" text-anchor="middle" font-size="9" fill="#C22A63">real-time class — mức 16 – 31</text>
+      <text x="10" y="48" font-size="8" fill="#8A5F78">mức 0: memory-management thread</text>
+    </svg>
+
+    <p class="en">The Win32 API exposes several <b>priority classes</b> a process can belong to: <span class="mono">REALTIME_PRIORITY_CLASS</span>, <span class="mono">HIGH_PRIORITY_CLASS</span>, <span class="mono">ABOVE_NORMAL_PRIORITY_CLASS</span>, <span class="mono">NORMAL_PRIORITY_CLASS</span>, <span class="mono">BELOW_NORMAL_PRIORITY_CLASS</span>, and <span class="mono">IDLE_PRIORITY_CLASS</span> — all variable except REALTIME.</p>
+    <span class="vi">Win32 API cung cấp nhiều <b>priority class</b> mà 1 tiến trình có thể thuộc về: <span class="mono">REALTIME_PRIORITY_CLASS</span>, <span class="mono">HIGH_PRIORITY_CLASS</span>, <span class="mono">ABOVE_NORMAL_PRIORITY_CLASS</span>, <span class="mono">NORMAL_PRIORITY_CLASS</span>, <span class="mono">BELOW_NORMAL_PRIORITY_CLASS</span>, và <span class="mono">IDLE_PRIORITY_CLASS</span> — tất cả đều là variable trừ REALTIME.</span>
+
+    <svg viewBox="0 0 560 55" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="10" y="10" font-size="8" fill="#8A5F78">cao nhất</text>
+      <text x="550" y="10" font-size="8" fill="#8A5F78" text-anchor="end">thấp nhất</text>
+      <rect x="10" y="16" width="90" height="24" fill="#E8407F" stroke="#C22A63"/><text x="55" y="32" text-anchor="middle" font-size="7" fill="#fff">REALTIME</text>
+      <rect x="100" y="16" width="90" height="24" fill="#FF6FA5" stroke="#C22A63"/><text x="145" y="32" text-anchor="middle" font-size="7" fill="#fff">HIGH</text>
+      <rect x="190" y="16" width="90" height="24" fill="#FFA8C9" stroke="#8A5F78"/><text x="235" y="32" text-anchor="middle" font-size="6.3" fill="#4A2E40">ABOVE NORMAL</text>
+      <rect x="280" y="16" width="90" height="24" fill="#FFD3E8" stroke="#8A5F78"/><text x="325" y="32" text-anchor="middle" font-size="7" fill="#4A2E40">NORMAL</text>
+      <rect x="370" y="16" width="90" height="24" fill="#FFE9F2" stroke="#8A5F78"/><text x="415" y="32" text-anchor="middle" font-size="6.3" fill="#4A2E40">BELOW NORMAL</text>
+      <rect x="460" y="16" width="90" height="24" fill="#FFF6FB" stroke="#8A5F78"/><text x="505" y="32" text-anchor="middle" font-size="7" fill="#4A2E40">IDLE</text>
+    </svg>
+
+    <p class="en">Within a priority class, a thread also has a <b>relative priority</b>: <span class="mono">TIME_CRITICAL</span>, <span class="mono">HIGHEST</span>, <span class="mono">ABOVE_NORMAL</span>, <span class="mono">NORMAL</span>, <span class="mono">BELOW_NORMAL</span>, <span class="mono">LOWEST</span>, <span class="mono">IDLE</span>. Class + relative priority combine into the final numeric priority (base = NORMAL within the class); if a thread's quantum expires, its priority is lowered but never below base.</p>
+    <span class="vi">Trong 1 priority class, 1 thread còn có <b>relative priority</b>: <span class="mono">TIME_CRITICAL</span>, <span class="mono">HIGHEST</span>, <span class="mono">ABOVE_NORMAL</span>, <span class="mono">NORMAL</span>, <span class="mono">BELOW_NORMAL</span>, <span class="mono">LOWEST</span>, <span class="mono">IDLE</span>. Class + relative priority kết hợp thành priority số cuối cùng (mặc định = NORMAL trong class); nếu quantum của thread hết, priority bị hạ nhưng không bao giờ thấp hơn base.</span>
+
+    <div class="table-scroll">
+    <table class="cmp-table" style="font-size:10.5px;">
+      <tr><th>Relative \ Class</th><th>real-time</th><th>high</th><th>above normal</th><th>normal</th><th>below normal</th><th>idle</th></tr>
+      <tr><td>time-critical</td><td>31</td><td>15</td><td>15</td><td>15</td><td>15</td><td>15</td></tr>
+      <tr><td>highest</td><td>26</td><td>15</td><td>12</td><td>10</td><td>8</td><td>6</td></tr>
+      <tr><td>above normal</td><td>25</td><td>14</td><td>11</td><td>9</td><td>7</td><td>5</td></tr>
+      <tr><td>normal</td><td>24</td><td>13</td><td>10</td><td>8</td><td>6</td><td>4</td></tr>
+      <tr><td>below normal</td><td>23</td><td>12</td><td>9</td><td>7</td><td>5</td><td>3</td></tr>
+      <tr><td>lowest</td><td>22</td><td>11</td><td>8</td><td>6</td><td>4</td><td>2</td></tr>
+      <tr><td>idle</td><td>16</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+    </table>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🪟</div>
+      <div class="cap"><b>Boost tương tác</b>Windows tăng priority tạm thời cho thread vừa thoát wait, và cho cửa sổ đang ở foreground — để hệ thống luôn cảm giác phản hồi nhanh với người dùng.</div>
+    </div>
+
+    <p class="en">Windows 7 introduced <b>User-Mode Scheduling (UMS)</b>: applications create and manage their own threads independently of the kernel — far more efficient for large numbers of threads. UMS schedulers are typically supplied by language libraries such as the C++ <b>Concurrent Runtime (ConcRT)</b> framework.</p>
+    <span class="vi">Windows 7 giới thiệu <b>User-Mode Scheduling (UMS)</b>: ứng dụng tự tạo và quản lý thread của mình độc lập với kernel — hiệu quả hơn nhiều khi có số lượng lớn thread. Scheduler UMS thường do các thư viện ngôn ngữ cung cấp, ví dụ framework <b>Concurrent Runtime (ConcRT)</b> của C++.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">🏛️ Scheduling truyền thống</div>
+        <svg viewBox="0 0 220 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="200" height="20" rx="4" fill="#FFE0EE" stroke="#8A5F78"/><text x="110" y="24" text-anchor="middle" font-size="8" fill="#4A2E40">app threads</text>
+          <line x1="110" y1="30" x2="110" y2="46" stroke="#8A5F78" marker-end="url(#ahU1)"/>
+          <defs><marker id="ahU1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#8A5F78"/></marker></defs>
+          <rect x="10" y="48" width="200" height="20" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="110" y="62" text-anchor="middle" font-size="8" fill="#2E7FC1">kernel scheduler (mọi lần switch)</text>
+        </svg>
+        <p>Mỗi lần chuyển thread đều phải vào kernel — tốn chi phí system call.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">⚡ UMS</div>
+        <svg viewBox="0 0 220 70" style="width:100%;font-family:'IBM Plex Mono',monospace;">
+          <rect x="10" y="10" width="200" height="20" rx="4" fill="#FFE0EE" stroke="#8A5F78"/><text x="110" y="24" text-anchor="middle" font-size="8" fill="#4A2E40">app threads</text>
+          <line x1="60" y1="30" x2="60" y2="46" stroke="#8A5F78" marker-end="url(#ahU1)"/>
+          <rect x="10" y="48" width="100" height="20" rx="4" fill="#FF6FA51f" stroke="#E8407F"/><text x="60" y="62" text-anchor="middle" font-size="7" fill="#C22A63">UMS scheduler (user-mode)</text>
+          <line x1="160" y1="30" x2="160" y2="46" stroke="#8A5F78" stroke-dasharray="2,2"/>
+          <rect x="120" y="48" width="90" height="20" rx="4" fill="#7FC4F026" stroke="#4FA4DD"/><text x="165" y="62" text-anchor="middle" font-size="6.5" fill="#2E7FC1">kernel (hiếm khi cần)</text>
+        </svg>
+        <p>Phần lớn việc chuyển thread xử lý ngay trong user-mode, không cần vào kernel.</p>
+      </div>
+    </div>
+
+    <p class="en">Choosing a CPU-scheduling algorithm for a real OS means first fixing the criteria, then evaluating candidates by <b>deterministic modeling</b> (exact numbers for a fixed workload), <b>queueing models</b> (arrival/burst rates treated probabilistically, e.g. via Little's Formula n = λ×W), <b>simulation</b> (a programmed model driven by random numbers or real trace tapes), or full <b>implementation</b> in a real system.</p>
+    <span class="vi">Chọn thuật toán lập lịch CPU cho 1 HĐH thật nghĩa là trước tiên chốt tiêu chí, rồi đánh giá ứng viên bằng <b>deterministic modeling</b> (số liệu chính xác cho 1 workload cố định), <b>queueing models</b> (tỉ lệ đến/burst xử lý theo xác suất, vd Little's Formula n = λ×W), <b>simulation</b> (mô hình lập trình chạy bằng số ngẫu nhiên hoặc trace tape thật), hoặc <b>implementation</b> đầy đủ trên hệ thống thật.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">🧮 Deterministic modeling</div><p>Nhanh, chính xác — nhưng chỉ đúng với đúng bộ input đã cho.</p></div>
+      <div class="res-card"><div class="rk">📈 Queueing models</div><p>Dùng phân phối xác suất (thường mũ); tính utilization, độ dài hàng đợi, wait time trung bình.</p></div>
+      <div class="res-card"><div class="rk">🖥️ Simulation</div><p>Mô hình lập trình + clock biến; dữ liệu từ random number generator hoặc trace tape thật.</p></div>
+      <div class="res-card"><div class="rk">🏗️ Implementation</div><p>Chính xác nhất nhưng chi phí cao, rủi ro cao — môi trường thật luôn thay đổi.</p></div>
+    </div>
+
+    <div class="note teal">
+      <b>Little's Formula</b>
+      n = λ × W — với n là độ dài hàng đợi trung bình, λ là tốc độ đến trung bình, W là thời gian chờ trung bình trong hàng đợi. Đúng với MỌI thuật toán lập lịch và MỌI phân phối đến.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Linux CFS: vruntime + red-black tree</span><span class="rchip">Windows: 32-level dispatcher priority</span>
+        <span class="rchip">Deterministic / Queueing / Simulation / Implementation</span><span class="rchip">Little's Law: n = λW</span>
+      </div>
+      <p class="rline">Không thuật toán "chuẩn" nào tồn tại — mỗi hệ điều hành thật luôn là 1 lựa chọn đánh đổi cụ thể, được kiểm chứng bằng mô hình hoặc mô phỏng trước khi triển khai thật.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: EXERCISES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-exercises" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📝</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Practice</div>
+        <h2>4 bài tập tự luyện Gantt chart</h2>
+        <span class="vi">4 bài tập tự luyện vẽ Gantt chart</span>
+      </div>
+    </div>
+    <p class="intro">Tự vẽ Gantt chart và tính waiting/turnaround time cho mỗi bài trước khi mở đáp án — đây là kỹ năng hay ra thi nhất trong chương này.</p>
+    <span class="vi">Làm hết sức trước khi bấm "Xem đáp án" — càng tự làm nhiều, kỹ năng đọc đề và vẽ Gantt chart càng vững.</span>
+
+    <div class="exercise">
+      <h4>Exercise 1 — FCFS, SJF, RR (q = 10)</h4>
+      <table class="cmp-table">
+        <tr><th>Process</th><th>Burst Time</th></tr>
+        <tr><td>P1</td><td>10</td></tr>
+        <tr><td>P2</td><td>29</td></tr>
+        <tr><td>P3</td><td>3</td></tr>
+        <tr><td>P4</td><td>7</td></tr>
+        <tr><td>P5</td><td>12</td></tr>
+      </table>
+      <p>Tất cả đến lúc 0, theo thứ tự P1→P2→P3→P4→P5. Xét cả 3 thuật toán <b>FCFS</b>, <b>SJF</b> (non-preemptive), và <b>RR</b> (quantum = 10). Tính <b>average waiting time</b> và <b>average turnaround time</b> cho mỗi thuật toán.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <table class="cmp-table ans-table">
+          <tr><th>Algorithm</th><th>Avg waiting time</th><th>Avg turnaround time</th></tr>
+          <tr><td>FCFS</td><td>28.0 ms</td><td>40.2 ms</td></tr>
+          <tr><td>SJF (non-preemptive)</td><td>13.0 ms</td><td>25.2 ms</td></tr>
+          <tr><td>RR (q=10)</td><td>23.0 ms</td><td>35.2 ms</td></tr>
+        </table>
+        <p class="ans-note">FCFS chạy đúng thứ tự P1(0-10) P2(10-39) P3(39-42) P4(42-49) P5(49-61). SJF sắp lại theo burst tăng dần: P3(3) P4(7) P1(10) P5(12) P2(29). RR: P1(0-10,xong) P2(10-20) P3(20-23,xong) P4(23-30,xong) P5(30-40) P2(40-50) P5(50-52,xong) P2(52-61,xong).</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 2 — thêm Arrival Time &amp; Priority</h4>
+      <table class="cmp-table">
+        <tr><th>Process</th><th>Burst Time</th><th>Arrival Time</th><th>Priority</th></tr>
+        <tr><td>P1</td><td>10</td><td>0</td><td>3</td></tr>
+        <tr><td>P2</td><td>29</td><td>2</td><td>2</td></tr>
+        <tr><td>P3</td><td>3</td><td>3</td><td>4</td></tr>
+        <tr><td>P4</td><td>7</td><td>5</td><td>1</td></tr>
+        <tr><td>P5</td><td>12</td><td>6</td><td>0</td></tr>
+      </table>
+      <p>Số priority càng nhỏ càng ưu tiên cao. Xét cả 5 thuật toán <b>FCFS</b>, <b>SJF</b> (non-preemptive), <b>SRTF</b>, <b>Priority</b> (preemptive), <b>Priority</b> (non-preemptive), và <b>RR</b> (quantum = 10). Tính average waiting time và average turnaround time.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <table class="cmp-table ans-table">
+          <tr><th>Algorithm</th><th>Avg waiting time</th><th>Avg turnaround time</th></tr>
+          <tr><td>FCFS</td><td>24.8 ms</td><td>37.0 ms</td></tr>
+          <tr><td>SJF (non-preemptive)</td><td>11.8 ms</td><td>24.0 ms</td></tr>
+          <tr><td>SRTF</td><td>11.0 ms</td><td>23.2 ms</td></tr>
+          <tr><td>Priority (preemptive)</td><td>26.8 ms</td><td>39.0 ms</td></tr>
+          <tr><td>Priority (non-preemptive)</td><td>20.6 ms</td><td>32.8 ms</td></tr>
+          <tr><td>RR (q=10)</td><td>19.8 ms</td><td>32.0 ms</td></tr>
+        </table>
+        <p class="ans-note">Chú ý SRTF: P1 chạy 0-3 thì bị P3 (burst 3 &lt; remaining của P1) giành CPU tại t=3, P3 xong đúng lúc t=6 nên không kịp bị P5 giành. Priority (preemptive): P5 (priority 0) giành CPU ngay khi đến ở t=6, khiến P1/P2/P3 chờ rất lâu — vì vậy avg waiting của nó lại XẤU nhất trong bài, minh chứng priority cao không đồng nghĩa hệ thống công bằng hơn.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 3 — Round Robin, quantum = 5</h4>
+      <table class="cmp-table">
+        <tr><th>Process</th><th>Burst Time</th><th>Arrival Time</th></tr>
+        <tr><td>P1</td><td>10</td><td>0</td></tr>
+        <tr><td>P2</td><td>29</td><td>2</td></tr>
+        <tr><td>P3</td><td>3</td><td>5</td></tr>
+        <tr><td>P4</td><td>7</td><td>3</td></tr>
+        <tr><td>P5</td><td>12</td><td>6</td></tr>
+      </table>
+      <p>Xét <b>RR</b> với quantum = 5 ms. Tính average waiting time.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p class="ans-note"><b>Average waiting time = 21.4 ms</b> (= 107/5). Gantt chart: P1(0-5) P2(5-10) P4(10-15) P3(15-18,xong) P1(18-23,xong) P5(23-28) P2(28-33) P4(33-35,xong) P5(35-40) P2(40-45) P5(45-47,xong) P2(47-61,xong).</p>
+        <p class="ans-note">Quy ước dùng: khi 1 tiến trình vừa hết quantum tại đúng thời điểm 1 tiến trình khác đến, tiến trình mới đến được xếp vào hàng đợi TRƯỚC tiến trình vừa bị preempt.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 4 — Multilevel Feedback Queue</h4>
+      <table class="cmp-table">
+        <tr><th>Process</th><th>Burst Time</th><th>Arrival Time</th></tr>
+        <tr><td>P1</td><td>11</td><td>0</td></tr>
+        <tr><td>P2</td><td>12</td><td>3</td></tr>
+        <tr><td>P3</td><td>13</td><td>9</td></tr>
+      </table>
+      <p>Dùng MLFQ với 3 hàng đợi: <b>Q0: RR (4ms)</b>, <b>Q1: RR (6ms)</b>, <b>Q2: FCFS</b>. Tiến trình mới luôn vào Q0; hết quantum mà chưa xong thì bị hạ xuống hàng kế tiếp. Tính average waiting time.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p class="ans-note"><b>Average waiting time ≈ 15.33 ms</b> (= 46/3). Giả định: Q0 luôn có quyền ưu tiên tuyệt đối, preempt ngay cả Q1/Q2 khi có tiến trình mới xuất hiện ở Q0 (P3 đến lúc t=9 preempt P1 đang chạy dở trong Q1).</p>
+        <p class="ans-note">Gợi ý dòng thời gian: P1 vào Q0 chạy 0-4 (còn 7, xuống Q1) → P2 vào Q0 chạy 4-8 (còn 8, xuống Q1) → P1 chạy trong Q1 8-9 thì bị P3 (mới đến, vào Q0) preempt → P3 chạy Q0 9-13 (còn 9, xuống Q1) → P2 chạy Q1 13-19 (còn 2, xuống Q2) → P1 chạy Q1 19-25 (xong, đúng 6ms còn lại) → P3 chạy Q1 25-31 (còn 3, xuống Q2) → Q2 FCFS: P2 31-33 (xong), P3 33-36 (xong).</p>
+      </details>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Mẹo tự luyện</div>
+      <p class="rline">Luôn vẽ Gantt chart ra giấy trước, ghi rõ thời điểm bắt đầu/kết thúc mỗi đoạn, rồi mới tính waiting = turnaround − burst. Sai sót phổ biến nhất là quên xét đúng thời điểm <em>arrival</em> khi chọn tiến trình kế tiếp.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: QUIZ -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 5</h2>
+    <p class="intro">15 câu, đủ chủ đề trong chương. Bấm vào đáp án để xem đúng/sai và giải thích ngay.</p>
+    <div class="quiz-score" id="quizScore">0 / 15 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+  </section>
+
+  <footer>Xin chào, mình là admin. Gọi mình là Whis-san nhé!</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','basics','algorithms','multilevel','multicore','realtime','examples','exercises','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const PROGRESS_KEY = 'os-ch5-visited';
+  let visitedSet = new Set();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    if (Array.isArray(saved)) visitedSet = new Set(saved.filter(t => panelIds.includes(t)));
+  } catch(e) {}
+
+  function updateProgress(){
+    const total = panelIds.length;
+    const done = visitedSet.size;
+    const pct = Math.round((done / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = done + '/' + total + ' tab · ' + pct + '%';
+  }
+
+  function markVisited(name){
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+    if (!visitedSet.has(name)){
+      visitedSet.add(name);
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(visitedSet))); } catch(e) {}
+    }
+    updateProgress();
+  }
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    markVisited(name);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+  visitedSet.forEach(name => {
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+  });
+  updateProgress();
+  markVisited('overview');
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch5-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "CPU burst": ["A stretch of process execution spent purely computing on the CPU.", "1 đoạn tiến trình thực thi chỉ tính toán trên CPU."],
+      "I/O burst": ["A stretch of process execution spent waiting on an I/O device.", "1 đoạn tiến trình thực thi chỉ chờ thiết bị I/O."],
+      "CPU scheduler": ["The module that selects one process from the ready queue and allocates the core to it.", "Mô-đun chọn 1 tiến trình từ ready queue và cấp nhân CPU cho nó."],
+      "dispatcher": ["The module that actually gives control of the CPU to the process the scheduler chose.", "Mô-đun thực sự trao quyền điều khiển CPU cho tiến trình scheduler đã chọn."],
+      "CPU utilization": ["Keeping the CPU as busy as possible. Want to maximize.", "Giữ CPU bận càng nhiều càng tốt. Muốn tối đa hóa."],
+      "throughput": ["Number of processes completed per unit time. Want to maximize.", "Số tiến trình hoàn thành trên 1 đơn vị thời gian. Muốn tối đa hóa."],
+      "turnaround time": ["Total time to execute a particular process. Want to minimize.", "Tổng thời gian thực thi 1 tiến trình. Muốn tối thiểu hóa."],
+      "waiting time": ["Time a process spends waiting in the ready queue. Want to minimize.", "Thời gian tiến trình chờ trong ready queue. Muốn tối thiểu hóa."],
+      "response time": ["Time from request submission until the first response. Want to minimize.", "Thời gian từ lúc gửi yêu cầu tới lúc có phản hồi đầu tiên. Muốn tối thiểu hóa."],
+      "convoy effect": ["Short processes queue behind one long process, wasting CPU and device utilization.", "Tiến trình ngắn xếp hàng sau 1 tiến trình dài, lãng phí CPU và thiết bị."],
+      "exponential averaging": ["A formula estimating the next CPU burst from past bursts, weighted by α.", "Công thức ước lượng CPU burst kế tiếp từ các burst trước, trọng số bởi α."],
+      "Shortest-Remaining-Time-First": ["The preemptive version of SJF — reschedules if a shorter burst arrives.", "Phiên bản preemptive của SJF — lập lịch lại nếu có burst ngắn hơn vừa đến."],
+      "time quantum": ["The small fixed unit of CPU time Round Robin gives each process before preempting.", "Đơn vị thời gian CPU nhỏ, cố định mà Round Robin cấp cho mỗi tiến trình trước khi preempt."],
+      "starvation": ["Low-priority processes may never get to execute.", "Tiến trình priority thấp có thể không bao giờ được thực thi."],
+      "aging": ["Gradually increasing a waiting process's priority over time to prevent starvation.", "Tăng dần priority của tiến trình đang chờ theo thời gian để tránh starvation."],
+      "multilevel queue": ["Partitions the ready queue into separate queues by process type, each with fixed priority.", "Chia ready queue thành các hàng đợi riêng theo loại tiến trình, mỗi hàng đợi có priority cố định."],
+      "multilevel feedback queue": ["Like multilevel queue, but processes can migrate between queues.", "Giống multilevel queue, nhưng tiến trình có thể di chuyển giữa các hàng đợi."],
+      "Process-Contention Scope (PCS)": ["Scheduling competition among user threads within the same process.", "Cạnh tranh lập lịch giữa các thread người dùng trong cùng 1 tiến trình."],
+      "System-Contention Scope (SCS)": ["Scheduling competition among all kernel threads system-wide.", "Cạnh tranh lập lịch giữa toàn bộ kernel thread trong hệ thống."],
+      "Light-Weight Process (LWP)": ["An intermediate structure a user thread is scheduled onto, attached to one kernel thread.", "Cấu trúc trung gian mà 1 thread người dùng được lập lịch lên, gắn với 1 kernel thread."],
+      "Symmetric Multiprocessing (SMP)": ["Each processor schedules itself, rather than a single master processor scheduling all.", "Mỗi bộ xử lý tự lập lịch cho chính nó, thay vì 1 bộ xử lý chủ lập lịch cho tất cả."],
+      "load balancing": ["Keeping workload evenly distributed across all processors.", "Giữ khối lượng công việc phân bố đều trên mọi bộ xử lý."],
+      "push migration": ["A periodic task checks load and pushes work from an overloaded CPU to others.", "1 tác vụ định kỳ kiểm tra tải và đẩy công việc từ CPU quá tải sang nơi khác."],
+      "pull migration": ["An idle processor pulls waiting work from a busy processor.", "1 bộ xử lý rảnh tự kéo công việc đang chờ từ bộ xử lý bận."],
+      "processor affinity": ["A thread's tendency to keep running on the same processor to reuse its warm cache.", "Xu hướng của 1 thread tiếp tục chạy trên cùng 1 bộ xử lý để tận dụng cache còn 'ấm'."],
+      "soft affinity": ["The OS tries to keep a thread on the same processor, but doesn't guarantee it.", "OS cố giữ 1 thread ở cùng bộ xử lý, nhưng không đảm bảo."],
+      "hard affinity": ["Lets a process explicitly specify the set of processors it may run on.", "Cho phép 1 tiến trình chỉ định rõ tập bộ xử lý mà nó được phép chạy trên."],
+      "event latency": ["Time elapsed from when an event occurs to when it is serviced.", "Thời gian từ lúc 1 sự kiện xảy ra tới lúc nó được phục vụ."],
+      "interrupt latency": ["Time from an interrupt's arrival to the start of the routine servicing it.", "Thời gian từ lúc ngắt đến tới lúc bắt đầu routine xử lý ngắt đó."],
+      "dispatch latency": ["Time for the scheduler to take the current process off the CPU and switch to another.", "Thời gian để scheduler đưa tiến trình hiện tại ra khỏi CPU và chuyển sang tiến trình khác."],
+      "Rate-Monotonic Scheduling": ["Assigns static priority based on the inverse of a periodic task's period.", "Gán priority tĩnh dựa trên nghịch đảo chu kỳ của tác vụ định kỳ."],
+      "Earliest-Deadline-First (EDF)": ["Assigns priority dynamically according to deadline — earlier deadline, higher priority.", "Gán priority động theo deadline — deadline càng sớm, priority càng cao."],
+      "proportional share scheduling": ["Allocates T shares among applications; N shares guarantees N/T of CPU time.", "Phân bổ T phần cho các ứng dụng; N phần đảm bảo N/T thời gian CPU."],
+      "Completely Fair Scheduler (CFS)": ["Linux's default scheduler — no fixed quantum, allocates CPU proportional to priority.", "Scheduler mặc định của Linux — không quantum cố định, cấp CPU tỉ lệ theo priority."],
+      "vruntime": ["A task's virtual run time in CFS, decayed by priority; the smallest vruntime runs next.", "Thời gian chạy ảo của 1 tác vụ trong CFS, suy giảm theo priority; vruntime nhỏ nhất chạy tiếp theo."],
+      "deterministic modeling": ["Computing exact algorithm performance for one fixed, predetermined workload.", "Tính hiệu năng chính xác của thuật toán cho 1 workload cố định, đã biết trước."],
+      "queueing models": ["Describing arrivals and bursts probabilistically to compute average performance.", "Mô tả sự đến và burst theo xác suất để tính hiệu năng trung bình."],
+      "Little's Formula": ["n = λ × W — average queue length equals arrival rate times average wait time.", "n = λ × W — độ dài hàng đợi trung bình bằng tốc độ đến nhân thời gian chờ trung bình."],
+      "simulation": ["A programmed model of the system, driven by random numbers or real trace tapes.", "1 mô hình được lập trình của hệ thống, chạy bằng số ngẫu nhiên hoặc trace tape thật."],
+      "implementation": ["Building the scheduler into a real system and testing it directly — most accurate but costly and risky.", "Xây dựng scheduler vào 1 hệ thống thật và kiểm thử trực tiếp — chính xác nhất nhưng tốn kém và rủi ro nhất."],
+      "minimize the variance": ["Keeping response time consistent and predictable, rather than just low on average.", "Giữ response time ổn định, dễ đoán, thay vì chỉ thấp ở mức trung bình."],
+      "First-Come, First-Served (FCFS)": ["Processes run strictly in arrival order — simplest policy, but prone to the convoy effect.", "Tiến trình chạy đúng theo thứ tự đến — chính sách đơn giản nhất, nhưng dễ gặp convoy effect."],
+      "Shortest-Job-First (SJF)": ["Always run the process with the smallest next CPU burst — provably optimal average waiting time.", "Luôn chạy tiến trình có CPU burst kế tiếp nhỏ nhất — được chứng minh tối ưu về waiting time trung bình."],
+      "Round Robin (RR)": ["Each process gets a fixed time quantum in turn, preempted and requeued if it doesn't finish.", "Mỗi tiến trình được cấp 1 quantum cố định theo lượt, bị preempt và xếp lại hàng nếu chưa xong."],
+      "Priority scheduling": ["The CPU goes to whichever process has the highest priority number/rank.", "CPU được cấp cho tiến trình có priority cao nhất."],
+      "multiprocessor": ["A system with more than one CPU/core — may be multicore, multithreaded, NUMA, or heterogeneous.", "Hệ thống có nhiều hơn 1 CPU/nhân — có thể là multicore, multithreaded, NUMA, hoặc heterogeneous."],
+      "multicore processors": ["Multiple processor cores placed on the same physical chip.", "Nhiều nhân xử lý được đặt trên cùng 1 chip vật lý."],
+      "chip-multithreading / hyperthreading": ["Each physical core exposes multiple hardware threads (logical CPUs) to the OS.", "Mỗi nhân vật lý để lộ nhiều hardware thread (CPU logic) cho OS thấy."],
+      "preemptive, priority-based scheduling": ["The minimum a scheduler needs to support soft real-time guarantees.", "Mức tối thiểu 1 scheduler cần hỗ trợ để đảm bảo soft real-time."],
+      "Periodic": ["A task that repeatedly requests the CPU at regular intervals, each with its own deadline.", "1 tác vụ liên tục yêu cầu CPU theo chu kỳ đều đặn, mỗi lần có deadline riêng."],
+      "O(1) scheduler": ["Linux's pre-2.6.23 scheduler — constant-time selection using active/expired priority arrays.", "Scheduler của Linux trước bản 2.6.23 — chọn tiến trình với thời gian hằng số, dùng mảng priority active/expired."],
+      "active": ["In the O(1) scheduler, a task that still has time left in its current time slice.", "Trong O(1) scheduler, 1 tác vụ vẫn còn thời gian trong time slice hiện tại."],
+      "expired": ["In the O(1) scheduler, a task that has used up its time slice and must wait for the array swap.", "Trong O(1) scheduler, 1 tác vụ đã dùng hết time slice và phải chờ tới lượt hoán đổi mảng."],
+      "priority classes": ["Win32 categories a process belongs to, e.g. HIGH_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS.", "Các nhóm priority trong Win32 mà 1 tiến trình thuộc về, vd HIGH_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS."],
+      "relative priority": ["A thread's priority position within its own priority class, e.g. HIGHEST, NORMAL, LOWEST.", "Vị trí priority của 1 thread trong chính priority class của nó, vd HIGHEST, NORMAL, LOWEST."],
+      "User-Mode Scheduling (UMS)": ["Windows 7+ feature letting applications schedule their own threads without kernel involvement.", "Tính năng từ Windows 7 cho phép ứng dụng tự lập lịch thread của mình mà không cần kernel can thiệp."],
+      "Concurrent Runtime (ConcRT)": ["A C++ library framework that implements a UMS scheduler for Windows applications.", "1 framework thư viện C++ cài đặt UMS scheduler cho ứng dụng Windows."],
+      "context switches": ["Saving one process's state and loading another's so a different process can run.", "Lưu trạng thái 1 tiến trình và nạp trạng thái tiến trình khác để nó có thể chạy."],
+      "NUMA": ["Non-Uniform Memory Access — memory access time depends on which core is accessing which memory region.", "Non-Uniform Memory Access — thời gian truy cập bộ nhớ phụ thuộc vào nhân nào đang truy cập vùng nhớ nào."],
+      "red-black tree": ["A self-balancing binary search tree; CFS uses one so the smallest-vruntime task is always the leftmost node.", "1 cây tìm kiếm nhị phân tự cân bằng; CFS dùng nó để tác vụ có vruntime nhỏ nhất luôn là nút trái nhất."],
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    const Glookup = {};
+    Object.keys(G).forEach(k => { Glookup[k.toLowerCase()] = k; });
+    function resolveKey(text){
+      if (G[text]) return text;
+      const lk = Glookup[text.toLowerCase()];
+      return lk || null;
+    }
+
+    document.querySelectorAll('p.en b, .note b, .illus b, .hook b, .mono').forEach(el => {
+      const text = el.textContent.trim();
+      const key = resolveKey(text);
+      if (!key) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = key;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+    { q:"What does the CPU scheduler actually do, as opposed to the dispatcher?", opts:["It gives control of the CPU to the chosen process","It selects one process from the ready queue to receive the CPU","It handles I/O interrupts only","It calculates the time quantum"], correct:1, exp:"The scheduler picks WHO runs next; the dispatcher is the module that actually hands the CPU over." },
+    { q:"Scheduling that occurs when a process switches from running to waiting is classified as:", opts:["Preemptive","Nonpreemptive","Real-time only","Undefined"], correct:1, exp:"Cases 1 (running→waiting) and 4 (terminates) are nonpreemptive — there's no other choice at that instant." },
+    { q:"Which scheduling criterion do we want to MAXIMIZE?", opts:["Waiting time","Turnaround time","CPU utilization","Response time"], correct:2, exp:"CPU utilization and throughput are maximized; turnaround, waiting, and response time are minimized." },
+    { q:"FCFS scheduling is famous for causing what problem?", opts:["Starvation","The convoy effect","Priority inversion","Thrashing"], correct:1, exp:"A long CPU-bound process ahead of many short ones creates a 'convoy' — everyone waits for the big one to finish." },
+    { q:"Why is SJF considered 'optimal'?", opts:["It always uses the least memory","It minimizes average waiting time for a given set of processes","It never causes starvation","It requires no burst-time estimation"], correct:1, exp:"SJF provably gives the minimum average waiting time — but it needs an estimate of the next CPU burst, which is its main practical difficulty." },
+    { q:"In exponential averaging τₙ₊₁ = α·tₙ + (1−α)·τₙ, what does setting α = 0 mean?", opts:["Only the most recent burst counts","Recent history doesn't count at all — τ stays constant","The formula becomes SRTF","It disables preemption"], correct:1, exp:"With α = 0, τₙ₊₁ = τₙ, so the prediction never updates based on new data." },
+    { q:"What happens to Round Robin if the time quantum q becomes very large?", opts:["It becomes equivalent to SJF","It becomes equivalent to FCFS","It becomes equivalent to priority scheduling","Context switch overhead grows unbounded"], correct:1, exp:"A very large q means each process effectively runs to completion before being preempted — exactly like FCFS." },
+    { q:"What is 'aging' used to solve in priority scheduling?", opts:["Convoy effect","Starvation of low-priority processes","Excessive context switching","Dispatch latency"], correct:1, exp:"Aging gradually raises a waiting process's priority over time, guaranteeing it eventually runs and avoiding starvation." },
+    { q:"In a multilevel feedback queue, what makes it different from a plain multilevel queue?", opts:["It has no queues at all","Processes can migrate between queues over time","It only supports FCFS","It requires hardware support"], correct:1, exp:"Multilevel feedback queues allow migration between queues — this migration is how aging gets implemented." },
+    { q:"Process-Contention Scope (PCS) refers to scheduling competition among:", opts:["All kernel threads system-wide","User-level threads within the same process","Only real-time threads","Threads across different machines"], correct:1, exp:"PCS is competition scoped to threads inside one process; SCS is the system-wide version among kernel threads." },
+    { q:"What is 'processor affinity'?", opts:["A process's fixed maximum priority","A thread's tendency to keep running on the same core to reuse its warm cache","A rule that forbids multiprocessing","The number of hardware threads per core"], correct:1, exp:"Processor affinity reflects that a thread's cache contents on a core are valuable — moving it elsewhere invalidates that cache." },
+    { q:"Push migration and pull migration are both mechanisms for:", opts:["Real-time deadline scheduling","Load balancing across processors","Thread cancellation","Context switching"], correct:1, exp:"Push migration proactively moves work off an overloaded CPU; pull migration has an idle CPU grab waiting work — both balance load." },
+    { q:"Under Rate-Monotonic Scheduling, how is priority assigned?", opts:["Randomly at runtime","Based on the inverse of a periodic task's period — shorter period, higher priority","Based on deadline only, updated dynamically","Based on the amount of memory a task uses"], correct:1, exp:"Rate-Monotonic is a STATIC scheme: priority = 1/period, fixed for the task's lifetime." },
+    { q:"How does Earliest-Deadline-First (EDF) differ fundamentally from Rate-Monotonic?", opts:["EDF never preempts running tasks","EDF assigns priority dynamically based on each task's current deadline","EDF only works with one processor","EDF ignores burst time entirely"], correct:1, exp:"EDF recalculates priority dynamically — whichever task has the nearest deadline right now gets the highest priority." },
+    { q:"In Linux's Completely Fair Scheduler, which task is selected to run next?", opts:["The task with the highest nice value","The task with the largest vruntime","The task with the smallest vruntime, found via the leftmost red-black tree node","The first task in a FIFO queue"], correct:2, exp:"CFS always picks the smallest-vruntime task — the leftmost node of its red-black tree, cached for O(1) access." }
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  let correctCount = 0;
+
+  QUIZ.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q';
+    qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+    const optsWrap = document.createElement('div');
+    item.opts.forEach((optText, oi) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.type = 'button';
+      b.textContent = optText;
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        const allOpts = optsWrap.querySelectorAll('.opt');
+        allOpts.forEach(o => o.disabled = true);
+        if (oi === item.correct){
+          b.classList.add('correct');
+          correctCount++;
+        } else {
+          b.classList.add('wrong');
+          allOpts[item.correct].classList.add('correct');
+        }
+        quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+        const ex = qDiv.querySelector('.explain');
+        ex.classList.add('show');
+      });
+      optsWrap.appendChild(b);
+    });
+    qDiv.appendChild(optsWrap);
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.textContent = item.exp;
+    qDiv.appendChild(explain);
+    quizRoot.appendChild(qDiv);
+  });
+</script>
+</body>
+</html>
