@@ -514,7 +514,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 21/09/2026 • 20:59:10 (PDF Lab 1 added)
+            Last Updated: 21/09/2026 • 20:59:10 (Little notes added)
           </p>
         </div>
 
