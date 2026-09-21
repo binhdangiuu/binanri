@@ -172,8 +172,10 @@ const subjects = [
       {
         id: "lab-1",
         title: "Lab 1 - Thầy Nguyễn Phương Duy",
-        questionsCount: 5,
-        comingSoon: true,
+        type: "pdf",
+        documents: [
+  { title: "PDF Lab 1 - Introduction to Linux and Programming", file: "/pdfs/lecture/Lab_1_Linux_and_Program.pdf" },
+        ]
       },
 
       {
@@ -511,7 +513,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 16/09/2026 • 21:40:25 (Lecture Notes 05 added)
+            Last Updated: 21/09/2026 • 12:43:14 (PDF Lab 1 added)
           </p>
         </div>
 
