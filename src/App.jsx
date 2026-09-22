@@ -10,6 +10,7 @@ import ktmtmach from "./data/ktmtmach"
 import hash from "./data/hash"
 import graph from "./data/graph"
 import hk251DSA from "./data/hk251dsa"
+import osReviewCh1To2 from "./data/os-review-ch1-2"
 import BubbleNote from "./BubbleNote"
 const subjects = [
 
@@ -175,7 +176,7 @@ const subjects = [
         title: "Lab 1 - Thầy Nguyễn Phương Duy",
         type: "pdf",
         documents: [
-          { title: "Lab 1 - Introduction to Linux Programming", file: "/pdfs/lecture/Lab_1_Linux_and_Program.pdf" },
+          { title: "Lab 1 - Introduction to Linux Programming", file: "/pdfs/lab/lab1_Linux_and_Program.pdf" },
         ],
       },
 
@@ -224,8 +225,9 @@ const subjects = [
       {
         id: "introduction",
         title: "Introduction to Operating Systems (ôn thi Chapter 1 - Chapter 2)",
-        questionsCount: 52,
-        comingSoon: true,
+        questionsCount: osReviewCh1To2.length,
+        comingSoon: false,
+        questions: osReviewCh1To2
       },
 
       {
@@ -514,7 +516,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 21/09/2026 • 20:59:10 (Little notes added)
+            Last Updated: 21/09/2026 • 12:43:14 (PDF Lab 1 added)
           </p>
         </div>
 
@@ -563,7 +565,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-1" icon="🎥" title="Ghi chú nhỏ">
-              Mình dặn nè, Lab 01 í, phải có máy ảo Ubuntu mới chạy được, mình nghĩ mình sẽ quay video để hướng dẫn cậu cài nha.
+              Có lẽ tui sẽ làm 1 video hướng dẫn cài máy ảo để chạy Lab.
             </BubbleNote>
           )}
         </div>
