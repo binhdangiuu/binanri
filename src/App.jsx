@@ -516,7 +516,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 21/09/2026 • 12:43:14 (PDF Lab 1 added)
+            Last Updated: 22/09/2026 • 17:20:25 (Chapter 01, Chapter 02 Final Semester has been testing)
           </p>
         </div>
 
@@ -565,7 +565,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-1" icon="🎥" title="Ghi chú nhỏ">
-              Mình dặn nè, cái lab 01 í, phải có máy ảo mới chạy được, sau này tụi mình sẽ làm lab trên đó. Nên cậu chờ một chút nha, mình sẽ quay video hướng dẫn cài máy ảo cho cậu nhen.
+              Hehe dạo này mình hơi bận, đáng lẽ mình quay video hướng dẫn cậu cài máy ảo từ hôm chủ nhật rùi. Nhưng mà không sao, mình sẽ bù cho cậu Bộ ôn tập cuối kì Chap 1 và Chap 2 nhaaa, mình đang test web á, cậu chịu khó lướt xuống xíu nha nó ở gần dưới cùng ấy.
             </BubbleNote>
           )}
         </div>
