@@ -565,7 +565,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-1" icon="🎥" title="Ghi chú nhỏ">
-              Có lẽ tui sẽ làm 1 video hướng dẫn cài máy ảo để chạy Lab.
+              Mình dặn nè, cái lab 01 í, phải có máy ảo mới chạy được, sau này tụi mình sẽ làm lab trên đó. Nên cậu chờ một chút nha, mình sẽ quay video hướng dẫn cài máy ảo cho cậu nhen.
             </BubbleNote>
           )}
         </div>
