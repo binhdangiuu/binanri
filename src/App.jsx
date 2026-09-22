@@ -175,7 +175,7 @@ const subjects = [
         title: "Lab 1 - Thầy Nguyễn Phương Duy",
         type: "pdf",
         documents: [
-          { title: "Lab 1 - Introduction to Linux Programming", file: "/pdfs/lab/Lab1_Linux_and_Program.pdf" },
+          { title: "Lab 1 - Introduction to Linux Programming", file: "/pdfs/lecture/Lab1_Linux_and_Program.pdf" },
         ],
       },
 
