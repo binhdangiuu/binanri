@@ -270,6 +270,7 @@ export default function App() {
   const [selectedQuiz, setSelectedQuiz] = useState(null)
   const [selectedDocument, setSelectedDocument] = useState(null)
   const [selectedChapter, setSelectedChapter] = useState(null)
+  const [quizLang, setQuizLang] = useState("vi")
 
   useEffect(() => {
     const savedData = localStorage.getItem("quiz-progress")
@@ -341,6 +342,11 @@ export default function App() {
     return answer
   }
 
+  const applyLanguage = (item, lang) => {
+    if (lang !== "en" || !item?.en) return item
+    return { ...item, question: item.en.question ?? item.question, options: item.en.options ?? item.options }
+  }
+
   const normalizeQuestionItem = (item) => {
     if (!item) return item
 
@@ -379,7 +385,7 @@ export default function App() {
     return normalized
   }
 
-  const normalizedQuizQuestions = selectedQuiz?.questions?.map(normalizeQuestionItem) || []
+  const normalizedQuizQuestions = selectedQuiz?.questions?.map((item) => normalizeQuestionItem(applyLanguage(item, quizLang))) || []
   const question = normalizedQuizQuestions?.[currentQuestion]
   const q = question?.question || {}
   const contextText = question?.context || q?.context
@@ -516,7 +522,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 22/09/2026 • 17:20:25 (Chapter 01, Chapter 02 Final Semester has been testing)
+            Last Updated: 23/09/2026 • 09:35:22 (Final Exam Review Chap01, Chap02 added)
           </p>
         </div>
 
@@ -593,6 +599,7 @@ export default function App() {
                         setAnswers([])
                         setScore(0)
                         setScreen("quiz")
+                        setQuizLang("vi")
                     }
                   }}
                   className={`
@@ -792,6 +799,21 @@ export default function App() {
         {screen === "quiz" && selectedQuiz && question && (
           <div className="animate-fade-in">
             <button onClick={() => { setScreen("subject"); setSelectedQuiz(null) }} className="mb-6 bg-cream/80 border border-blush-deep px-5 py-3 rounded-2xl font-medium hover:border-sky hover:-translate-y-0.5 transition">← Quay lại</button>
+
+            {selectedQuiz?.questions?.[0]?.en && (
+              <div className="flex justify-end mb-6">
+                <div className="bg-cream/70 border border-blush-deep rounded-full p-1 flex gap-1">
+                  <button
+                    onClick={() => setQuizLang("en")}
+                    className={`px-5 py-2 rounded-full text-sm font-semibold transition ${quizLang === "en" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-white"}`}
+                  >English</button>
+                  <button
+                    onClick={() => setQuizLang("vi")}
+                    className={`px-5 py-2 rounded-full text-sm font-semibold transition ${quizLang === "vi" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-white"}`}
+                  >Tiếng Việt</button>
+                </div>
+              </div>
+            )}
 
             {/* Tabs */}
             <div className="bg-cream/70 border border-blush-deep rounded-full p-2 flex gap-3 mb-8 overflow-x-auto">
