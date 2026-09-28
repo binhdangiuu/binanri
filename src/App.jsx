@@ -522,7 +522,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 21/09/2026 • 12:43:14 (PDF Lab 1 added)
+            Last Updated: 28/09/2026 • 16:36:25 (ENGLISH language Chap01, Chap02 Final Exam added)
           </p>
         </div>
 
