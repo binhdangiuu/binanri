@@ -522,7 +522,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 23/09/2026 • 09:35:22 (Final Exam Review Chap01, Chap02 added)
+            Last Updated: 21/09/2026 • 12:43:14 (PDF Lab 1 added)
           </p>
         </div>
 
@@ -570,7 +570,7 @@ export default function App() {
 
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
-            <BubbleNote inline id="vm-video-1" icon="🎥" title="Ghi chú nhỏ">
+            <BubbleNote inline id="vm-video-2" icon="🎥" title="Ghi chú nhỏ">
               Hehe dạo này mình hơi bận, đáng lẽ mình quay video hướng dẫn cậu cài máy ảo từ hôm chủ nhật rùi. Nhưng mà không sao, mình sẽ bù cho cậu Bộ ôn tập cuối kì Chap 1 và Chap 2 nhaaa, mình đang test web á, cậu chịu khó lướt xuống xíu nha nó ở gần dưới cùng ấy.
             </BubbleNote>
           )}
@@ -800,28 +800,6 @@ export default function App() {
           <div className="animate-fade-in">
             <button onClick={() => { setScreen("subject"); setSelectedQuiz(null) }} className="mb-6 bg-cream/80 border border-blush-deep px-5 py-3 rounded-2xl font-medium hover:border-sky hover:-translate-y-0.5 transition">← Quay lại</button>
 
-            {selectedQuiz?.questions?.[0]?.en && (
-              <div className="flex justify-end mb-6">
-                <div className="bg-cream/70 border border-blush-deep rounded-full p-1 flex gap-1">
-                  <button
-                    onClick={() => setQuizLang("en")}
-                    className={`px-5 py-2 rounded-full text-sm font-semibold transition ${quizLang === "en" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-white"}`}
-                  >English</button>
-                  <button
-                    onClick={() => setQuizLang("vi")}
-                    className={`px-5 py-2 rounded-full text-sm font-semibold transition ${quizLang === "vi" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-white"}`}
-                  >Tiếng Việt</button>
-                </div>
-              </div>
-            )}
-
-            {/* Tabs */}
-            <div className="bg-cream/70 border border-blush-deep rounded-full p-2 flex gap-3 mb-8 overflow-x-auto">
-              {["Overview","Fundamentals","Inheritance","Polymorphism","Patterns","Review","MCQ Quiz"].map((tab, index) => (
-                <button key={index} className={`px-4 py-2 rounded-full whitespace-nowrap transition font-medium ${tab === "MCQ Quiz" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-white"}`}>{tab}</button>
-              ))}
-            </div>
-
             {/* Quiz Info */}
             <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
               <div>
@@ -846,6 +824,21 @@ export default function App() {
                 {Math.round(((currentQuestion + 1) / selectedQuiz.questions.length) * 100)}%
               </span>
             </div>
+
+            {selectedQuiz?.questions?.[0]?.en && (
+              <div className="flex justify-center mb-6">
+                <div className="bg-white border-2 border-sky rounded-full p-1.5 flex gap-1 shadow-md">
+                  <button
+                    onClick={() => setQuizLang("en")}
+                    className={`px-8 py-2.5 rounded-full text-base font-bold transition ${quizLang === "en" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-cream"}`}
+                  >🇬🇧 English</button>
+                  <button
+                    onClick={() => setQuizLang("vi")}
+                    className={`px-8 py-2.5 rounded-full text-base font-bold transition ${quizLang === "vi" ? "bg-sky text-white shadow-sm" : "text-plum-soft hover:bg-cream"}`}
+                  >🇻🇳 Tiếng Việt</button>
+                </div>
+              </div>
+            )}
 
             {/* Question Card */}
             <div className="bg-cream/80 border border-blush-deep rounded-[28px] p-6 sm:p-8">

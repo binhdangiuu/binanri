@@ -103,8 +103,8 @@
 
 /* ---- Bản gọn: nằm cạnh hàng tab, đuôi bong bóng trỏ về nút tab ---- */
 .bubble-note--inline {
-  flex: 1 1 260px;
-  max-width: 380px;
+  flex: 1 1 320px;
+  max-width: 560px;
   margin: 0 0 0 24px;
   padding: 14px 42px 14px 16px;
   border-radius: 28px;
@@ -113,7 +113,7 @@
 .bubble-note--inline::before { left: 58px; top: 6px; width: 34px; height: 9px; }
 .bubble-note--inline .bubble-note-icon { font-size: 26px; }
 .bubble-note--inline .bubble-note-title { font-size: 11px; }
-.bubble-note--inline .bubble-note-text { font-size: 15px; line-height: 1.35; }
+.bubble-note--inline .bubble-note-text { font-size: 15px; line-height: 1.45; }
 .bubble-note--inline .bubble-note-close { top: 8px; right: 12px; width: 24px; height: 24px; font-size: 16px; }
 .bubble-note--inline .bubble-note-dot-1 { width: 12px; height: 12px; left: -17px; bottom: auto; top: calc(50% - 6px); }
 .bubble-note--inline .bubble-note-dot-2 { width: 7px; height: 7px; left: -30px; bottom: auto; top: calc(50% - 3px); }
