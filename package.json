@@ -11,8 +11,12 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "pg": "^8.23.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "socket.io": "^4.8.4",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
@@ -24,6 +28,20 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "nodemon": "^3.1.14",
     "vite": "^8.0.12"
-  }
+  },
+  "description": "Ứng dụng web trắc nghiệm ôn tập, hỗ trợ nhiều môn học với giao diện đơn giản, dễ dùng.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuperArsenal1886/binanri.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SuperArsenal1886/binanri/issues"
+  },
+  "homepage": "https://github.com/SuperArsenal1886/binanri#readme"
 }

@@ -522,7 +522,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 28/09/2026 • 16:36:25 (ENGLISH language Chap01, Chap02 Final Exam added)
+            Last Updated: 1/10/2026 • 17:45:16 (Note updated)
           </p>
         </div>
 
@@ -571,7 +571,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-2" icon="🎥" title="Ghi chú nhỏ">
-              Hehe dạo này mình hơi bận, đáng lẽ mình quay video hướng dẫn cậu cài máy ảo từ hôm chủ nhật rùi. Nhưng mà không sao, mình sẽ bù cho cậu Bộ ôn tập cuối kì Chap 1 và Chap 2 nhaaa, mình đang test web á, cậu chịu khó lướt xuống xíu nha nó ở gần dưới cùng ấy.
+              Mình quay xong video rùi nha. Có hơi ngại một chút nên mình ăn nói hơi nhanh với thô lỗ. Mình sẽ up video lên sau khi mình up xong Chap6 Lecture Note nhé. Dạo này trời mưa, cậu nhớ đi đường cẩn thận, chú ý sức khỏe nha.
             </BubbleNote>
           )}
         </div>
