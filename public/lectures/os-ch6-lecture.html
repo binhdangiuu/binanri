@@ -1,0 +1,1886 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2018 · Chapter 6 — Synchronization Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#2E7FC1; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar-wrap{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); padding:12px 14px 11px; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ position:relative; font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 14px 7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper); color:#fff; border-color:var(--copper); }
+  .tab-btn.visited:not(.active){ box-shadow: inset 0 -2px 0 0 #ffffff55; }
+
+  .progress-row{ display:flex; align-items:center; gap:11px; margin-top:10px; }
+  .progress-track{ flex:1; height:7px; border-radius:999px; background:#ffffff1f; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--copper) 0%, #FFB454 50%, var(--teal) 100%); transition:width .4s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:#ffffffb0; white-space:nowrap; min-width:96px; text-align:right; }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:18ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:20px; margin:36px 0 10px; }
+
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .codeblock{ background:var(--ink); color:#F3E6EF; border-radius:12px; padding:16px 20px; margin:16px 0 24px; overflow-x:auto; }
+  .codeblock .clabel{ display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#FFB4D6; margin-bottom:8px; }
+  .codeblock pre{ margin:0; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.65; white-space:pre; }
+  .codeblock .kw{ color:#7FD3FF; } .codeblock .fn{ color:#FFD37F; } .codeblock .cm{ color:#8A9BA8; font-style:italic; } .codeblock .tp{ color:#B3F0C0; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:440px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; max-width:560px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:10px; padding:14px 10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:18px 20px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 20px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  .term:hover, .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .rings-wrap{ display:flex; align-items:center; gap:28px; margin:10px 0 24px; flex-wrap:wrap; }
+  .rings{ position:relative; width:210px; height:210px; flex-shrink:0; }
+  .rings .ring{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:1px solid var(--grid); display:flex; align-items:center; justify-content:center; }
+  .rings .r4{ width:210px; height:210px; background:var(--paper-deep); }
+  .rings .r3{ width:158px; height:158px; background:#FFE0EE; }
+  .rings .r2{ width:106px; height:106px; background:var(--teal-tint); }
+  .rings .r1{ width:54px; height:54px; background:var(--teal); }
+  .rings .r1 span{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:#fff; text-align:center; font-weight:600; line-height:1.2; }
+  .rings-legend{ display:flex; flex-direction:column; gap:9px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .rl-item{ display:flex; align-items:center; gap:8px; }
+  .rl-item .sw{ width:14px; height:14px; border-radius:50%; border:1px solid var(--grid); flex-shrink:0; }
+  .rl-item .sw.r4{ background:var(--paper-deep); } .rl-item .sw.r3{ background:#FFE0EE; } .rl-item .sw.r2{ background:var(--teal-tint); } .rl-item .sw.r1{ background:var(--teal); }
+
+  .seqlist{ margin:6px 0 24px; max-width:540px; counter-reset:seq; }
+  .seqlist .sitem{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px dashed var(--grid); }
+  .seqlist .sitem:first-child{ border-top:none; }
+  .seqlist .snum{ counter-increment:seq; flex-shrink:0; width:23px; height:23px; border-radius:50%; background:var(--copper); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:11.5px; display:flex; align-items:center; justify-content:center; font-weight:700; margin-top:1px; }
+  .seqlist .snum::before{ content: counter(seq); }
+  .seqlist .stext{ font-family:"IBM Plex Mono",monospace; font-size:12.8px; color:var(--ink); padding-top:2px; line-height:1.5; }
+
+  .term-mock{ max-width:460px; margin:6px 0 24px; border-radius:10px; overflow:hidden; box-shadow:0 12px 28px -16px rgba(74,46,64,.45); }
+  .term-mock .tm-bar{ background:#2b2530; padding:8px 12px; display:flex; gap:6px; }
+  .term-mock .tm-dot{ width:10px; height:10px; border-radius:50%; }
+  .term-mock .tm-dot.r{ background:#ff5f56; } .term-mock .tm-dot.y{ background:#ffbd2e; } .term-mock .tm-dot.g{ background:#27c93f; }
+  .term-mock .tm-body{ background:#241f29; color:#e8dce3; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:14px 16px; line-height:1.75; white-space:pre-wrap; }
+  .term-mock .tm-prompt{ color:#7FC4F0; }
+  .term-mock .tm-out{ color:#c7a8bb; }
+  .term-mock .tm-com{ color:#7bd88f; }
+
+  .phone-mock{ max-width:220px; margin:6px auto 24px; border:8px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--paper-deep); }
+  .phone-mock .pm-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .phone-mock .pm-icon{ aspect-ratio:1; border-radius:12px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .phone-mock .pm-icon:nth-child(3n+2){ background:var(--copper-tint); }
+
+  table.cmp-table{ width:100%; max-width:600px; border-collapse:collapse; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+  .table-scroll{ overflow-x:auto; margin:6px 0 24px; }
+  .table-scroll table.cmp-table{ margin:0; min-width:520px; }
+  .exercise{ background:var(--paper-deep); border:1px solid var(--grid); border-left:4px solid var(--copper); border-radius:12px; padding:20px 22px; margin:22px 0; }
+  .exercise h4{ margin:0 0 10px; font-size:16.5px; color:var(--copper-deep); }
+  .exercise table.cmp-table{ margin:10px 0 14px; font-size:13px; }
+  .exercise details{ margin-top:12px; border-top:1px dashed var(--grid); padding-top:10px; }
+  .exercise summary{ cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--teal-deep); font-weight:600; }
+  .exercise summary:hover{ color:var(--copper-deep); }
+  .exercise .ans-table{ margin-top:10px; }
+  .exercise .ans-note{ font-size:13px; color:var(--ink-soft); margin-top:8px; }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .tree{ display:flex; flex-direction:column; align-items:center; gap:6px; margin:10px 0 24px; }
+  .tree .trow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .tree .tnode{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:8px 12px; border-radius:8px; border:1px solid var(--grid); background:var(--paper-deep); text-align:center; }
+  .tree .tnode.root{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .tree .tconn{ color:var(--ink-soft); font-size:12px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar-wrap{ position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 12px 6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .rings-wrap{ justify-content:center; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2018 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="background">Background</button>
+    <button class="tab-btn" data-tab="critical">Critical-Section Problem</button>
+    <button class="tab-btn" data-tab="peterson">Peterson's Solution</button>
+    <button class="tab-btn" data-tab="hardware">Hardware Support</button>
+    <button class="tab-btn" data-tab="mutexsem">Mutex Locks &amp; Semaphores</button>
+    <button class="tab-btn" data-tab="monitors">Monitors</button>
+    <button class="tab-btn" data-tab="liveness">Liveness &amp; Evaluation</button>
+    <button class="tab-btn" data-tab="exercises">Exercises</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/10 tab · 0%</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 6 · Synchronization Tools</span>
+    <h1>Two processes, one shared variable, <em>zero</em> coordination — what could go wrong?</h1>
+    <p class="lede">Chapter 4 gave processes and threads the ability to run concurrently. This chapter is about the price of that freedom: when two flows of execution touch the same data at the same time, the result can quietly become wrong. We spend this chapter building — layer by layer — the tools that make shared data safe again.</p>
+    <span class="vi">Chương 4 cho tiến trình và thread khả năng chạy đồng thời. Chương này nói về cái giá của sự tự do đó: khi 2 luồng thực thi cùng đụng vào 1 dữ liệu chung cùng lúc, kết quả có thể âm thầm trở nên sai. Cả chương này xây dựng — từng lớp một — các công cụ giúp dữ liệu dùng chung an toàn trở lại.</span>
+    <div class="tagrow">
+      <span class="tag user">Race condition: kết quả phụ thuộc thứ tự thực thi ngẫu nhiên</span>
+      <span class="tag kernel">Critical section: đoạn code phải chạy một mình, không ai xen vào</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="background"><div class="kicker">01 · The problem</div><h3>Background</h3><p>Race condition là gì, vì sao truy cập đồng thời vào dữ liệu chung lại nguy hiểm — ví dụ producer–consumer và fork().</p></div>
+    <div class="card kernel" data-goto="critical"><div class="kicker">02 · Defining it</div><h3>The Critical-Section Problem</h3><p>Cấu trúc entry/exit section, 3 yêu cầu bắt buộc: mutual exclusion, progress, bounded waiting.</p></div>
+    <div class="card user" data-goto="peterson"><div class="kicker">03 · Software attempt</div><h3>Peterson's Solution</h3><p>Hai lời giải nháp thất bại, rồi tới Peterson's Solution — và vì sao nó vẫn thất bại trên phần cứng hiện đại.</p></div>
+    <div class="card kernel" data-goto="hardware"><div class="kicker">04 · Hardware help</div><h3>Hardware Support for Synchronization</h3><p>Memory barrier, test-and-set, compare-and-swap, atomic variables.</p></div>
+    <div class="card user" data-goto="mutexsem"><div class="kicker">05–06 · OS tools</div><h3>Mutex Locks &amp; Semaphores</h3><p>Công cụ thực tế các lập trình viên dùng hàng ngày — và các lỗi kinh điển khi dùng sai.</p></div>
+    <div class="card kernel" data-goto="monitors"><div class="kicker">07 · Higher-level</div><h3>Monitors</h3><p>Trừu tượng hóa bậc cao, condition variable, Hoare vs Mesa, ví dụ producer–consumer đầy đủ.</p></div>
+    <div class="card user" data-goto="liveness"><div class="kicker">08–09 · When it fails</div><h3>Liveness &amp; Evaluation</h3><p>Deadlock, starvation, priority inversion — và priority-inheritance protocol để giải quyết nó.</p></div>
+    <div class="card kernel" data-goto="exercises"><div class="kicker">10 · Practice</div><h3>Exercises</h3><p>3 bài tập nguyên bản từ slide — tự phân tích trước khi mở đáp án.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.6</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Race condition &amp; critical section</h4><p>Describe the critical-section problem and illustrate a race condition.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Hardware solutions</h4><p>Illustrate hardware solutions using memory barriers, compare-and-swap operations, and atomic variables.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Software tools</h4><p>Demonstrate how mutex locks, semaphores, monitors, and condition variables can be used to solve the critical-section problem.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 4</div><div><h4>Evaluation</h4><p>Evaluate tools that solve the critical-section problem in low-, moderate-, and high-contention scenarios.</p></div></div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: BACKGROUND -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-background" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🏃</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · The problem</div>
+        <h2>When "at the same time" breaks your data</h2>
+        <span class="vi">Khi "cùng lúc" làm hỏng dữ liệu của bạn</span>
+      </div>
+    </div>
+    <p class="intro">Processes can execute concurrently, or in parallel on multiple cores — and either way, each one may be interrupted at any time, partway through its work.</p>
+    <span class="vi">Các tiến trình có thể thực thi đồng thời (concurrently), hoặc song song (in parallel) trên nhiều nhân — và dù kiểu nào, mỗi tiến trình đều có thể bị ngắt bất cứ lúc nào, ngay giữa chừng công việc.</span>
+
+    <p class="en"><b>Concurrent access</b> to shared data may result in <b>data inconsistency</b>. Maintaining data consistency requires mechanisms to ensure the orderly execution of cooperating processes.</p>
+    <span class="vi"><b>Truy cập đồng thời</b> vào dữ liệu dùng chung có thể dẫn đến <b>dữ liệu không nhất quán</b>. Muốn giữ dữ liệu nhất quán, ta cần có cơ chế đảm bảo các tiến trình hợp tác thực thi theo đúng trật tự.</span>
+
+    <div class="illus">
+      <div class="emo">🏧</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Hai vợ chồng cùng dùng chung 1 tài khoản ngân hàng, số dư 1.000.000đ. Cùng lúc, vợ rút 200.000đ ở cây ATM còn chồng chuyển khoản 300.000đ trên app. Nếu ngân hàng xử lý ẩu, số dư cuối có thể sai — không phải 500.000đ như đáng ra phải là.</div>
+    </div>
+
+    <p class="en">A classic illustration: the <b>producer–consumer</b> problem with a bounded buffer. An integer <b>counter</b> tracks how many buffer slots are currently full — incremented by the producer after adding an item, decremented by the consumer after removing one.</p>
+    <span class="vi">Ví dụ kinh điển: bài toán <b>producer–consumer</b> (người sản xuất – người tiêu thụ) với 1 buffer giới hạn. Biến nguyên <b>counter</b> theo dõi số ô buffer đang đầy — được tăng bởi producer sau khi thêm 1 item, giảm bởi consumer sau khi lấy đi 1 item.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Shared data — C</span>
+      <pre>#define BUFFER_SIZE 8
+
+typedef struct {
+    <span class="cm">. . .</span>
+} item;
+
+item buffer[BUFFER_SIZE];
+int in  = 0;
+int out = 0;
+int counter = 0;  <span class="cm">/* number of full slots, initially 0 */</span></pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Producer — C</span>
+      <pre>while (true) {
+    <span class="cm">/* produce an item in next_produced */</span>
+
+    while (counter == BUFFER_SIZE)
+        ;  <span class="cm">/* do nothing — buffer is full */</span>
+
+    buffer[in] = next_produced;
+    in = (in + 1) % BUFFER_SIZE;
+    counter++;
+}</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Consumer — C</span>
+      <pre>while (true) {
+    while (counter == 0)
+        ;  <span class="cm">/* do nothing — buffer is empty */</span>
+
+    next_consumed = buffer[out];
+    out = (out + 1) % BUFFER_SIZE;
+    counter--;
+
+    <span class="cm">/* consume the item in next_consumed */</span>
+}</pre>
+    </div>
+
+    <p class="en">On paper this looks safe. The problem is that <b>counter++</b> and <b>counter--</b> are not single, indivisible steps — each compiles down to three separate machine instructions.</p>
+    <span class="vi">Nhìn trên giấy thì có vẻ an toàn. Vấn đề là <b>counter++</b> và <b>counter--</b> không phải 1 bước duy nhất, không thể chia nhỏ — mỗi lệnh đó thực ra biên dịch thành 3 lệnh máy riêng biệt.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">counter++ thực chất là</div>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;">register1 = counter<br>register1 = register1 + 1<br>counter = register1</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">counter-- thực chất là</div>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:13px;">register2 = counter<br>register2 = register2 − 1<br>counter = register2</p>
+      </div>
+    </div>
+
+    <p class="en">Because these 3-instruction sequences can be interleaved, the final value of <b>counter</b> depends on the exact order the CPU happened to execute them in — this dependency on timing is exactly what we call a <b>race condition</b>.</p>
+    <span class="vi">Vì các chuỗi 3 lệnh này có thể bị xen kẽ (interleave) với nhau, giá trị cuối cùng của <b>counter</b> phụ thuộc vào đúng thứ tự mà CPU tình cờ thực thi chúng — sự phụ thuộc vào thời điểm này chính là <b>race condition</b>.</span>
+
+    <div class="labeled-box">
+      <span class="lb-tag">interleaving — counter = 5 lúc đầu</span>
+      <table class="cmp-table">
+        <tr><th>Bước</th><th>Tiến trình</th><th>Lệnh</th><th>Giá trị</th></tr>
+        <tr><td>S0</td><td>producer</td><td>register1 = counter</td><td>register1 = 5</td></tr>
+        <tr><td>S1</td><td>producer</td><td>register1 = register1 + 1</td><td>register1 = 6</td></tr>
+        <tr><td>S2</td><td>consumer</td><td>register2 = counter</td><td>register2 = 5</td></tr>
+        <tr><td>S3</td><td>consumer</td><td>register2 = register2 − 1</td><td>register2 = 4</td></tr>
+        <tr><td>S4</td><td>producer</td><td>counter = register1</td><td>counter = 6</td></tr>
+        <tr><td>S5</td><td>consumer</td><td>counter = register2</td><td>counter = 4</td></tr>
+      </table>
+      <p style="margin:10px 0 0;font-size:13.5px;color:var(--copper-deep);font-weight:600;">⚠ 1 item được thêm và 1 item bị lấy đi — counter đáng lẽ vẫn phải là 5. Nhưng vì producer ghi đè sau consumer, kết quả thực tế là 4. Dữ liệu sai mà không hề có lỗi (exception) nào xảy ra!</p>
+    </div>
+
+    <p class="en">The same kind of bug happens deep inside the OS kernel itself — for example, two processes <b>P0</b> and <b>P1</b> both calling <b>fork()</b> at nearly the same moment, racing over the kernel variable <b>next_available_pid</b>.</p>
+    <span class="vi">Loại lỗi tương tự cũng xảy ra ngay bên trong nhân hệ điều hành — ví dụ 2 tiến trình <b>P0</b> và <b>P1</b> cùng gọi <b>fork()</b> gần như cùng lúc, cùng tranh chấp biến kernel <b>next_available_pid</b>.</span>
+
+    <svg viewBox="0 0 620 260" style="max-width:620px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="150" y="18" text-anchor="middle" font-size="12" fill="#C22A63" font-weight="600">P0</text>
+      <text x="470" y="18" text-anchor="middle" font-size="12" fill="#2E7FC1" font-weight="600">P1</text>
+      <line x1="70" y1="28" x2="70" y2="240" stroke="#8A5F78" stroke-dasharray="3,3"/>
+      <text x="46" y="130" font-size="10" fill="#8A5F78" transform="rotate(-90 46,130)">time</text>
+
+      <rect x="105" y="34" width="150" height="28" rx="6" fill="#FF6FA51f" stroke="#E8407F"/>
+      <text x="180" y="53" text-anchor="middle" font-size="10.5" fill="#C22A63">pid_t child = fork();</text>
+      <rect x="365" y="34" width="150" height="28" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="440" y="53" text-anchor="middle" font-size="10.5" fill="#2E7FC1">pid_t child = fork();</text>
+
+      <path d="M180 62 C 200 90, 260 100, 300 118" fill="none" stroke="#C22A63" marker-end="url(#ahR)"/>
+      <text x="185" y="90" font-size="9.5" fill="#C22A63">request pid</text>
+      <path d="M440 62 C 420 90, 360 100, 320 118" fill="none" stroke="#2E7FC1" marker-end="url(#ahR)"/>
+      <text x="400" y="90" font-size="9.5" fill="#2E7FC1">request pid</text>
+      <defs><marker id="ahR" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+
+      <rect x="220" y="120" width="180" height="30" rx="6" fill="#FFE0EE" stroke="#8A5F78"/>
+      <text x="310" y="140" text-anchor="middle" font-size="10.5" fill="#4A2E40" font-weight="600">next_available_pid = 2615</text>
+
+      <path d="M300 150 C 260 168, 200 178, 180 196" fill="none" stroke="#C22A63" marker-end="url(#ahR)"/>
+      <text x="170" y="182" font-size="9.5" fill="#C22A63">return 2615</text>
+      <path d="M320 150 C 360 168, 420 178, 440 196" fill="none" stroke="#2E7FC1" marker-end="url(#ahR)"/>
+      <text x="400" y="182" font-size="9.5" fill="#2E7FC1">return 2615</text>
+
+      <rect x="105" y="200" width="150" height="28" rx="6" fill="#FF6FA51f" stroke="#E8407F"/>
+      <text x="180" y="219" text-anchor="middle" font-size="10.5" fill="#C22A63" font-weight="600">child = 2615</text>
+      <rect x="365" y="200" width="150" height="28" rx="6" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="440" y="219" text-anchor="middle" font-size="10.5" fill="#2E7FC1" font-weight="600">child = 2615</text>
+
+      <text x="310" y="252" text-anchor="middle" font-size="10.5" fill="#8A5F78" font-weight="600">⚠ cùng 1 pid = 2615 bị cấp cho 2 tiến trình con khác nhau!</text>
+    </svg>
+
+    <div class="note">
+      <b>Vì sao nguy hiểm</b>
+      Unless there is mutual exclusion around next_available_pid, the same pid could be assigned to two different processes — and the kernel loses the ability to tell them apart.
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎟️</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như 2 nhân viên ở quầy vé cùng lấy "số thứ tự tiếp theo" từ 1 cuốn sổ chung mà không ai khóa cuốn sổ lại — cả 2 cùng đọc được số 2615, cùng xé đưa cho khách, và thế là có 2 khách khác nhau cầm cùng 1 số thứ tự.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Race condition = kết quả phụ thuộc thứ tự thực thi</span><span class="rchip">counter++/-- không atomic</span><span class="rchip">Xảy ra cả trong kernel (vd: next_available_pid)</span>
+      </div>
+      <p class="rline">Race condition không gây crash — nó âm thầm cho ra kết quả sai. Đây là lý do nó nguy hiểm và khó phát hiện hơn nhiều so với 1 lỗi thông thường.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: THE CRITICAL-SECTION PROBLEM -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-critical" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🚪</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Defining it</div>
+        <h2>One bathroom, n roommates, one rule</h2>
+        <span class="vi">1 phòng tắm, n người ở chung nhà, 1 quy tắc</span>
+      </div>
+    </div>
+    <p class="intro">Consider a system of n processes {P0, P1, …, Pn−1}. Each process has a segment of code called its <b>critical section</b>, where it may be changing common variables, updating a table, or writing a file.</p>
+    <span class="vi">Xét 1 hệ thống gồm n tiến trình {P0, P1, …, Pn−1}. Mỗi tiến trình có 1 đoạn code gọi là <b>critical section</b> (đoạn tới hạn), nơi nó có thể đang thay đổi biến chung, cập nhật 1 bảng, hoặc ghi 1 file.</span>
+
+    <p class="en">The important part: when one process is in its critical section, <b>no other process may be in its critical section at the same time</b>. The critical-section problem is to design a protocol the processes can use to cooperate.</p>
+    <span class="vi">Phần quan trọng: khi 1 tiến trình đang ở trong critical section, <b>không tiến trình nào khác được ở trong critical section của nó cùng lúc</b>. Bài toán critical-section là thiết kế 1 giao thức để các tiến trình hợp tác tuân theo điều đó.</span>
+
+    <div class="illus">
+      <div class="emo">🚿</div>
+      <div class="cap"><b>Ví dụ đời thường</b>1 nhà có n người ở chung nhưng chỉ có 1 phòng tắm. Ai muốn tắm phải: gõ cửa xem có ai không (entry section) → tắm (critical section) → mở khóa báo đã xong (exit section) → về phòng làm việc khác (remainder section). Luật ngầm: đang có người tắm thì người khác phải đợi ngoài cửa, không được xông vào.</div>
+    </div>
+
+    <p class="en">Each process must first request permission to enter its critical section, in a piece of code called the <b>entry section</b>. The critical section may be followed by an <b>exit section</b>, then the <b>remainder section</b> — the rest of the code.</p>
+    <span class="vi">Mỗi tiến trình phải xin phép trước khi vào critical section, trong 1 đoạn code gọi là <b>entry section</b>. Sau critical section có thể có <b>exit section</b>, rồi đến <b>remainder section</b> — phần code còn lại.</span>
+
+    <div class="flow-row">
+      <div class="flow-box">entry section<br><small style="opacity:.7">"gõ cửa, xin vào"</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box hi">critical section<br><small style="opacity:.7">"đang tắm"</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">exit section<br><small style="opacity:.7">"báo đã xong"</small></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box mid">remainder<br><small style="opacity:.7">"việc khác"</small></div>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">General structure of process Pᵢ — C</span>
+      <pre>do {
+    <span class="cm">/* entry section */</span>
+
+    critical section
+
+    <span class="cm">/* exit section */</span>
+
+    remainder section
+} while (true);</pre>
+    </div>
+
+    <p class="en">A solution to the critical-section problem must satisfy three requirements.</p>
+    <span class="vi">1 lời giải cho bài toán critical-section phải thỏa 3 yêu cầu sau.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">1 · Mutual Exclusion</div><p>If Pi is executing in its critical section, then no other process can be executing in their critical sections.</p></div>
+      <div class="res-card"><div class="rk">2 · Progress</div><p>If no process is in its CS and some processes wish to enter, the selection of who enters next cannot be postponed indefinitely.</p></div>
+      <div class="res-card"><div class="rk">3 · Bounded Waiting</div><p>A bound must exist on how many times other processes are allowed to enter their CS after a process requests entry and before that request is granted.</p></div>
+    </div>
+    <span class="vi" style="max-width:640px;">1) <b>Mutual Exclusion</b> — nếu Pi đang trong CS, không tiến trình nào khác được thực thi trong CS của nó. 2) <b>Progress</b> — nếu chưa có ai trong CS và có tiến trình muốn vào, việc chọn ai vào tiếp theo không được trì hoãn vô thời hạn. 3) <b>Bounded Waiting</b> — phải tồn tại 1 giới hạn số lần các tiến trình khác được vào CS trước khi yêu cầu của 1 tiến trình đang chờ được chấp thuận. (Giả định: mỗi tiến trình thực thi ở tốc độ khác 0, không giả định gì về tốc độ tương đối giữa các tiến trình.)</span>
+
+    <div class="illus">
+      <div class="emo">⚖️</div>
+      <div class="cap"><b>Diễn giải bằng ví dụ phòng tắm</b><b>Mutual exclusion</b>: đang có người trong phòng tắm thì cửa phải khóa, không ai vào chung được. <b>Progress</b>: nếu phòng tắm trống và có người đang đợi, không được để phòng trống mãi mà không cho ai vào — phải có ai đó được chọn. <b>Bounded waiting</b>: nếu bạn xếp hàng thứ 3, không được để 10 người sau liên tục chen ngang trước bạn mãi mãi.</div>
+    </div>
+
+    <p class="en">The critical-section problem inside an OS kernel splits into two approaches, depending on whether the kernel is <b>preemptive</b> or <b>non-preemptive</b>.</p>
+    <span class="vi">Bài toán critical-section bên trong nhân HĐH chia thành 2 hướng tiếp cận, tùy kernel là <b>preemptive</b> hay <b>non-preemptive</b>.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">🔓 Preemptive kernel</div>
+        <p>Allows preemption of a process while it is running in kernel mode.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">🔒 Non-preemptive kernel</div>
+        <p>Runs until it exits kernel mode, blocks, or voluntarily yields the CPU — essentially free of race conditions in kernel mode.</p>
+      </div>
+    </div>
+    <span class="vi">Preemptive kernel: cho phép ngắt 1 tiến trình ngay cả khi nó đang chạy ở kernel mode. Non-preemptive kernel: chạy tới khi tự thoát kernel mode, tự block, hoặc tự nguyện nhường CPU — về cơ bản không có race condition trong kernel mode.</span>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">entry → critical → exit → remainder</span><span class="rchip">3 yêu cầu: mutual exclusion, progress, bounded waiting</span><span class="rchip">preemptive vs non-preemptive kernel</span>
+      </div>
+      <p class="rline">Mọi lời giải trong chương này — từ Peterson's Solution tới monitor — đều được đánh giá bằng đúng 3 tiêu chí này.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: PETERSON'S SOLUTION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-peterson" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🤝</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Software attempts</div>
+        <h2>Two failed tries, then a working one</h2>
+        <span class="vi">2 lần thử thất bại, rồi mới tới lời giải chạy được</span>
+      </div>
+    </div>
+    <p class="intro">Before we get to a real solution, it's worth seeing two natural-looking ideas fail — because understanding <em>why</em> they fail is what makes Peterson's Solution click.</p>
+    <span class="vi">Trước khi tới lời giải thật sự, đáng để xem 2 ý tưởng tưởng chừng hợp lý bị thất bại như thế nào — vì hiểu được <em>vì sao</em> chúng thất bại mới giúp Peterson's Solution thật sự "thấm".</span>
+
+    <h3 style="margin:22px 0 6px;color:var(--plum);font-family:var(--font-display);">Proposal solution 1 — biến turn</h3>
+    <p class="en">Shared variable: <b>int turn;</b> initialized to 0. If <b>turn == i</b>, then Pi is permitted to enter its CS.</p>
+    <span class="vi">Biến dùng chung: <b>int turn;</b> khởi tạo bằng 0. Nếu <b>turn == i</b>, Pi được phép vào CS.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Process Pᵢ — C</span>
+      <pre>do {
+    while (turn != i)
+        ;
+    critical section
+    turn = j;
+    remainder section
+} while (1);</pre>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Process P0</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">do {
+  while (turn != 0);
+  critical section
+  turn := 1;
+  remainder section
+} while (1);</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Process P1</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">do {
+  while (turn != 1);
+  critical section
+  turn := 0;
+  remainder section
+} while (1);</pre>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Kết quả</b>
+      Achieves mutual exclusion (1) ✓ — but violates the progress condition (2) ✗.
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎲</div>
+      <div class="cap"><b>Vì sao vi phạm progress</b>2 người chơi board game bắt buộc đi lần lượt tuyệt đối theo turn, kể cả khi 1 người chẳng còn nước đi nào muốn đi. Nếu P1 không bao giờ muốn vào CS nữa nhưng turn đang là 1, P0 vẫn phải đứng đó chờ turn quay về 0 mãi mãi — dù CS đang hoàn toàn trống!</div>
+    </div>
+
+    <h3 style="margin:26px 0 6px;color:var(--plum);font-family:var(--font-display);">Proposal solution 2 — mảng flag[]</h3>
+    <p class="en">Shared variable: <b>boolean flag[2];</b> both initialized to false. <b>flag[i] = true</b> means Pi wants to enter its CS.</p>
+    <span class="vi">Biến dùng chung: <b>boolean flag[2];</b> khởi tạo cả 2 là false. <b>flag[i] = true</b> nghĩa là Pi muốn vào CS.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Process Pᵢ — C</span>
+      <pre>do {
+    flag[i] = true;
+    while (flag[j])
+        ;
+    critical section
+    flag[i] = false;
+    remainder section
+} while (1);</pre>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Process P0</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">do {
+  flag[0] = true;
+  while (flag[1]);
+  critical section
+  flag[0] = false;
+  remainder section
+} while (1);</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Process P1</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">do {
+  flag[1] = true;
+  while (flag[0]);
+  critical section
+  flag[1] = false;
+  remainder section
+} while (1);</pre>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Kết quả</b>
+      Again achieves mutual exclusion (1) ✓ — but again violates the progress condition (2) ✗.
+    </div>
+
+    <div class="illus">
+      <div class="emo">🚪</div>
+      <div class="cap"><b>Vì sao vi phạm progress</b>2 người cùng lịch sự bước tới 1 cánh cửa, cùng nói "tôi nhường bạn trước" (flag[i]=true) đúng cùng lúc, rồi cùng đứng nhìn nhau chờ đối phương hạ cờ xuống trước (while flag[j]) — không ai chịu đi trước, cả 2 đứng đó mãi mãi dù cửa đang trống. Đây gọi là <b>livelock</b>.</div>
+    </div>
+
+    <p class="en">Both proposals achieve mutual exclusion — but both can get stuck forever. <b>Peterson's Solution</b> fixes this by combining <em>both</em> ideas: a <b>flag[]</b> array to declare intent, plus a <b>turn</b> variable to politely break ties.</p>
+    <span class="vi">Cả 2 đề xuất đều đạt mutual exclusion — nhưng cả 2 đều có thể bị kẹt mãi mãi. <b>Peterson's Solution</b> sửa lỗi này bằng cách kết hợp <em>cả 2</em> ý tưởng: mảng <b>flag[]</b> để khai báo ý định, cộng thêm biến <b>turn</b> để lịch sự phân xử khi cả 2 cùng muốn vào.</span>
+
+    <p class="en">Peterson's Solution is a classic <b>software-only</b> two-process solution. It is not guaranteed to work on modern architectures — but it is a genuinely good algorithmic description of how to solve the problem. We assume <b>load</b> and <b>store</b> instructions are <b>atomic</b>.</p>
+    <span class="vi">Peterson's Solution là lời giải kinh điển, <b>chỉ dùng phần mềm</b>, cho 2 tiến trình. Nó không được đảm bảo chạy đúng trên kiến trúc hiện đại — nhưng vẫn là 1 mô tả thuật toán rất hay. Ta giả định lệnh <b>load</b> và <b>store</b> là <b>atomic</b>.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Shared variables — C</span>
+      <pre>int turn;
+boolean flag[i];</pre>
+    </div>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">int turn</div><p>Indicates whose turn it is to enter the critical section.</p></div>
+      <div class="res-card"><div class="rk">boolean flag[i]</div><p>Indicates if a process is ready to enter — flag[i] = true implies process Pi is ready!</p></div>
+    </div>
+    <span class="vi"><b>turn</b>: cho biết tới lượt ai vào CS. <b>flag[]</b>: cho biết 1 tiến trình đã sẵn sàng vào chưa.</span>
+
+    <div class="illus">
+      <div class="emo">🚦</div>
+      <div class="cap"><b>Ví dụ đời thường</b>2 người muốn qua 1 cây cầu 1 làn hẹp. Mỗi người cắm cờ báo "tôi muốn qua" (flag[i]=true), rồi tự nhường: "thôi bạn qua trước đi" (turn=j). Ai thấy cờ đối phương còn cắm VÀ tới lượt đối phương thì đứng đợi; ngược lại thì qua cầu — khác Proposal 2 ở chỗ luôn có 1 "trọng tài" (turn) phân xử khi cả 2 cùng nhường.</div>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Algorithm for process Pᵢ — C</span>
+      <pre>while (true) {
+    flag[i] = true;
+    turn = j;
+    while (flag[j] && turn == j)
+        ;  <span class="cm">/* do nothing */</span>
+
+    <span class="cm">/* critical section */</span>
+
+    flag[i] = false;
+
+    <span class="cm">/* remainder section */</span>
+}</pre>
+    </div>
+
+    <p class="en">Peterson's Solution is provable to meet all three CS requirements: <b>mutual exclusion</b> is preserved because Pi can only enter its CS if either <b>flag[j] == false</b> or <b>turn == i</b>; <b>progress</b> and <b>bounded-waiting</b> both hold too.</p>
+    <span class="vi">Peterson's Solution được chứng minh thỏa cả 3 yêu cầu: <b>mutual exclusion</b> giữ vì Pi chỉ vào CS khi <b>flag[j]==false</b> hoặc <b>turn==i</b>; <b>progress</b> và <b>bounded waiting</b> cũng đều thỏa.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">1 · Mutual exclusion</div><p>Pi enters CS only if: either flag[j] = false or turn = i.</p></div>
+      <div class="res-card"><div class="rk">2 · Progress</div><p>Satisfied — the design guarantees someone always gets to move forward.</p></div>
+      <div class="res-card"><div class="rk">3 · Bounded waiting</div><p>Met — a process waits at most one turn of the other process before entering.</p></div>
+    </div>
+
+    <p class="en">So why doesn't it actually work today? To improve performance, processors and/or compilers may <b>reorder operations</b> that appear to have no dependencies. For single-threaded code this is harmless. For <b>multithreaded</b> code, reordering can produce inconsistent or unexpected results.</p>
+    <span class="vi">Vậy tại sao ngày nay nó lại không chạy đúng? Để tăng hiệu năng, CPU và/hoặc trình biên dịch có thể <b>sắp xếp lại (reorder)</b> các phép toán trông như không phụ thuộc nhau. Với code đơn luồng thì vô hại. Nhưng với code <b>đa luồng</b>, việc này có thể cho ra kết quả không nhất quán hoặc bất ngờ.</span>
+
+    <p class="en">Example: two threads share <b>boolean flag = false</b> and <b>int x = 0</b>. Thread 1 spins on <b>while (!flag);</b> then prints x. Thread 2 sets <b>x = 100;</b> then <b>flag = true;</b>. The expected output is <b>100</b>.</p>
+    <span class="vi">Ví dụ: 2 thread dùng chung <b>boolean flag = false</b> và <b>int x = 0</b>. Thread 1 chờ <b>while (!flag);</b> rồi in x. Thread 2 gán <b>x = 100;</b> rồi mới <b>flag = true;</b>. Kết quả mong đợi là in ra <b>100</b>.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Thread 1</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin:0;">while (!flag)
+    ;
+print x</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Thread 2</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin:0;">x = 100;
+flag = true;</pre>
+      </div>
+    </div>
+
+    <p class="en">But the compiler/CPU may reorder Thread 2's instructions to <b>flag = true; x = 100;</b> — if that happens, the output may be <b>0</b> instead!</p>
+    <span class="vi">Nhưng trình biên dịch/CPU có thể sắp xếp lại lệnh Thread 2 thành <b>flag = true; x = 100;</b> — nếu vậy xảy ra, kết quả in ra có thể là <b>0</b> thay vì 100!</span>
+
+    <svg viewBox="0 0 620 190" style="max-width:600px;width:100%;margin:6px 0 20px;font-family:'IBM Plex Mono',monospace;">
+      <text x="20" y="40" font-size="11" fill="#4A2E40" font-weight="600">process₀</text>
+      <rect x="95" y="26" width="70" height="26" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="130" y="43" text-anchor="middle" font-size="10" fill="#2E7FC1">turn = 1</text>
+      <line x1="167" y1="39" x2="330" y2="39" stroke="#8A5F78"/>
+      <rect x="332" y="26" width="90" height="26" rx="5" fill="#FF6FA51f" stroke="#E8407F"/><text x="377" y="43" text-anchor="middle" font-size="10" fill="#C22A63">flag[0]=true</text>
+      <rect x="430" y="26" width="46" height="26" rx="5" fill="#FFE0EE" stroke="#8A5F78"/><text x="453" y="43" text-anchor="middle" font-size="9.5" fill="#4A2E40">CS ▤</text>
+
+      <text x="20" y="100" font-size="11" fill="#4A2E40" font-weight="600">process₁</text>
+      <rect x="95" y="86" width="180" height="26" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/><text x="185" y="103" text-anchor="middle" font-size="10" fill="#2E7FC1">turn = 0, flag[1]=true</text>
+      <rect x="285" y="86" width="230" height="26" rx="5" fill="#FFE0EE" stroke="#8A5F78"/><text x="400" y="103" text-anchor="middle" font-size="9.5" fill="#4A2E40">CS ▤▤▤▤▤▤ (đã vào cùng lúc với process₀!)</text>
+
+      <line x1="60" y1="140" x2="540" y2="140" stroke="#8A5F78" marker-end="url(#ahT)"/>
+      <text x="300" y="158" text-anchor="middle" font-size="10" fill="#8A5F78">time</text>
+      <defs><marker id="ahT" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+      <text x="300" y="182" text-anchor="middle" font-size="10.5" fill="#C22A63" font-weight="600">Vì flag[1]=true bị đặt trước turn=0, cả 2 tiến trình lọt vào CS cùng lúc!</text>
+    </svg>
+
+    <div class="note">
+      <b>Bài học</b>
+      This allows both processes to be in their critical section at the same time — Peterson's Solution is still correct <em>as an algorithm</em>, but modern hardware/compiler reordering can silently break the assumption that instructions execute in program order.
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Proposal 1 (turn): vi phạm progress</span><span class="rchip">Proposal 2 (flag[]): livelock, vi phạm progress</span><span class="rchip">Peterson = flag[] + turn, đúng về lý thuyết</span><span class="rchip">Reordering phá vỡ nó trên thực tế</span>
+      </div>
+      <p class="rline">Đây chính là lý do ta cần <b>hardware support</b> thực sự cho đồng bộ hóa — chủ đề của tab tiếp theo.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: HARDWARE SUPPORT -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-hardware" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🛠️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · Hardware help</div>
+        <h2>When software promises aren't enough, ask the CPU</h2>
+        <span class="vi">Khi lời hứa phần mềm chưa đủ, hãy nhờ CPU</span>
+      </div>
+    </div>
+    <p class="intro">Many systems provide hardware support for implementing critical-section code. On <b>uniprocessors</b>, one could simply disable interrupts — the currently running code executes without preemption. But this is generally too inefficient on multiprocessor systems, and operating systems relying on it are not broadly scalable.</p>
+    <span class="vi">Nhiều hệ thống cung cấp hỗ trợ phần cứng để hiện thực code critical-section. Trên hệ <b>1 nhân (uniprocessor)</b>, ta có thể đơn giản là tắt ngắt (disable interrupts) — code đang chạy sẽ thực thi mà không bị ngắt (preemption). Nhưng cách này thường quá kém hiệu quả trên hệ đa nhân, và các HĐH dựa vào nó không mở rộng (scale) tốt.</span>
+
+    <div class="illus">
+      <div class="emo">🔕</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như tắt hết chuông cửa và điện thoại khi đang làm việc quan trọng — hiệu quả nếu bạn chỉ có 1 mình, nhưng vô nghĩa nếu cả nhà (nhiều nhân CPU) đều cần liên lạc với nhau liên tục.</div>
+    </div>
+
+    <p class="en">We look at three forms of hardware support: <b>memory barriers</b>, <b>hardware instructions</b>, and <b>atomic variables</b>.</p>
+    <span class="vi">Ta xem xét 3 dạng hỗ trợ phần cứng: <b>memory barrier</b>, <b>hardware instructions</b>, và <b>atomic variable</b>.</span>
+
+    <h3 style="margin:22px 0 6px;color:var(--plum);font-family:var(--font-display);">1 · Memory Barriers</h3>
+    <p class="en">A <b>memory model</b> is the guarantee a computer architecture makes about memory visibility to application programs. <b>Strongly ordered</b>: a modification by one processor is immediately visible to all others. <b>Weakly ordered</b>: it may not be immediately visible.</p>
+    <span class="vi"><b>Memory model</b> là sự đảm bảo mà 1 kiến trúc máy tính hứa với chương trình ứng dụng về việc nhìn thấy thay đổi bộ nhớ. <b>Strongly ordered</b>: 1 thay đổi của nhân này lập tức được các nhân khác thấy ngay. <b>Weakly ordered</b>: có thể không thấy ngay lập tức.</span>
+
+    <p class="en">A <b>memory barrier</b> is an instruction that forces any change in memory to be propagated (made visible) to all other processors.</p>
+    <span class="vi"><b>Memory barrier</b> là 1 lệnh buộc mọi thay đổi bộ nhớ phải được lan truyền (propagate) để tất cả các nhân khác đều thấy được.</span>
+
+    <div class="illus">
+      <div class="emo">📢</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Weakly-ordered giống như nhắn tin nội bộ công ty — tin có thể tới chậm, thứ tự lộn xộn. Memory barrier giống như bấm nút "thông báo khẩn" bắt buộc mọi phòng ban phải nhận và xác nhận đã đọc trước khi ai được làm việc tiếp.</div>
+    </div>
+
+    <p class="en">We could add a memory barrier to our earlier reordering example to guarantee Thread 1 outputs 100:</p>
+    <span class="vi">Ta có thể thêm memory barrier vào ví dụ reordering ở tab trước để đảm bảo Thread 1 luôn in ra 100:</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Thread 1</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">while (!flag)
+    memory_barrier();
+print x;</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Thread 2</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">x = 100;
+memory_barrier();
+flag = true;</pre>
+      </div>
+    </div>
+
+    <h3 style="margin:26px 0 6px;color:var(--plum);font-family:var(--font-display);">2 · Hardware Instructions</h3>
+    <p class="en">Special hardware instructions let us either test-and-modify a word, or swap the contents of two words <b>atomically</b> (uninterruptedly): <b>test_and_set()</b> and <b>compare_and_swap()</b>.</p>
+    <span class="vi">Các lệnh phần cứng đặc biệt cho phép ta test-and-modify 1 word, hoặc hoán đổi nội dung 2 word <b>atomic</b> (không thể bị ngắt giữa chừng): <b>test_and_set()</b> và <b>compare_and_swap()</b>.</span>
+
+    <div class="codeblock">
+      <span class="clabel">test_and_set — định nghĩa</span>
+      <pre>boolean test_and_set(boolean *target) {
+    boolean rv = *target;
+    *target = true;
+    return rv;
+}</pre>
+    </div>
+    <p class="en">1) Executed atomically. 2) Returns the original value of <b>*target</b>. 3) Sets the new value of <b>*target</b> to true.</p>
+    <span class="vi">1) Thực thi atomic. 2) Trả về giá trị gốc của <b>*target</b>. 3) Đặt giá trị mới của <b>*target</b> thành true.</span>
+
+    <div class="illus">
+      <div class="emo">🔦</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Như 1 công tắc đèn nhà vệ sinh chung: bạn bấm công tắc (test_and_set) — nó vừa cho bạn biết đèn TRƯỚC ĐÓ đang tắt hay bật, VỪA đồng thời bật đèn lên ngay lập tức, tất cả trong 1 thao tác không thể xen ngang.</div>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Solution using test_and_set() — shared boolean lock, initially false</span>
+      <pre>do {
+    while (test_and_set(&lock))
+        ;  <span class="cm">/* do nothing */</span>
+
+    <span class="cm">/* critical section */</span>
+
+    lock = false;
+    <span class="cm">/* remainder section */</span>
+} while (true);</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">compare_and_swap — định nghĩa</span>
+      <pre>int compare_and_swap(int *value, int expected, int new_value) {
+    int temp = *value;
+    if (*value == expected)
+        *value = new_value;
+    return temp;
+}</pre>
+    </div>
+    <p class="en">1) Executed atomically. 2) Returns the original value of <b>value</b>. 3) Sets <b>value</b> to <b>new_value</b>, but only if <b>*value == expected</b> — the swap happens only under this condition.</p>
+    <span class="vi">1) Thực thi atomic. 2) Trả về giá trị gốc của <b>value</b>. 3) Đặt <b>value</b> thành <b>new_value</b>, nhưng chỉ khi <b>*value == expected</b> — chỉ hoán đổi khi đúng điều kiện này.</span>
+
+    <div class="illus">
+      <div class="emo">🔐</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Như đổi mã khóa tủ đồ: "nếu mã hiện tại đúng là 0000 (expected), đổi thành mã mới 1234 (new_value); còn nếu ai đó đã đổi mã rồi thì thôi, không đổi." Bạn luôn biết được mã TRƯỚC KHI thử đổi.</div>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Solution using compare_and_swap() — shared int lock, initially 0</span>
+      <pre>while (true) {
+    while (compare_and_swap(&lock, 0, 1) != 0)
+        ;  <span class="cm">/* do nothing */</span>
+
+    <span class="cm">/* critical section */</span>
+
+    lock = 0;
+
+    <span class="cm">/* remainder section */</span>
+}</pre>
+    </div>
+
+    <p class="en">Note: this particular solution does <b>not</b> satisfy the bounded-waiting requirement. A more elaborate algorithm is needed — it uses a <b>waiting[]</b> array so a process hands the lock directly to the next process in line, instead of leaving it up for grabs.</p>
+    <span class="vi">Lưu ý: lời giải này <b>chưa</b> thỏa yêu cầu bounded-waiting. Cần 1 thuật toán chi tiết hơn — dùng mảng <b>waiting[]</b> để 1 tiến trình trao lock trực tiếp cho tiến trình kế tiếp trong hàng, thay vì để lock "rơi tự do" cho ai nhanh tay giành được.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Bounded-waiting mutual exclusion with compare-and-swap — C</span>
+      <pre>while (true) {
+    waiting[i] = true;
+    key = 1;
+    while (waiting[i] && key == 1)
+        key = compare_and_swap(&lock, 0, 1);
+    waiting[i] = false;
+
+    <span class="cm">/* critical section */</span>
+
+    j = (i + 1) % n;
+    while ((j != i) && !waiting[j])
+        j = (j + 1) % n;
+
+    if (j == i)
+        lock = 0;
+    else
+        waiting[j] = false;
+
+    <span class="cm">/* remainder section */</span>
+}</pre>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎫</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như xếp hàng lấy số ở quầy dịch vụ: người vừa xong việc không đơn giản "thả" quyền ưu tiên ra cho ai nhanh nhất giành — mà chủ động tìm đúng người kế tiếp trong hàng (j = i+1, i+2, ...) và gọi tên họ, đảm bảo không ai bị bỏ quên vô thời hạn.</div>
+    </div>
+
+    <h3 style="margin:26px 0 6px;color:var(--plum);font-family:var(--font-display);">3 · Atomic Variables</h3>
+    <p class="en">Instructions like compare-and-swap are typically used as <b>building blocks</b> for other synchronization tools. An <b>atomic variable</b> provides atomic (uninterruptible) updates on basic data types such as integers and booleans.</p>
+    <span class="vi">Các lệnh như compare-and-swap thường được dùng làm <b>viên gạch xây dựng (building block)</b> cho các công cụ đồng bộ khác. 1 <b>atomic variable</b> cung cấp cập nhật atomic (không thể ngắt) trên các kiểu dữ liệu cơ bản như integer và boolean.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Ví dụ — tăng biến atomic không bị ngắt giữa chừng</span>
+      <pre>increment(&sequence);</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">increment() được hiện thực như sau — C</span>
+      <pre>void increment(atomic_int *v) {
+    int temp;
+    do {
+        temp = *v;
+    } while (temp != compare_and_swap(v, temp, temp+1));
+}</pre>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎟️</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Máy lấy số thứ tự tự động ở ngân hàng: dù 5 người cùng bấm nút cùng lúc, máy vẫn đảm bảo mỗi người nhận 1 số khác nhau, tăng dần, không ai bị trùng số hay bị bỏ qua — y hệt increment() không bao giờ để 2 luồng cùng đọc-rồi-ghi chồng lên nhau.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Memory barrier: ép cả hệ thống "thấy" thay đổi ngay</span><span class="rchip">test_and_set / compare_and_swap: đọc + ghi trong 1 bước atomic</span><span class="rchip">Atomic variable: xây trên compare_and_swap</span>
+      </div>
+      <p class="rline">Đây là những viên gạch phần cứng cấp thấp nhất. Ở tab tiếp theo, ta dùng chúng để xây 2 công cụ lập trình viên thật sự dùng hàng ngày: <b>mutex lock</b> và <b>semaphore</b>.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: MUTEX LOCKS & SEMAPHORES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-mutexsem" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🔐</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05–06 · OS tools</div>
+        <h2>The two tools you'll actually write in code</h2>
+        <span class="vi">2 công cụ bạn sẽ thật sự viết trong code</span>
+      </div>
+    </div>
+    <p class="intro">Everything so far — turn variables, flag arrays, test-and-set, compare-and-swap — is complicated and generally inaccessible to application programmers. So OS designers package it into simpler tools.</p>
+    <span class="vi">Mọi thứ từ đầu tới giờ — biến turn, mảng flag, test-and-set, compare-and-swap — đều phức tạp và nói chung không dễ dùng cho lập trình viên ứng dụng. Vì vậy, người thiết kế HĐH đóng gói chúng thành các công cụ đơn giản hơn.</span>
+
+    <h3 style="margin:22px 0 6px;color:var(--plum);font-family:var(--font-display);">Mutex Lock</h3>
+    <p class="en">The simplest tool is the <b>mutex lock</b> (mutual exclusion lock). We protect a critical section by first calling <b>acquire()</b>, then <b>release()</b> — a boolean variable indicates whether the lock is available. Calls to acquire() and release() must be atomic, usually implemented via hardware instructions like compare-and-swap.</p>
+    <span class="vi">Công cụ đơn giản nhất là <b>mutex lock</b> (khóa loại trừ lẫn nhau). Ta bảo vệ 1 critical section bằng cách gọi <b>acquire()</b> trước, rồi <b>release()</b> sau — 1 biến boolean cho biết khóa có đang rảnh hay không. acquire() và release() phải atomic, thường hiện thực qua các lệnh phần cứng như compare-and-swap.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Solution to CS problem using locks — C</span>
+      <pre>while (true) {
+    acquire lock;
+
+    critical section;
+
+    release lock;
+
+    remainder section;
+}</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Mutex Lock Definitions — C</span>
+      <pre>acquire() {
+    while (!available)
+        ;  <span class="cm">/* busy wait */</span>
+    available = false;
+}
+
+release() {
+    available = true;
+}</pre>
+    </div>
+
+    <p class="en">Both functions must be implemented atomically — using test-and-set or compare-and-swap. But this solution requires <b>busy waiting</b> — a process spins in a tight loop while it waits, which is why this style of lock is called a <b>spinlock</b>.</p>
+    <span class="vi">Cả 2 hàm phải hiện thực atomic — dùng test-and-set hoặc compare-and-swap. Nhưng lời giải này đòi hỏi <b>busy waiting</b> — tiến trình quay vòng lặp liên tục trong khi chờ, đó là lý do loại khóa này gọi là <b>spinlock</b>.</span>
+
+    <div class="illus">
+      <div class="emo">🚻</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Spinlock giống như đứng ngay trước cửa nhà vệ sinh, liên tục lay nắm cửa mỗi giây để kiểm tra đã mở khóa chưa — tốn sức chờ, nhưng phản ứng cực nhanh ngay khi cửa vừa mở. Phù hợp nếu bạn đoán người trong đó sắp ra ngay (critical section ngắn).</div>
+    </div>
+
+    <h3 style="margin:26px 0 6px;color:var(--plum);font-family:var(--font-display);">Semaphore</h3>
+    <p class="en">A <b>semaphore</b> is a synchronization tool that provides more sophisticated ways than mutex locks for processes to synchronize. Semaphore <b>S</b> is an integer variable, accessed only through two atomic operations: <b>wait()</b> and <b>signal()</b> — originally called <b>P()</b> and <b>V()</b>.</p>
+    <span class="vi"><b>Semaphore</b> là công cụ đồng bộ cung cấp cách tinh vi hơn mutex lock để các tiến trình đồng bộ hoạt động. Semaphore <b>S</b> là 1 biến nguyên, chỉ được truy cập qua 2 phép toán atomic: <b>wait()</b> và <b>signal()</b> — ban đầu gọi là <b>P()</b> và <b>V()</b>.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">wait(S) — P()</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin:0;">wait(semaphore *S) {
+  S->value--;
+  if (S->value < 0) {
+    add this process
+      to S->list;
+    block();
+  }
+}</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">signal(S) — V()</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin:0;">signal(semaphore *S) {
+  S->value++;
+  if (S->value <= 0) {
+    remove a process P
+      from S->list;
+    wakeup(P);
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🅿️</div>
+      <div class="cap"><b>Ví dụ đời thường — bãi đỗ xe</b>Semaphore S = số chỗ trống còn lại trong bãi đỗ xe. Xe vào → <b>wait(S)</b> (giảm 1 chỗ trống; nếu hết chỗ, xe phải đậu chờ ở ngoài — "block"). Xe ra → <b>signal(S)</b> (tăng 1 chỗ trống; nếu có xe đang chờ ngoài cổng, gọi xe đó vào — "wakeup"). Đây chính là <b>counting semaphore</b>.</div>
+    </div>
+
+    <p class="en">Semaphore implementation with no busy waiting keeps, for each semaphore, an associated <b>waiting queue</b>. Each entry has a value and a pointer to the next record. Two operations manage it: <b>block</b> places the invoking process on the waiting queue; <b>wakeup</b> removes one process from the queue and moves it to the ready queue.</p>
+    <span class="vi">Cách hiện thực semaphore không cần busy waiting sẽ giữ, cho mỗi semaphore, 1 <b>hàng đợi (waiting queue)</b> đi kèm. Mỗi phần tử có 1 giá trị và 1 con trỏ tới bản ghi kế tiếp. 2 thao tác quản lý nó: <b>block</b> đặt tiến trình đang gọi vào hàng đợi; <b>wakeup</b> lấy 1 tiến trình ra khỏi hàng đợi và đưa vào ready queue.</span>
+
+    <div class="codeblock">
+      <span class="clabel">typedef struct semaphore — C</span>
+      <pre>typedef struct {
+    int value;
+    struct process *list;
+} semaphore;</pre>
+    </div>
+
+    <p class="en">The implementation must guarantee that no two processes can execute wait() and signal() on the same semaphore at the same time — so the implementation itself becomes a critical-section problem! The upside: this inner critical section is short, so there is little busy waiting if it's rarely occupied. Note: applications may spend a lot of time in their own critical sections, so this isn't automatically a good solution for every case.</p>
+    <span class="vi">Cách hiện thực phải đảm bảo không 2 tiến trình nào cùng thực thi wait() và signal() trên cùng 1 semaphore cùng lúc — vậy nên chính việc hiện thực lại trở thành 1 bài toán critical-section! Điểm hay: đoạn critical section bên trong này rất ngắn, nên ít khi phải busy-wait nếu hiếm khi bị chiếm dụng. Lưu ý: ứng dụng có thể ở lâu trong critical section của riêng nó, nên đây không tự động là lời giải tốt cho mọi trường hợp.</span>
+
+    <p class="en"><b>Counting semaphore</b>: the integer value can range over an unrestricted domain. <b>Binary semaphore</b>: the value ranges only between 0 and 1 — same as a mutex lock. We can implement a counting semaphore using a binary semaphore.</p>
+    <span class="vi"><b>Counting semaphore</b>: giá trị nguyên có thể nằm trong 1 miền không giới hạn. <b>Binary semaphore</b>: giá trị chỉ nằm giữa 0 và 1 — giống hệt mutex lock. Ta có thể hiện thực 1 counting semaphore bằng binary semaphore.</span>
+
+    <div class="illus">
+      <div class="emo">🔑</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Binary semaphore giống như 1 chìa khóa phòng họp duy nhất (chỉ 0 hoặc 1 người dùng được) — chính là mutex. Counting semaphore giống bãi đỗ N chỗ ở trên — nhiều "chìa khóa" hơn 1.</div>
+    </div>
+
+    <p class="en">Semaphores can also enforce <b>ordering</b>. Consider P1 and P2 where statement <b>S1</b> in P1 must happen before statement <b>S2</b> in P2. Create a semaphore <b>synch</b>, initialized to 0.</p>
+    <span class="vi">Semaphore cũng có thể ép buộc <b>thứ tự thực thi</b>. Xét P1 và P2, trong đó lệnh <b>S1</b> ở P1 phải xảy ra trước lệnh <b>S2</b> ở P2. Tạo 1 semaphore <b>synch</b>, khởi tạo bằng 0.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">P1</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin:0;">S1;
+signal(synch);</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">P2</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin:0;">wait(synch);
+S2;</pre>
+      </div>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🍳</div>
+      <div class="cap"><b>Ví dụ đời thường</b>P1 = "đầu bếp nấu xong món ăn rồi rung chuông báo" (signal), P2 = "phục vụ đứng đợi tiếng chuông rồi mới được bưng ra" (wait). Dù phục vụ có tới sớm cỡ nào, họ vẫn phải đợi chuông reo — đảm bảo S1 (nấu xong) luôn xảy ra trước S2 (bưng ra).</div>
+    </div>
+
+    <p class="en">Used incorrectly, semaphores create their own class of bugs.</p>
+    <span class="vi">Nếu dùng sai, semaphore lại tạo ra chính những lỗi kiểu mới của riêng nó.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">signal(mutex) … wait(mutex)</div><p>Gọi ngược thứ tự → mất luôn tác dụng loại trừ lẫn nhau.</p></div>
+      <div class="res-card"><div class="rk">wait(mutex) … wait(mutex)</div><p>Gọi wait 2 lần liên tiếp không có signal ở giữa → tự khóa chính mình, deadlock ngay lập tức.</p></div>
+      <div class="res-card"><div class="rk">Omitting wait/signal</div><p>Quên gọi wait(mutex) và/hoặc signal(mutex) → mất bảo vệ hoàn toàn, hoặc semaphore bị "rò rỉ" giá trị mãi mãi.</p></div>
+    </div>
+    <span class="vi" style="max-width:680px;">Đây — và nhiều lỗi khác — là ví dụ về điều có thể xảy ra khi semaphore và các công cụ đồng bộ khác bị dùng sai. Vấn đề: <b>trình biên dịch không thể kiểm tra giúp bạn</b> — bạn phải tự nhớ gọi đúng cặp wait/signal, đúng thứ tự, không thiếu không thừa.</span>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Mutex lock: acquire/release, spinlock, busy-wait</span><span class="rchip">Semaphore: wait/signal (P/V), counting vs binary</span><span class="rchip">Dùng sai wait/signal → deadlock hoặc mất bảo vệ</span>
+      </div>
+      <p class="rline">Cả 2 công cụ đều mạnh — nhưng đều dễ dùng sai vì phải tự tay gọi đúng cặp lệnh. Tab tiếp theo giới thiệu <b>monitor</b>: 1 trừu tượng bậc cao hơn giúp trình biên dịch tự lo phần khóa cho bạn.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: MONITORS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-monitors" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🏥</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Higher-level</div>
+        <h2>A waiting room with a nurse who enforces the rules</h2>
+        <span class="vi">1 phòng chờ khám bệnh có y tá tự lo phần khóa cho bạn</span>
+      </div>
+    </div>
+    <p class="intro">A <b>monitor</b> is a high-level abstraction that provides a convenient and effective mechanism for process synchronization. It is an <b>abstract data type</b> — internal variables are only accessible by code within the monitor's own procedures — and only <b>one process may be active</b> inside the monitor at a time.</p>
+    <span class="vi">1 <b>monitor</b> là 1 trừu tượng bậc cao, cung cấp cơ chế đồng bộ tiến trình tiện lợi và hiệu quả. Nó là 1 <b>kiểu dữ liệu trừu tượng</b> — các biến bên trong chỉ được truy cập bởi code nằm trong chính các hàm của monitor — và chỉ <b>1 tiến trình được hoạt động</b> bên trong monitor tại 1 thời điểm.</span>
+
+    <div class="illus">
+      <div class="emo">🏥</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Với mutex/semaphore, bạn tự tay khóa/mở cửa phòng khám — quên 1 bước là hỏng ngay. Với monitor, có sẵn 1 <b>y tá</b> đứng ở cửa: bạn chỉ cần gọi "khám bệnh" (gọi hàm của monitor), y tá tự lo việc đảm bảo trong phòng khám luôn chỉ có đúng 1 bệnh nhân, không cần bạn tự nhớ khóa/mở cửa.</div>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Pseudocode syntax của 1 monitor</span>
+      <pre>monitor monitor-name
+{
+    <span class="cm">// shared variable declarations</span>
+    function P1 (…) { …. }
+    function P2 (…) { …. }
+    function Pn (…) { …. }
+    initialization code (…) { … }
+}</pre>
+    </div>
+
+    <p class="en">Here is the schematic view: an entry queue of processes waits outside; only the shared data and the operations sit protected inside; an initialization block runs once.</p>
+    <span class="vi">Đây là cấu trúc tổng quan: 1 hàng đợi (entry queue) các tiến trình chờ bên ngoài; chỉ có shared data và các operations được bảo vệ bên trong; 1 khối khởi tạo chạy 1 lần duy nhất.</span>
+
+    <svg viewBox="0 0 460 300" style="max-width:420px;width:100%;margin:8px auto 20px;display:block;font-family:'IBM Plex Mono',monospace;">
+      <ellipse cx="200" cy="160" rx="150" ry="130" fill="#fff" stroke="#4A2E40" stroke-width="1.6"/>
+      <path d="M 55 100 A 150 130 0 0 1 345 100 L 345 100 A 150 60 0 0 1 55 100 Z" fill="#BEE3F8" opacity="0.6"/>
+      <text x="200" y="75" text-anchor="middle" font-size="12" fill="#1A4A6B" font-weight="600">shared data</text>
+      <path d="M 70 225 A 150 130 0 0 0 330 225" fill="#BEE3F8" opacity="0.6"/>
+      <text x="200" y="262" text-anchor="middle" font-size="11.5" fill="#1A4A6B" font-weight="600">initialization code</text>
+      <rect x="130" y="140" width="26" height="60" fill="#ccc" stroke="#888"/>
+      <rect x="170" y="140" width="26" height="60" fill="#ccc" stroke="#888"/>
+      <text x="215" y="175" font-size="16" fill="#666">…</text>
+      <rect x="250" y="140" width="26" height="60" fill="#ccc" stroke="#888"/>
+      <text x="200" y="220" text-anchor="middle" font-size="11.5" fill="#4A2E40">operations</text>
+      <path d="M345 100 C 380 90, 400 80, 420 65" stroke="#4A2E40" fill="none"/>
+      <rect x="418" y="55" width="18" height="18" fill="#BEE3F8" stroke="#4A2E40" transform="rotate(20 427 64)"/>
+      <rect x="392" y="70" width="18" height="18" fill="#ccc" stroke="#4A2E40" transform="rotate(20 401 79)"/>
+      <rect x="366" y="85" width="18" height="18" fill="#BEE3F8" stroke="#4A2E40" transform="rotate(20 375 94)"/>
+      <text x="452" y="45" text-anchor="end" font-size="10.5" fill="#4A2E40">entry queue</text>
+    </svg>
+
+    <p class="en">Two operations are allowed on a <b>condition variable</b> — declared as <b>condition x, y;</b>. <b>x.wait()</b> suspends the invoking process until <b>x.signal()</b> is called; <b>x.signal()</b> resumes one of the processes suspended on x (if any exist — otherwise it has no effect).</p>
+    <span class="vi">2 thao tác được phép trên 1 <b>condition variable</b> — khai báo dạng <b>condition x, y;</b>. <b>x.wait()</b> tạm dừng tiến trình gọi nó cho tới khi <b>x.signal()</b> được gọi; <b>x.signal()</b> đánh thức 1 trong các tiến trình đang chờ trên x (nếu có — nếu không có ai chờ thì signal() không có tác dụng gì).</span>
+
+    <div class="illus">
+      <div class="emo">📢</div>
+      <div class="cap"><b>Ví dụ đời thường</b>x.wait() giống như bệnh nhân ngồi ở phòng chờ riêng "chờ tới lượt" (không phải phòng chờ chung). x.signal() giống như y tá gọi loa "mời bệnh nhân tiếp theo trong danh sách chờ x vào" — nếu phòng chờ x đang trống không ai đợi, tiếng gọi đó "trôi qua" mà chẳng ai nghe cả, không có gì xảy ra.</div>
+    </div>
+
+    <p class="en">A monitor with condition variables looks like this — note the separate little queues associated with each condition (<b>x</b>, <b>y</b>), sitting alongside the shared data:</p>
+    <span class="vi">1 monitor có condition variable trông như sau — chú ý các hàng đợi nhỏ riêng biệt gắn với mỗi condition (<b>x</b>, <b>y</b>), nằm cạnh shared data:</span>
+
+    <svg viewBox="0 0 460 320" style="max-width:420px;width:100%;margin:8px auto 20px;display:block;font-family:'IBM Plex Mono',monospace;">
+      <ellipse cx="200" cy="170" rx="150" ry="130" fill="#fff" stroke="#4A2E40" stroke-width="1.6"/>
+      <path d="M 55 110 A 150 130 0 0 1 345 110 L 345 110 A 150 60 0 0 1 55 110 Z" fill="#BEE3F8" opacity="0.6"/>
+      <text x="215" y="85" text-anchor="middle" font-size="11.5" fill="#1A4A6B" font-weight="600">shared data</text>
+      <text x="80" y="103" font-size="9.5" fill="#1A4A6B">x →</text><rect x="98" y="94" width="14" height="14" fill="#ccc" stroke="#4A2E40"/><rect x="116" y="94" width="14" height="14" fill="#ccc" stroke="#4A2E40"/>
+      <text x="80" y="121" font-size="9.5" fill="#1A4A6B">y →</text><rect x="98" y="112" width="14" height="14" fill="#ccc" stroke="#4A2E40"/>
+      <text x="60" y="140" font-size="9" fill="#4A2E40">queues of x, y</text>
+      <path d="M 70 235 A 150 130 0 0 0 330 235" fill="#BEE3F8" opacity="0.6"/>
+      <text x="200" y="272" text-anchor="middle" font-size="11.5" fill="#1A4A6B" font-weight="600">initialization code</text>
+      <rect x="130" y="150" width="26" height="60" fill="#ccc" stroke="#888"/>
+      <rect x="170" y="150" width="26" height="60" fill="#ccc" stroke="#888"/>
+      <text x="215" y="185" font-size="16" fill="#666">…</text>
+      <rect x="250" y="150" width="26" height="60" fill="#ccc" stroke="#888"/>
+      <text x="200" y="230" text-anchor="middle" font-size="11.5" fill="#4A2E40">operations</text>
+      <path d="M345 110 C 380 100, 400 90, 420 75" stroke="#4A2E40" fill="none"/>
+      <rect x="418" y="65" width="18" height="18" fill="#BEE3F8" stroke="#4A2E40" transform="rotate(20 427 74)"/>
+      <rect x="392" y="80" width="18" height="18" fill="#ccc" stroke="#4A2E40" transform="rotate(20 401 89)"/>
+      <text x="452" y="55" text-anchor="end" font-size="10.5" fill="#4A2E40">entry queue</text>
+    </svg>
+
+    <p class="en">If process P invokes <b>x.signal()</b> while process Q is suspended in <b>x.wait()</b>, they can't both run at once — so what happens next? Two options: <b>signal and wait</b> — P waits until Q leaves the monitor (or waits on another condition); <b>signal and continue</b> — Q waits until P leaves. Both have pros and cons; the language implementer decides. Concurrent Pascal compromises: P executing signal() immediately leaves the monitor, and Q is resumed. Mesa, C#, and Java implement it differently.</p>
+    <span class="vi">Nếu tiến trình P gọi <b>x.signal()</b> trong khi tiến trình Q đang tạm dừng ở <b>x.wait()</b>, cả 2 không thể cùng chạy — vậy điều gì xảy ra tiếp theo? 2 lựa chọn: <b>signal and wait</b> — P đợi tới khi Q rời monitor (hoặc chờ 1 condition khác); <b>signal and continue</b> — Q đợi tới khi P rời monitor. Cả 2 đều có ưu/nhược điểm; người thiết kế ngôn ngữ tự quyết định. Concurrent Pascal thỏa hiệp: P thực thi signal() thì lập tức rời monitor ngay, Q được đánh thức. Mesa, C#, Java hiện thực theo cách khác.</span>
+
+    <div class="illus">
+      <div class="emo">🚑</div>
+      <div class="cap"><b>Ví dụ đời thường</b>"Signal and wait" giống như bác sĩ (P) gọi tên bệnh nhân tiếp theo (Q) rồi đứng nép qua 1 bên nhường phòng ngay. "Signal and continue" giống như bác sĩ gọi tên xong vẫn ghi nốt vài dòng hồ sơ (tiếp tục trong phòng) rồi mới thật sự rời đi, bệnh nhân mới phải đợi thêm chút.</div>
+    </div>
+
+    <p class="en">Monitors can be implemented <b>using semaphores</b> under the hood. Variables: <b>semaphore mutex</b> (initially 1), <b>semaphore next</b> (initially 0), <b>int next_count = 0</b>. Every function F is wrapped as follows — this guarantees mutual exclusion within the monitor.</p>
+    <span class="vi">Monitor có thể được hiện thực <b>bằng semaphore</b> ở tầng dưới. Các biến: <b>semaphore mutex</b> (khởi tạo 1), <b>semaphore next</b> (khởi tạo 0), <b>int next_count = 0</b>. Mỗi hàm F được bọc như sau — điều này đảm bảo mutual exclusion bên trong monitor.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Mỗi hàm F được thay bằng — C</span>
+      <pre>wait(mutex);
+    …
+    body of F;
+    …
+if (next_count > 0)
+    signal(next);
+else
+    signal(mutex);</pre>
+    </div>
+
+    <p class="en">For each condition variable x, we add <b>semaphore x_sem</b> (initially 0) and <b>int x_count = 0</b>. Then <b>x.wait()</b> and <b>x.signal()</b> can be implemented as:</p>
+    <span class="vi">Với mỗi condition variable x, ta thêm <b>semaphore x_sem</b> (khởi tạo 0) và <b>int x_count = 0</b>. Khi đó <b>x.wait()</b> và <b>x.signal()</b> có thể hiện thực như sau:</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">x.wait()</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin:0;">x_count++;
+if (next_count > 0)
+    signal(next);
+else
+    signal(mutex);
+wait(x_sem);
+x_count--;</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">x.signal()</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin:0;">if (x_count > 0) {
+    next_count++;
+    signal(x_sem);
+    wait(next);
+    next_count--;
+}</pre>
+      </div>
+    </div>
+
+    <p class="en">Putting it together, here is the classic <b>producer–consumer</b> problem written with a monitor — first the <b>Hoare</b>-style version using <b>if</b>, then the <b>Mesa</b>-style version using <b>while</b> (the only difference, but a crucial one!).</p>
+    <span class="vi">Ghép lại, đây là bài toán <b>producer–consumer</b> kinh điển viết bằng monitor — trước tiên là bản kiểu <b>Hoare</b> dùng <b>if</b>, rồi tới bản kiểu <b>Mesa</b> dùng <b>while</b> (khác biệt duy nhất, nhưng lại cực kỳ quan trọng!).</span>
+
+    <div class="codeblock">
+      <span class="clabel">Producer–Consumer với Monitor (Hoare) — dùng if</span>
+      <pre>monitor bounded_buffer {
+    buffer resources[N];
+    condition not_full, not_empty;
+
+    produce(resource x) {
+        <b>if</b> (resources is full)
+            wait(not_full);
+        insert x in resources;
+        signal(not_empty);
+    }
+
+    consume(resource *x) {
+        <b>if</b> (resources is empty)
+            wait(not_empty);
+        *x = get resource from resources;
+        signal(not_full);
+    }
+}</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Producer–Consumer với Monitor (Mesa) — dùng while</span>
+      <pre>monitor bounded_buffer {
+    buffer resources[N];
+    condition not_full, not_empty;
+
+    produce(resource x) {
+        <b>while</b> (resources is full)
+            wait(not_full);
+        insert x in resources;
+        signal(not_empty);
+    }
+
+    consume(resource *x) {
+        <b>while</b> (resources is empty)
+            wait(not_empty);
+        *x = get resource from resources;
+        signal(not_full);
+    }
+}</pre>
+    </div>
+
+    <div class="note">
+      <b>if vs while — vì sao quan trọng</b>
+      Under "signal and continue" semantics (Mesa-style), by the time a woken-up process actually runs, another process may have already snuck in and changed the condition again. <b>while</b> re-checks the condition after waking up; a bare <b>if</b> would wrongly assume it's still true.
+    </div>
+
+    <div class="illus">
+      <div class="emo">🥡</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Y tá gọi "còn giường trống rồi, mời vào" (signal not_full) — nhưng vì kiểu "signal and continue", giữa lúc gọi và lúc bạn thật sự bước vào, có thể 1 bệnh nhân khác đã nhanh chân giành mất giường đó. Nếu bạn chỉ kiểm tra 1 lần (if) rồi tin luôn là còn giường, bạn sẽ vào nhầm giường đã có người. Dùng <b>while</b> nghĩa là bước vào tới nơi, bạn kiểm tra lại lần nữa cho chắc.</div>
+    </div>
+
+    <p class="en">If several processes are queued on condition x and <b>x.signal()</b> is executed, which one should be resumed? Plain FCFS is frequently not adequate. The <b>conditional-wait</b> construct <b>x.wait(c)</b> lets c be a priority number — the process with the lowest number (highest priority) is scheduled next.</p>
+    <span class="vi">Nếu nhiều tiến trình đang xếp hàng chờ trên condition x và <b>x.signal()</b> được gọi, ai sẽ được đánh thức? FCFS đơn thuần thường không đủ tốt. Cấu trúc <b>conditional-wait</b> <b>x.wait(c)</b> cho phép c là 1 số ưu tiên — tiến trình có số nhỏ nhất (ưu tiên cao nhất) được lên lịch tiếp theo.</span>
+
+    <div class="illus">
+      <div class="emo">🚨</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Phòng cấp cứu không gọi bệnh nhân theo đúng thứ tự đến trước — ca nguy kịch (số ưu tiên thấp = khẩn cấp cao) luôn được gọi vào trước, dù họ tới sau. x.wait(c) chính là cách monitor mô hình hóa việc đó.</span></div>
+    </div>
+
+    <p class="en">Example — allocating a <b>single resource</b> among competing processes using priority numbers that specify the maximum time a process plans to use it:</p>
+    <span class="vi">Ví dụ — cấp phát 1 <b>tài nguyên duy nhất</b> cho các tiến trình đang tranh chấp, dùng số ưu tiên thể hiện thời gian tối đa mà tiến trình dự định sử dụng nó:</span>
+
+    <div class="codeblock">
+      <span class="clabel">Sử dụng — R là 1 instance của kiểu ResourceAllocator</span>
+      <pre>R.acquire(t);
+    …
+    access the resource;
+    …
+R.release;</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">A Monitor to Allocate Single Resource — C</span>
+      <pre>monitor ResourceAllocator {
+    boolean busy;
+    condition x;
+
+    void acquire(int time) {
+        if (busy)
+            x.wait(time);
+        busy = true;
+    }
+
+    void release() {
+        busy = false;
+        x.signal();
+    }
+
+    initialization code() {
+        busy = false;
+    }
+}</pre>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🗓️</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Đặt lịch dùng chung 1 phòng họp: bạn khai báo "tôi cần tối đa 30 phút" (acquire(30)). Nếu phòng đang bận, bạn xếp hàng chờ theo đúng thời lượng bạn khai — ai xin thời lượng ngắn hơn (ưu tiên cao hơn) được xếp vào trước. Xong việc, bạn "trả phòng" (release()), người tiếp theo trong hàng chờ được vào.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Monitor: chỉ 1 tiến trình hoạt động bên trong tại 1 thời điểm</span><span class="rchip">condition variable: wait()/signal(), không có bộ nhớ giá trị</span><span class="rchip">Hoare (if) vs Mesa (while)</span><span class="rchip">Hiện thực bằng semaphore mutex+next+next_count</span>
+      </div>
+      <p class="rline">Monitor giải quyết được vấn đề "quên gọi wait/signal" của semaphore — nhưng vẫn còn 1 nhóm vấn đề khác mà bất kỳ công cụ đồng bộ nào cũng có thể mắc phải: <b>liveness</b>. Đó là chủ đề tab tiếp theo.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: LIVENESS & EVALUATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-liveness" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">⚠️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">08–09 · When it fails</div>
+        <h2>Safe from wrong answers — but still stuck forever</h2>
+        <span class="vi">An toàn khỏi kết quả sai — nhưng vẫn có thể kẹt cứng mãi mãi</span>
+      </div>
+    </div>
+    <p class="intro">Processes may have to wait <b>indefinitely</b> while trying to acquire a synchronization tool such as a mutex lock or semaphore. Waiting indefinitely violates the progress and bounded-waiting criteria from earlier in this chapter.</p>
+    <span class="vi">Tiến trình có thể phải chờ <b>vô thời hạn</b> khi cố lấy 1 công cụ đồng bộ như mutex lock hay semaphore. Việc chờ vô thời hạn vi phạm chính 2 tiêu chí progress và bounded-waiting đã nêu ở đầu chương.</span>
+
+    <p class="en"><b>Liveness</b> refers to a set of properties that a system must satisfy to ensure processes make progress. Indefinite waiting is an example of a <b>liveness failure</b>.</p>
+    <span class="vi"><b>Liveness</b> là 1 tập các tính chất mà hệ thống phải thỏa để đảm bảo các tiến trình luôn tiến triển được. Chờ vô thời hạn là 1 ví dụ của <b>liveness failure</b> (lỗi tính sống động).</span>
+
+    <h3 style="margin:22px 0 6px;color:var(--plum);font-family:var(--font-display);">Deadlock</h3>
+    <p class="en"><b>Deadlock</b>: two or more processes are waiting indefinitely for an event that can only be caused by one of the waiting processes themselves. Let <b>S</b> and <b>Q</b> be two semaphores, both initialized to 1.</p>
+    <span class="vi"><b>Deadlock</b>: 2 hay nhiều tiến trình chờ vô thời hạn 1 sự kiện mà sự kiện đó chỉ có thể được gây ra bởi chính 1 trong các tiến trình đang chờ. Gọi <b>S</b> và <b>Q</b> là 2 semaphore, cả 2 khởi tạo bằng 1.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">P0</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin:0;">wait(S);
+wait(Q);
+   ...
+signal(S);
+signal(Q);</pre>
+      </div>
+      <div class="compare-box">
+        <div class="ck">P1</div>
+        <pre style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin:0;">wait(Q);
+wait(S);
+   ...
+signal(Q);
+signal(S);</pre>
+      </div>
+    </div>
+
+    <p class="en">Suppose P0 executes <b>wait(S)</b> and P1 executes <b>wait(Q)</b>. When P0 tries <b>wait(Q)</b>, it must wait until P1 executes <b>signal(Q)</b>. But P1 is waiting until P0 executes <b>signal(S)</b>. Since neither signal() will ever run, P0 and P1 are deadlocked.</p>
+    <span class="vi">Giả sử P0 thực thi <b>wait(S)</b> và P1 thực thi <b>wait(Q)</b>. Khi P0 thử <b>wait(Q)</b>, nó phải chờ tới khi P1 gọi <b>signal(Q)</b>. Nhưng P1 lại đang chờ P0 gọi <b>signal(S)</b>. Vì cả 2 signal() đó sẽ không bao giờ chạy được, P0 và P1 bị deadlock.</span>
+
+    <svg viewBox="0 0 460 190" style="max-width:420px;width:100%;margin:8px auto 20px;display:block;font-family:'IBM Plex Mono',monospace;">
+      <rect x="30" y="70" width="140" height="50" rx="10" fill="#FF6FA51f" stroke="#E8407F" stroke-width="1.6"/>
+      <text x="100" y="100" text-anchor="middle" font-size="13" fill="#C22A63" font-weight="700">P0</text>
+      <rect x="290" y="70" width="140" height="50" rx="10" fill="#7FC4F026" stroke="#4FA4DD" stroke-width="1.6"/>
+      <text x="360" y="100" text-anchor="middle" font-size="13" fill="#2E7FC1" font-weight="700">P1</text>
+      <path d="M175 82 C 220 60, 250 60, 288 82" fill="none" stroke="#8A5F78" stroke-width="1.5" marker-end="url(#ahD)"/>
+      <text x="230" y="58" text-anchor="middle" font-size="10.5" fill="#4A2E40">giữ S, đợi Q</text>
+      <path d="M288 108 C 250 130, 220 130, 175 108" fill="none" stroke="#8A5F78" stroke-width="1.5" marker-end="url(#ahD)"/>
+      <text x="230" y="148" text-anchor="middle" font-size="10.5" fill="#4A2E40">giữ Q, đợi S</text>
+      <defs><marker id="ahD" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+      <text x="230" y="175" text-anchor="middle" font-size="11" fill="#C22A63" font-weight="600">Vòng chờ khép kín — không ai nhường trước được nữa</text>
+    </svg>
+
+    <div class="illus">
+      <div class="emo">🚗</div>
+      <div class="cap"><b>Ví dụ đời thường</b>2 xe đi ngược chiều gặp nhau ở 1 con hẻm chỉ vừa 1 làn. Xe A đã lấn qua nửa đầu hẻm (giữ "nửa trước"), xe B đã lấn qua nửa sau (giữ "nửa sau"). A cần B lùi ra để đi tiếp qua nửa sau, B cần A lùi ra để đi tiếp qua nửa trước — không ai chịu lùi trước, cả 2 kẹt cứng ở đó mãi mãi.</div>
+    </div>
+
+    <h3 style="margin:26px 0 6px;color:var(--plum);font-family:var(--font-display);">Starvation &amp; Priority Inversion</h3>
+    <p class="en">Other liveness failures: <b>starvation</b> — indefinite blocking, where a process may simply never be removed from the semaphore queue it is suspended in. <b>Priority inversion</b> — a scheduling problem where a lower-priority process holds a lock needed by a higher-priority process. This is solved via a <b>priority-inheritance protocol</b>.</p>
+    <span class="vi">Các dạng liveness failure khác: <b>starvation</b> (đói tài nguyên) — bị chặn vô thời hạn, 1 tiến trình có thể đơn giản là không bao giờ được lấy ra khỏi hàng đợi semaphore mà nó đang chờ. <b>Priority inversion</b> (đảo ngược độ ưu tiên) — vấn đề lập lịch khi 1 tiến trình ưu tiên thấp đang giữ khóa mà 1 tiến trình ưu tiên cao cần. Vấn đề này được giải bằng <b>priority-inheritance protocol</b>.</span>
+
+    <div class="illus">
+      <div class="emo">🎫</div>
+      <div class="cap"><b>Ví dụ đời thường — Starvation</b>Bạn xếp hàng mua vé thứ 3, nhưng cứ liên tục có khách "VIP" chen ngang lên trước bạn hết lần này tới lần khác. Về lý thuyết bạn không bị từ chối — chỉ là không bao giờ tới lượt.</div>
+    </div>
+
+    <p class="en">Consider three processes: <b>P1</b> (highest priority), <b>P2</b> (medium), <b>P3</b> (lowest). Suppose P3 holds resource <b>R</b> that P1 wants — so P1 must wait for P3 to finish. But then <b>P2</b> becomes runnable and preempts P3. Now P2 — a process with <em>lower</em> priority than P1 — has indirectly prevented P3 from finishing and releasing the resource P1 needs!</p>
+    <span class="vi">Xét 3 tiến trình: <b>P1</b> (ưu tiên cao nhất), <b>P2</b> (trung bình), <b>P3</b> (thấp nhất). Giả sử P3 đang giữ tài nguyên <b>R</b> mà P1 cần — nên P1 phải chờ P3 xong việc. Nhưng rồi <b>P2</b> lại sẵn sàng chạy và chiếm quyền của P3. Giờ đây P2 — tiến trình có độ ưu tiên <em>thấp hơn</em> P1 — lại gián tiếp ngăn cản P3 hoàn thành và trả lại tài nguyên mà P1 đang cần!</span>
+
+    <div class="illus">
+      <div class="emo">🎓</div>
+      <div class="cap"><b>Ví dụ đời thường — Priority Inversion</b>1 sinh viên giỏi P1 (đồ án quan trọng nhất) cần dùng phòng lab, nhưng 1 sinh viên yếu P3 đang chiếm phòng làm bài dở. P1 đành đợi P3 xong. Nhưng đúng lúc đó, 1 sinh viên trung bình P2 (không liên quan gì tới P1 hay phòng lab) lại xuất hiện chiếm hết thời gian sử dụng máy chung của P3, khiến P3 càng lâu xong việc hơn — và P1 phải đợi lâu hơn dự kiến, dù P1 có độ ưu tiên cao hơn P2 rất nhiều.</div>
+    </div>
+
+    <p class="en">The <b>priority-inheritance protocol</b> fixes this: the priority of the highest-priority thread waiting for a shared resource is temporarily assigned to the thread currently holding it. So the current owner "inherits" the priority of whoever needs it the most.</p>
+    <span class="vi">Giao thức <b>priority-inheritance</b> (kế thừa độ ưu tiên) sửa lỗi này: độ ưu tiên của luồng có ưu tiên cao nhất đang chờ tài nguyên dùng chung được tạm thời gán cho luồng đang giữ tài nguyên đó. Vậy nên người đang giữ tài nguyên sẽ "thừa hưởng" độ ưu tiên của người cần nó nhất.</span>
+
+    <div class="illus">
+      <div class="emo">🚀</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Nhà trường tạm thời "phong" cho sinh viên yếu P3 danh hiệu ưu tiên như P1 trong lúc P3 còn đang giữ phòng lab — để không ai (kể cả P2) được chen ngang giành máy của P3 nữa. P3 xong việc thật nhanh, trả phòng, P1 vào ngay. Xong việc, P3 lại trở về đúng độ ưu tiên thấp như cũ.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Tổng kết chương</div>
+      <p class="rline"><b>Race condition</b> xảy ra khi các tiến trình truy cập đồng thời vào dữ liệu dùng chung và kết quả cuối phụ thuộc vào đúng thứ tự truy cập — có thể làm hỏng giá trị dữ liệu chung.</p>
+      <p class="rline"><b>Critical section</b> là đoạn code nơi dữ liệu chung có thể bị thao túng và race condition có thể xảy ra. Bài toán critical-section là thiết kế 1 giao thức để các tiến trình hợp tác dùng chung dữ liệu.</p>
+      <p class="rline">1 lời giải phải thỏa <b>3 yêu cầu</b>: mutual exclusion (chỉ 1 tiến trình trong CS tại 1 thời điểm), progress (luôn có tiến triển, không trì hoãn vô thời hạn), bounded waiting (có giới hạn số lần bị vượt mặt).</p>
+      <p class="rline">Lời giải phần mềm như <b>Peterson's Solution</b> không hoạt động tốt trên kiến trúc hiện đại. Hỗ trợ phần cứng gồm memory barrier, các lệnh như compare-and-swap, và atomic variable.</p>
+      <p class="rline"><b>Mutex lock</b> đảm bảo mutual exclusion bằng acquire/release. <b>Semaphore</b> cũng vậy nhưng dùng giá trị nguyên thay vì boolean, nên giải được nhiều bài toán đồng bộ đa dạng hơn.</p>
+      <p class="rline"><b>Monitor</b> là kiểu dữ liệu trừu tượng cung cấp đồng bộ hóa bậc cao, dùng condition variable để tiến trình chờ 1 điều kiện và báo hiệu cho nhau.</p>
+      <p class="rline">Lời giải cho bài toán critical-section vẫn có thể mắc <b>liveness problem</b>, bao gồm deadlock. Các công cụ khác nhau nên được đánh giá (evaluate) dưới các mức độ tranh chấp (contention) thấp, vừa, và cao khác nhau — 1 số công cụ hoạt động tốt hơn ở mức tranh chấp nhất định so với công cụ khác.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: EXERCISES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-exercises" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📝</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">10 · Practice</div>
+        <h2>3 bài tập nguyên bản từ slide</h2>
+        <span class="vi">Tự phân tích trước khi mở đáp án</span>
+      </div>
+    </div>
+    <p class="intro">Cả 3 bài dưới đây lấy nguyên văn từ slide gốc của chương. Đọc kỹ code, tự suy luận trước khi bấm "Xem đáp án" — đây đều là dạng câu hỏi hay gặp trong đề thi.</p>
+    <span class="vi">Cố gắng tự trả lời trước — càng vật lộn với đề bài, càng nhớ lâu.</span>
+
+    <div class="exercise">
+      <h4>Exercise (1) — Tìm race condition trong resource counter</h4>
+      <div class="codeblock" style="margin:0 0 12px;">
+        <pre>#define MAX_RESOURCES 5
+int available_resources = MAX_RESOURCES;
+
+<span class="cm">/* decrease available_resources by count; return 0 if
+   sufficient resources available, otherwise -1 */</span>
+int decrease_count(int count) {
+    if (available_resources < count)
+        return -1;
+    else {
+        available_resources -= count;
+        return 0;
+    }
+}
+
+<span class="cm">/* increase available_resources by count */</span>
+int increase_count(int count) {
+    available_resources += count;
+    return 0;
+}</pre>
+      </div>
+      <p>1. Identify the data involved in the race condition.<br>2. Identify the location(s) in the code where the race condition occurs.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p><b>1. Dữ liệu bị race:</b> biến toàn cục <span style="font-family:'IBM Plex Mono',monospace;">available_resources</span>, được nhiều tiến trình/thread cùng đọc-ghi mà không có khóa nào bảo vệ.</p>
+        <p><b>2. Vị trí xảy ra race:</b></p>
+        <p class="ans-note">Trong <b>decrease_count()</b>: giữa dòng kiểm tra <span style="font-family:'IBM Plex Mono',monospace;">if (available_resources &lt; count)</span> và dòng cập nhật <span style="font-family:'IBM Plex Mono',monospace;">available_resources -= count</span> — 2 tiến trình có thể cùng đọc thấy đủ tài nguyên, cùng vượt qua kiểm tra, rồi cùng trừ, khiến <span style="font-family:'IBM Plex Mono',monospace;">available_resources</span> tụt xuống âm dù mỗi lần gọi riêng lẻ đều "hợp lệ".</p>
+        <p class="ans-note">Trong <b>increase_count()</b>: dòng <span style="font-family:'IBM Plex Mono',monospace;">available_resources += count</span> tự nó cũng không atomic (giống ví dụ counter++ ở tab Background) — 2 lệnh gọi tăng cùng lúc có thể làm mất 1 lần cộng.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 2 — Xác định thứ tự thực thi với S1, S2</h4>
+      <div class="codeblock" style="margin:0 0 12px;">
+        <pre>semaphore S1, S2;
+S1.value = 1;
+S2.value = 0;</pre>
+      </div>
+      <div class="compare-row" style="margin:0 0 12px;">
+        <div class="compare-box">
+          <div class="ck">Process P1</div>
+          <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">while (1) {
+  wait(S1);
+  Critical section
+  signal(S2);
+}</pre>
+        </div>
+        <div class="compare-box">
+          <div class="ck">Process P2</div>
+          <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">while (1) {
+  wait(S2);
+  Critical section
+  signal(S1);
+}</pre>
+        </div>
+      </div>
+      <p>Determine the order of execution in critical section of P1 and P2.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p class="ans-note">S1 khởi tạo = 1 nên <b>P1 luôn được vào CS trước</b> ở vòng lặp đầu tiên (wait(S1) qua ngay). S2 khởi tạo = 0 nên P2 bị chặn ở wait(S2) cho tới khi P1 chạy xong CS và gọi signal(S2). Sau khi P2 chạy xong CS, nó gọi signal(S1), lại mở đường cho P1 vào vòng kế tiếp.</p>
+        <p class="ans-note">Kết quả: thứ tự CS bị ép buộc <b>luân phiên tuyệt đối</b> — P1, P2, P1, P2, P1, P2, … mãi mãi. Đây thực chất là cùng kỹ thuật "S1 phải xảy ra trước S2" đã học ở tab Mutex &amp; Semaphore, chỉ khác là lặp lại vô hạn giữa 2 tiến trình thay vì chỉ 1 lần.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise (2) — Lỗi gì trong monitor này?</h4>
+      <div class="codeblock" style="margin:0 0 12px;">
+        <pre>monitor resources
+{
+    int available_resources;
+    condition resources_avail;
+
+    int decrease_count(int count)
+    {
+        <b>IF/WHILE</b> (available_resources &lt; count)
+            resources_avail.wait();
+        available_resources = available_resources - count;
+    }
+
+    int increase_count(int count)
+    {
+        available_resources = available_resources + count;
+        resources_avail.signal();
+    }
+}</pre>
+      </div>
+      <p>What's the problem with the given code?</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p class="ans-note">Vấn đề nằm ở chỗ dùng <b>if</b> thay vì <b>while</b> trước <span style="font-family:'IBM Plex Mono',monospace;">resources_avail.wait()</span> — giống hệt bài học "Hoare vs Mesa" ở tab Monitors. Với monitor kiểu <b>signal-and-continue</b> (phổ biến nhất, như Mesa/Java/C#), khi 1 tiến trình bị đánh thức bởi <span style="font-family:'IBM Plex Mono',monospace;">signal()</span>, nó không được đảm bảo chạy ngay — 1 tiến trình khác có thể "chen ngang", gọi <span style="font-family:'IBM Plex Mono',monospace;">decrease_count()</span> trước và lấy hết tài nguyên vừa được giải phóng.</p>
+        <p class="ans-note">Nếu code dùng <b>if</b>: tiến trình vừa tỉnh dậy sẽ tin ngay là "chắc chắn đủ tài nguyên rồi" mà không kiểm tra lại, dẫn tới <span style="font-family:'IBM Plex Mono',monospace;">available_resources</span> có thể bị trừ xuống âm. Sửa lại bằng <b>while</b> để bắt buộc kiểm tra lại điều kiện ngay sau khi tỉnh dậy, trước khi thật sự trừ tài nguyên.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 6</h2>
+    <p class="intro">19 câu, đủ chủ đề trong chương — từ race condition tới priority inheritance. Bấm vào đáp án để xem đúng/sai và giải thích ngay.</p>
+    <div class="quiz-score" id="quizScore">0 / 19 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+  </section>
+
+  <footer>Xin chào, mình là admin. Gọi mình là Whis-san nhé!</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','background','critical','peterson','hardware','mutexsem','monitors','liveness','exercises','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const PROGRESS_KEY = 'os-ch6-visited';
+  let visitedSet = new Set();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    if (Array.isArray(saved)) visitedSet = new Set(saved.filter(t => panelIds.includes(t)));
+  } catch(e) {}
+
+  function updateProgress(){
+    const total = panelIds.length;
+    const done = visitedSet.size;
+    const pct = Math.round((done / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = done + '/' + total + ' tab · ' + pct + '%';
+  }
+
+  function markVisited(name){
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+    if (!visitedSet.has(name)){
+      visitedSet.add(name);
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(visitedSet))); } catch(e) {}
+    }
+    updateProgress();
+  }
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    markVisited(name);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+  visitedSet.forEach(name => {
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+  });
+  updateProgress();
+  markVisited('overview');
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch6-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "race condition": ["The outcome of concurrent execution depends on the particular order in which accesses take place.", "Kết quả thực thi đồng thời phụ thuộc vào đúng thứ tự truy cập xảy ra."],
+      "critical section": ["A segment of code where a process may be changing shared variables, updating a table, writing a file, etc.", "1 đoạn code nơi tiến trình có thể đang thay đổi biến chung, cập nhật bảng, ghi file, v.v."],
+      "entry section": ["The code a process runs to request permission to enter its critical section.", "Đoạn code tiến trình chạy để xin phép vào critical section."],
+      "exit section": ["The code that follows the critical section, signaling that the process is done.", "Đoạn code theo sau critical section, báo hiệu tiến trình đã xong."],
+      "remainder section": ["The rest of a process's code, outside entry/critical/exit.", "Phần code còn lại của tiến trình, nằm ngoài entry/critical/exit."],
+      "mutual exclusion": ["If a process is executing in its critical section, no other process can be executing in theirs.", "Nếu 1 tiến trình đang trong critical section, không tiến trình nào khác được ở trong CS của nó cùng lúc."],
+      "progress": ["Selecting which process enters its critical section next cannot be postponed indefinitely.", "Việc chọn tiến trình nào vào CS kế tiếp không được trì hoãn vô thời hạn."],
+      "bounded waiting": ["A limit must exist on how many times other processes enter their CS before a waiting request is granted.", "Phải có 1 giới hạn số lần tiến trình khác được vào CS trước khi yêu cầu đang chờ được chấp thuận."],
+      "preemptive": ["Allows preemption of a process while it is running in kernel mode.", "Cho phép ngắt 1 tiến trình ngay cả khi nó đang chạy ở kernel mode."],
+      "non-preemptive": ["Runs until it exits kernel mode, blocks, or voluntarily yields the CPU.", "Chạy tới khi tự thoát kernel mode, tự block, hoặc tự nguyện nhường CPU."],
+      "turn": ["Shared variable indicating whose turn it is to enter the critical section.", "Biến dùng chung cho biết tới lượt ai được vào critical section."],
+      "atomic": ["An operation that executes as a single, indivisible step — it cannot be interrupted partway through.", "1 thao tác thực thi như 1 bước duy nhất, không thể chia nhỏ — không thể bị ngắt giữa chừng."],
+      "atomic variable": ["A variable type that provides atomic (uninterruptible) updates on basic data such as integers and booleans.", "1 kiểu biến cung cấp cập nhật atomic (không thể ngắt) trên dữ liệu cơ bản như integer, boolean."],
+      "memory barrier": ["An instruction that forces any change in memory to be made visible to all other processors.", "1 lệnh buộc mọi thay đổi bộ nhớ phải được lan truyền để tất cả nhân khác đều thấy."],
+      "test_and_set()": ["Atomically returns the old value of a target and sets it to true.", "Trả về giá trị cũ của target và đặt nó thành true, tất cả trong 1 bước atomic."],
+      "compare_and_swap()": ["Atomically swaps a value to a new one only if it currently equals an expected value.", "Hoán đổi 1 giá trị sang giá trị mới chỉ khi nó hiện đang bằng đúng giá trị mong đợi, tất cả atomic."],
+      "busy waiting": ["A process repeatedly checks a condition in a loop instead of being put to sleep.", "Tiến trình liên tục kiểm tra 1 điều kiện trong vòng lặp thay vì được cho ngủ."],
+      "spinlock": ["A lock where a waiting process busy-waits (spins) instead of blocking.", "1 khóa mà tiến trình chờ busy-wait (quay vòng) thay vì bị block."],
+      "mutex lock": ["The simplest synchronization tool: protect a CS with acquire() then release().", "Công cụ đồng bộ đơn giản nhất: bảo vệ CS bằng acquire() rồi release()."],
+      "semaphore": ["An integer variable accessed only through the atomic operations wait() and signal().", "1 biến nguyên chỉ được truy cập qua 2 phép toán atomic wait() và signal()."],
+      "acquire()": ["Mutex lock operation: waits until the lock is available, then marks it unavailable.", "Thao tác mutex lock: chờ tới khi khóa rảnh, rồi đánh dấu là đang bận."],
+      "release()": ["Mutex lock operation: marks the lock as available again.", "Thao tác mutex lock: đánh dấu khóa lại rảnh."],
+      "wait()": ["Semaphore operation (originally P()) that decrements the value and may block the process.", "Thao tác semaphore (gốc là P()) giảm giá trị và có thể block tiến trình."],
+      "signal()": ["Semaphore operation (originally V()) that increments the value and may wake a waiting process.", "Thao tác semaphore (gốc là V()) tăng giá trị và có thể đánh thức 1 tiến trình đang chờ."],
+      "counting semaphore": ["A semaphore whose integer value can range over an unrestricted domain.", "1 semaphore có giá trị nguyên nằm trong 1 miền không giới hạn."],
+      "monitor": ["A high-level abstract data type where only one process may be active inside at a time.", "1 kiểu dữ liệu trừu tượng bậc cao, chỉ 1 tiến trình được hoạt động bên trong tại 1 thời điểm."],
+      "condition variable": ["A variable supporting only wait() and signal(), used inside a monitor.", "1 biến chỉ hỗ trợ wait() và signal(), dùng bên trong monitor."],
+      "hoare": ["A monitor style using signal-and-wait semantics, typically written with if.", "Kiểu monitor dùng signal-and-wait, thường viết bằng if."],
+      "mesa": ["A monitor style using signal-and-continue semantics, typically written with while.", "Kiểu monitor dùng signal-and-continue, thường viết bằng while."],
+      "signal and wait": ["The signaling process waits until the resumed process leaves the monitor.", "Tiến trình gọi signal phải đợi tới khi tiến trình được đánh thức rời monitor."],
+      "signal and continue": ["The resumed process waits until the signaling process leaves the monitor.", "Tiến trình được đánh thức phải đợi tới khi tiến trình gọi signal rời monitor."],
+      "peterson's solution": ["A classic two-process, software-only critical-section solution using flag[] and turn.", "1 lời giải kinh điển 2 tiến trình, chỉ dùng phần mềm, dùng flag[] và turn."],
+      "priority-inheritance protocol": ["Temporarily assigns the priority of the highest waiting thread to the thread holding the resource.", "Tạm gán độ ưu tiên của luồng đang chờ cao nhất cho luồng đang giữ tài nguyên."],
+      "liveness": ["A set of properties a system must satisfy to ensure processes keep making progress.", "1 tập tính chất hệ thống phải thỏa để đảm bảo các tiến trình luôn tiến triển."],
+      "deadlock": ["Two or more processes wait indefinitely for an event only one of them can cause.", "2 hay nhiều tiến trình chờ vô thời hạn 1 sự kiện mà chỉ chính họ mới gây ra được."],
+      "priority inversion": ["A lower-priority process holds a lock a higher-priority process needs.", "1 tiến trình ưu tiên thấp giữ khóa mà tiến trình ưu tiên cao đang cần."],
+      "starvation": ["Indefinite blocking — a process may never be removed from a waiting queue.", "Bị chặn vô thời hạn — 1 tiến trình có thể không bao giờ được lấy ra khỏi hàng đợi."],
+      "producer–consumer": ["A classic synchronization problem: one process produces items, another consumes them from a shared buffer.", "1 bài toán đồng bộ kinh điển: 1 tiến trình sản xuất, 1 tiến trình tiêu thụ từ buffer dùng chung."],
+      "fork()": ["A system call that creates a new child process.", "1 system call tạo ra 1 tiến trình con mới."],
+      "hardware instructions": ["Special CPU instructions like test_and_set and compare_and_swap that execute atomically.", "Các lệnh CPU đặc biệt như test_and_set, compare_and_swap thực thi atomic."],
+      "conditional-wait": ["The construct x.wait(c) where c is a priority number for resuming order.", "Cấu trúc x.wait(c) với c là số ưu tiên quyết định thứ tự được đánh thức."],
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    const Glookup = {};
+    Object.keys(G).forEach(k => { Glookup[k.toLowerCase()] = k; });
+    function resolveKey(text){
+      if (G[text]) return text;
+      const lk = Glookup[text.toLowerCase()];
+      return lk || null;
+    }
+
+    document.querySelectorAll('p.en b, .note b, .illus b, .hook b, .mono').forEach(el => {
+      const text = el.textContent.trim();
+      const key = resolveKey(text);
+      if (!key) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = key;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+
+  {q:"counter++ trong bài toán producer–consumer thực chất được biên dịch thành mấy lệnh máy riêng biệt?",
+   opts:["Chỉ 1 lệnh, vì đây là phép toán tăng đơn giản nhất mà mọi CPU đều hỗ trợ trực tiếp trong 1 chu kỳ xung nhịp","2 lệnh: đọc giá trị rồi ghi ngay lập tức, không qua bước trung gian nào khác","3 lệnh: đọc vào thanh ghi, cộng 1, rồi ghi lại bộ nhớ","4 lệnh, vì còn phải kiểm tra tràn số trước khi ghi kết quả trở lại bộ nhớ chính"], correct:2,
+   exp:"register1 = counter; register1 = register1 + 1; counter = register1 — đúng 3 lệnh, và vì không atomic nên có thể bị xen kẽ với consumer."},
+  {q:"Biến kernel nào bị race giữa P0 và P1 trong ví dụ fork() đầu chương?",
+   opts:["next_available_pid", "process_table_lock, biến khóa bảng tiến trình toàn cục của kernel", "current_pid_counter, bộ đếm pid hiện hành được cấp phát tuần tự", "kernel_stack_pointer, con trỏ ngăn xếp riêng của mỗi tiến trình"], correct:0,
+   exp:"Cả 2 tiến trình cùng đọc và cập nhật next_available_pid mà không có mutual exclusion, nên có thể nhận trùng pid — race condition kinh điển ngay trong kernel."},
+  {q:"3 yêu cầu bắt buộc của 1 lời giải cho critical-section problem là gì?",
+   opts:["Tốc độ thực thi cao, tiết kiệm bộ nhớ, và tính bảo mật chống tấn công", "Mutual exclusion, progress, và bounded waiting", "Atomicity, consistency, isolation và durability — 4 tính chất ACID quen thuộc trong CSDL", "Preemption hợp lý, độ ưu tiên công bằng, và không đói tài nguyên"], correct:1,
+   exp:"3 yêu cầu bắt buộc theo đúng định nghĩa trong chương là: mutual exclusion, progress, và bounded waiting."},
+  {q:"Theo yêu cầu Progress, điều gì tuyệt đối KHÔNG được xảy ra?",
+   opts:["Có 2 tiến trình cùng đang ở remainder section tại cùng 1 thời điểm, không liên quan gì tới CS", "1 tiến trình phải chờ đúng 1 số lần giới hạn trước khi được vào CS của mình", "CS đang trống nhưng việc chọn ai vào kế tiếp bị trì hoãn mãi", "Tốc độ thực thi tương đối giữa các tiến trình khác nhau đáng kể"], correct:2,
+   exp:"Progress yêu cầu: nếu chưa có ai trong CS và có tiến trình muốn vào, việc quyết định ai vào tiếp theo không được trì hoãn mãi mãi."},
+  {q:"Vì sao non-preemptive kernel gần như không có race condition trong kernel mode?",
+   opts:["Vì tiến trình chỉ rời kernel mode khi tự thoát, tự block, hoặc tự nguyện nhường CPU", "Vì kernel mode trên hệ non-preemptive không cho phép truy cập bộ nhớ dùng chung giữa các tiến trình", "Vì non-preemptive kernel bắt buộc phải chạy trên hệ thống chỉ có đúng 1 tiến trình duy nhất", "Vì mọi lệnh trong non-preemptive kernel đều tự động được biên dịch thành các thao tác atomic"], correct:0,
+   exp:"Vì tiến trình chỉ rời kernel mode khi tự nguyện (thoát, block, hoặc nhường CPU), non-preemptive kernel về cơ bản tránh được race condition trong kernel mode."},
+  {q:"Proposal solution 1 (chỉ dùng 1 biến turn để luân phiên tuyệt đối) vi phạm yêu cầu nào?",
+   opts:["Mutual exclusion — 2 tiến trình vẫn có thể lọt vào CS cùng lúc do lỗi logic trong vòng lặp kiểm tra", "Progress — bên kia phải đợi đúng lượt", "Không vi phạm gì cả — đây thực chất chính là Peterson's Solution nguyên bản", "Bounded waiting — vì mỗi tiến trình phải đợi hàng nghìn lượt trước khi tới lượt mình"], correct:1,
+   exp:"Nếu 1 tiến trình không còn muốn vào CS nữa, tiến trình kia vẫn phải đợi đúng lượt của mình quay lại — vi phạm progress dù CS đang trống."},
+  {q:"Proposal solution 2 (mảng flag[], không có biến turn phân xử) có thể rơi vào tình huống nào?",
+   opts:["Tràn bộ nhớ do mảng flag[] phải mở rộng kích thước liên tục theo số tiến trình", "Deadlock do thứ tự gọi wait() và signal() bị đảo ngược so với thiết kế ban đầu", "Livelock — cả 2 cùng chờ nhau hạ cờ", "Không có vấn đề gì — đây chính xác là Peterson's Solution đầy đủ"], correct:2,
+   exp:"Nếu cả 2 cùng đặt flag[i]=true gần như đồng thời, cả 2 cùng thấy flag của đối phương là true và cùng đứng chờ mãi — livelock, vi phạm progress."},
+  {q:"Peterson's Solution sửa lỗi của 2 proposal trước đó bằng cách nào?",
+   opts:["Bỏ hẳn biến turn, chỉ giữ lại mảng flag[] nhưng thêm cơ chế timeout cho mỗi lần chờ", "Kết hợp cả flag[] (khai báo ý định) và turn (phân xử khi cả 2 cùng muốn vào)", "Thay thế hoàn toàn bằng 1 semaphore đếm số tiến trình đang chờ ở cửa CS", "Dùng thêm 1 hàng đợi FIFO phần cứng riêng biệt để quản lý thứ tự vào CS"], correct:1,
+   exp:"Peterson's Solution kết hợp cả 2 ý tưởng trước đó: flag[] để khai báo ý định muốn vào CS, và turn để phân xử khi cả 2 cùng muốn vào cùng lúc."},
+  {q:"Nếu compiler đổi thứ tự 2 lệnh của Thread 2 (x=100 rồi flag=true) thành flag=true trước, Thread 1 có thể in ra gì?",
+   opts:["Chắc chắn vẫn in ra 100 vì phần cứng hiện đại luôn tự động đảm bảo đúng thứ tự chương trình", "Chương trình sẽ dừng ngay lập tức và báo lỗi truy cập bộ nhớ không hợp lệ", "0 — vì Thread 1 có thể đọc x trước khi x thật sự được gán giá trị 100", "-1, vì đây là giá trị mặc định hệ điều hành trả về khi phát hiện lỗi đồng bộ"], correct:2,
+   exp:"Nếu compiler/CPU đổi thứ tự thành flag=true trước rồi mới x=100, Thread 1 có thể thấy flag=true và đọc x trước khi x được gán, in ra 0 thay vì 100."},
+  {q:"Memory barrier dùng để làm gì?",
+   opts:["Ép buộc thay đổi bộ nhớ lan truyền ngay", "Ngăn không cho 2 tiến trình khác nhau cùng mở 1 file trên đĩa tại cùng thời điểm", "Tăng tốc độ truy cập RAM bằng cách mở rộng kích thước bộ nhớ đệm cache L2/L3", "Tự động xóa sạch toàn bộ nội dung cache trước khi hệ thống tắt máy an toàn"], correct:0,
+   exp:"Memory barrier là 1 lệnh buộc thay đổi bộ nhớ của 1 nhân phải được các nhân khác nhìn thấy ngay lập tức, đặc biệt hữu ích trên kiến trúc weakly-ordered."},
+  {q:"test_and_set(&lock) làm gì trong đúng 1 bước atomic duy nhất?",
+   opts:["Chỉ đọc giá trị hiện tại của lock, tuyệt đối không được phép thay đổi giá trị đó", "Trả về giá trị CŨ của lock, đồng thời đặt lock thành true — cả 2 việc cùng lúc, không thể xen ngang", "Hoán đổi giá trị giữa 2 biến lock khác nhau nằm ở 2 vùng nhớ hoàn toàn tách biệt, không liên quan gì tới nhau về mặt logic chương trình", "So sánh lock với 1 giá trị mong đợi được truyền vào rồi mới quyết định có nên đổi hay không"], correct:1,
+   exp:"test_and_set trả về giá trị gốc của *target (để biết trước đó khóa có đang rảnh không) và đồng thời đặt *target = true, tất cả trong 1 thao tác atomic không thể bị ngắt."},
+  {q:"compare_and_swap(&lock, 0, 1) chỉ thực sự đổi giá trị của lock khi nào?",
+   opts:["Chỉ khi lock đang có giá trị bằng đúng 1, tức là đang bị khóa bởi tiến trình khác", "Luôn luôn đổi ngay lập tức, hoàn toàn không quan tâm tới giá trị hiện tại của lock là gì", "Chỉ khi lock đang bằng 0 (expected)", "Không bao giờ đổi — hàm compare_and_swap chỉ có tác dụng đọc giá trị, không ghi"], correct:2,
+   exp:"compare_and_swap chỉ gán value = new_value khi *value == expected; nếu không khớp thì giữ nguyên giá trị cũ, chỉ trả về giá trị đó để bên gọi biết."},
+  {q:"Vì sao mutex lock kiểu acquire()/release() trong chương này được gọi là spinlock?",
+   opts:["Vì cấu trúc dữ liệu quản lý bên trong nó được tổ chức thành 1 vòng tròn khép kín (ring buffer)", "Vì loại khóa này trên thực tế chỉ tương thích và chạy được trên ổ cứng cơ học quay (HDD)", "Vì phải busy-wait, quay vòng liên tục", "Vì mỗi lần gọi release phải xoay qua kiểm tra tuần tự tất cả các luồng khác đang tồn tại"], correct:2,
+   exp:"acquire() dùng while(!available); — busy wait, tiến trình cứ quay vòng kiểm tra liên tục thay vì được đưa vào ngủ, nên gọi là spinlock."},
+  {q:"Trong wait(S) của semaphore, nếu sau khi giảm mà S->value < 0 thì điều gì xảy ra tiếp theo?",
+   opts:["Semaphore lập tức tự động reset giá trị value về đúng giá trị khởi tạo ban đầu của nó", "Chương trình dừng thực thi ngay lập tức và báo lỗi tràn số nguyên ra màn hình", "Giá trị âm đơn giản bị bỏ qua, hệ thống coi như value đang bằng 0", "Tiến trình gọi wait() bị thêm vào S->list và gọi block() để tạm dừng"], correct:3,
+   exp:"if (S->value < 0) { add this process to S->list; block(); } — tiến trình bị đưa vào hàng đợi chờ và tạm dừng cho tới khi được wakeup bởi signal() sau này."},
+  {q:"Khác biệt cốt lõi giữa counting semaphore và binary semaphore là gì?",
+   opts:["Binary semaphore hoàn toàn không có thao tác signal(), nó chỉ hỗ trợ duy nhất thao tác wait()", "Cả 2 trên thực tế hoàn toàn giống hệt nhau, chỉ khác nhau đúng ở cái tên gọi trong sách giáo trình", "Counting semaphore chỉ được thiết kế riêng cho đúng bài toán producer-consumer, không dùng được việc khác", "Binary semaphore chỉ nhận giá trị 0 hoặc 1; counting semaphore có miền giá trị nguyên không giới hạn"], correct:3,
+   exp:"Binary semaphore có giá trị 0/1, hoạt động giống mutex lock. Counting semaphore có giá trị nguyên bất kỳ — dùng được cho các bài toán như bãi đỗ xe N chỗ."},
+  {q:"Trong 1 monitor, tối đa bao nhiêu tiến trình được HOẠT ĐỘNG (active) bên trong nó tại 1 thời điểm?",
+   opts:["Bằng đúng số lượng condition variable đã được khai báo sẵn trong định nghĩa monitor đó", "2 tiến trình — 1 tiến trình đang đọc dữ liệu và 1 tiến trình đang ghi dữ liệu cùng lúc", "Không giới hạn số lượng, miễn là tổng thời gian thực thi của tất cả các hàm đủ ngắn", "Đúng 1 — đây chính là định nghĩa cốt lõi của monitor"], correct:3,
+   exp:"Đây chính là định nghĩa của monitor: chỉ 1 tiến trình được active bên trong monitor tại 1 thời điểm, các tiến trình khác phải đợi ở entry queue."},
+  {q:"Vì sao Producer–Consumer kiểu Mesa dùng while(...) thay vì if(...) trước khi gọi wait()?",
+   opts:["Vì cú pháp while() là bắt buộc theo chuẩn ngôn ngữ ở mọi cài đặt monitor hiện có", "Sau khi được signal() đánh thức, điều kiện có thể đã bị 1 tiến trình khác chen vào thay đổi lại — cần kiểm tra lại cho chắc", "Vì lệnh if() vốn dĩ chạy chậm hơn while() đáng kể về mặt hiệu năng xử lý của CPU trên hầu hết các kiến trúc phần cứng hiện đại ngày nay", "Không có lý do đặc biệt gì cả, 2 cách viết này trên thực tế hoàn toàn tương đương nhau"], correct:1,
+   exp:"Với semantics signal-and-continue (Mesa), giữa lúc được signal() và lúc thực sự chạy lại, 1 tiến trình khác có thể đã chen vào thay đổi điều kiện — while() buộc kiểm tra lại, if() thì không."},
+  {q:"Trong ví dụ deadlock với 2 semaphore S, Q (P0: wait(S) rồi wait(Q); P1: wait(Q) rồi wait(S)), nguyên nhân deadlock nằm ở đâu?",
+   opts:["Do lập trình viên gõ nhầm cú pháp khi khai báo 2 biến semaphore này", "S và Q vô tình được khởi tạo cùng chung 1 giá trị ban đầu là 1", "Mỗi tiến trình giữ 1 semaphore, chờ semaphore kia", "P0 và P1 vô tình được lập lịch chạy trên 2 lõi CPU vật lý khác nhau"], correct:2,
+   exp:"P0 giữ S, chờ Q; P1 giữ Q, chờ S. Lệnh signal() để giải phóng semaphore mà mỗi bên đang chờ lại nằm ở phần code SAU đoạn đang bị kẹt — nên không bao giờ chạy tới được, tạo thành vòng chờ khép kín."},
+  {q:"Priority-inheritance protocol được dùng để giải quyết vấn đề gì?",
+   opts:["Priority inversion — ưu tiên thấp giữ khóa mà ưu tiên cao cần", "Race condition xảy ra trên 1 biến counter dùng chung giữa nhiều luồng khác nhau", "Livelock giữa 2 tiến trình liên tục nhường nhịn lẫn nhau vô thời hạn", "Tình trạng tràn bộ nhớ do có quá nhiều tiến trình cùng chờ trong 1 hàng đợi"], correct:0,
+   exp:"Priority inheritance tạm gán độ ưu tiên cao cho tiến trình đang giữ tài nguyên, để nó không bị các tiến trình ưu tiên trung bình khác chen ngang chiếm CPU, từ đó nhanh chóng trả lại tài nguyên cho tiến trình ưu tiên cao thật sự cần."}
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  let correctCount = 0;
+
+  QUIZ.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'q';
+    qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+    const optsWrap = document.createElement('div');
+    item.opts.forEach((optText, oi) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.type = 'button';
+      b.textContent = optText;
+      b.addEventListener('click', () => {
+        if (b.disabled) return;
+        const allOpts = optsWrap.querySelectorAll('.opt');
+        allOpts.forEach(o => o.disabled = true);
+        if (oi === item.correct){
+          b.classList.add('correct');
+          correctCount++;
+        } else {
+          b.classList.add('wrong');
+          allOpts[item.correct].classList.add('correct');
+        }
+        quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+        const ex = qDiv.querySelector('.explain');
+        ex.classList.add('show');
+      });
+      optsWrap.appendChild(b);
+    });
+    qDiv.appendChild(optsWrap);
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.textContent = item.exp;
+    qDiv.appendChild(explain);
+    quizRoot.appendChild(qDiv);
+  });
+</script>
+</body>
+</html>
