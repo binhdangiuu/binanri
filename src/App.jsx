@@ -131,14 +131,16 @@ const subjects = [
     id: "Hệ điều hành",
 
     quizzes: [
+
       {
         id: "video",
         title: "Video",
         type: "video",
         documents: [
-  { title: "Làm việc với VirtualBox & Ubuntu (Phần 1)", file: "https://www.youtube.com/watch?v=OqlQnR9IdzA" },
+  { title: "VIDEO 01: Hướng dẫn cài máy ảo để chạy Lab", file: "https://www.youtube.com/watch?v=OqlQnR9IdzA" },
 ],
       },
+
       {
         id: "lecture",
         title: "Lecture Slides",
@@ -168,7 +170,7 @@ const subjects = [
   { id: "ch3", title: "Chapter 3 - Process", file: "/lectures/os-ch3-lecture.html" },
   { id: "ch4", title: "Chapter 4 - Threads", file: "/lectures/os-ch4-lecture.html" },
   { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: "/lectures/os-ch5-lecture.html" },
-  { id: "ch6", title: "Chapter 6 - Synchronization 1", file: "/lectures/os-ch6-lecture.html" },
+  { id: "ch6", title: "Chapter 6 - Synchronization Tools", file: "/lectures/os-ch6-lecture.html" },
   { id: "ch7", title: "Chapter 7 - Synchronization 2", file: null },
   { id: "ch8", title: "Chapter 8 - Main Memory", file: null },
   { id: "ch9", title: "Chapter 9 - Virtual Memory", file: null },
@@ -323,14 +325,23 @@ export default function App() {
     )
   }, [screen, currentQuestion, score, activeSubject, selectedQuiz, answers])
 
-  const isQuizComingSoon = (quiz) => { //hàm check coming soon cho pdf và course
-    if (quiz.type === "pdf") {
+  const isQuizComingSoon = (quiz) => { //hàm check coming soon cho pdf, course và video
+    if (quiz.type === "pdf" || quiz.type === "video") {
       return !quiz.documents || quiz.documents.length === 0
     }
     if (quiz.type === "course") {
       return false
     }
     return quiz.comingSoon
+  }
+
+  const toEmbedUrl = (url) => { // chuyển link YouTube/Drive thường sang dạng nhúng được trong iframe
+    if (!url) return url
+    const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/)
+    if (yt) return `https://www.youtube.com/embed/${yt[1]}`
+    const drive = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/)
+    if (drive) return `https://drive.google.com/file/d/${drive[1]}/preview`
+    return url
   }
   const optionLetters = ["A", "B", "C", "D", "E", "F"]
 
@@ -529,7 +540,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 2/10/2026 • 9:07:28 (Lecture Notes Chapter 6 added)
+            Last Updated: 3/10/2026 • 14:29:30 (Video 1 added)
           </p>
         </div>
 
@@ -578,7 +589,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-2" icon="🎥" title="Ghi chú nhỏ">
-              Mình quay xong video rùi nha. Có hơi ngại một chút nên mình ăn nói hơi nhanh với thô lỗ. Mình sẽ up video lên sau khi mình up xong Chap6 Lecture Note nhé. Dạo này trời mưa, cậu nhớ đi đường cẩn thận, chú ý sức khỏe nha.
+              Mình tải xong phần 1 rùi, chiều nay mình quay phần 2, xong mình sẽ làm Lecture Notes chap7 á. 1 lần làm Lecture Notes nó lâu lắm nên cậu hãy cố gắng học nha.
             </BubbleNote>
           )}
         </div>
@@ -596,6 +607,9 @@ export default function App() {
                     if (quiz.type === "pdf") {
                       setSelectedQuiz(quiz)
                       setScreen("pdf-list")
+                    } else if (quiz.type === "video") {
+                      setSelectedQuiz(quiz)
+                      setScreen("video-list")
                     } else if (quiz.type === "course") {
                       setSelectedQuiz(quiz)
                       setScreen("course-list")
@@ -626,6 +640,11 @@ export default function App() {
                       Tài liệu
                     </span>
                   )}
+                  {!comingSoon && quiz.type === "video" && (
+                    <span className="absolute top-5 right-5 text-xs font-semibold uppercase tracking-wide bg-plum/15 text-plum px-3 py-1 rounded-full">
+                      Video
+                    </span>
+                  )}
                   <h1 className="font-[var(--font-display)] text-3xl sm:text-4xl font-bold mb-3 leading-snug text-plum">
                     <span className="float-right w-16 h-10 sm:w-24 sm:h-11"></span>
                     {quiz.title}
@@ -635,6 +654,8 @@ export default function App() {
                       ? "Đang chuẩn bị, quay lại sau nhé"
                       : quiz.type === "pdf"
                         ? `${quiz.documents.length} file${quiz.documents.length > 1 ? "s" : ""}`
+                            : quiz.type === "video"
+                              ? `${quiz.documents.length} video${quiz.documents.length > 1 ? "s" : ""}`
                             : quiz.type === "course"
                               ? "12 chương"
                               : `${quiz.questionsCount} câu hỏi`}
@@ -735,6 +756,81 @@ export default function App() {
                   src={selectedDocument.file}
                   title={selectedDocument.title}
                   className="w-full h-full"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIDEO LIST SCREEN */}
+        {screen === "video-list" && selectedQuiz && (
+          <div className="animate-fade-in">
+            <button
+              onClick={() => { setScreen("subject"); setSelectedQuiz(null) }}
+              className="mb-6 bg-cream/80 border border-blush-deep px-5 py-3 rounded-2xl font-medium hover:border-sky hover:-translate-y-0.5 transition"
+            >
+              ← Quay lại
+            </button>
+
+            <div className="bg-cream/80 border border-blush-deep rounded-[28px] p-6 sm:p-10">
+              <h1 className="font-[var(--font-display)] text-3xl sm:text-4xl font-bold mb-6 text-plum">{selectedQuiz.title}</h1>
+
+              {selectedQuiz.documents.length === 0 && (
+                <p className="text-lg text-plum-soft">Chưa có video nào được đăng.</p>
+              )}
+
+              <div className="divide-y divide-blush-deep/60">
+                {selectedQuiz.documents.map((doc, index) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      setSelectedDocument(doc)
+                      setScreen("video-view")
+                    }}
+                    className="flex items-center gap-4 py-5 cursor-pointer group"
+                  >
+                    <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-plum/10 text-plum font-bold text-[15px] shrink-0 transition group-hover:bg-plum group-hover:text-white">
+                      ▶
+                    </div>
+                    <span className="text-lg sm:text-xl text-plum font-medium group-hover:text-sky-deep transition">
+                      {doc.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIDEO VIEW SCREEN */}
+        {screen === "video-view" && selectedDocument && (
+          <div className="animate-fade-in">
+            <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+              <button
+                onClick={() => { setScreen("video-list"); setSelectedDocument(null) }}
+                className="bg-cream/80 border border-blush-deep px-5 py-3 rounded-2xl font-medium hover:border-sky hover:-translate-y-0.5 transition"
+              >
+                ← Quay lại
+              </button>
+              <a
+                href={selectedDocument.file}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-sky text-white px-5 py-3 rounded-2xl font-medium hover:bg-sky-deep hover:-translate-y-0.5 transition shadow-md"
+              >
+                ↗ Mở trên YouTube
+              </a>
+            </div>
+
+            <div className="bg-cream/80 border border-blush-deep rounded-[28px] p-4 sm:p-6">
+              <h2 className="font-[var(--font-display)] text-xl sm:text-2xl font-bold mb-4 px-2 text-plum">{selectedDocument.title}</h2>
+              <div className="w-full rounded-2xl overflow-hidden border border-blush-deep aspect-video">
+                <iframe
+                  src={toEmbedUrl(selectedDocument.file)}
+                  title={selectedDocument.title}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
               </div>
             </div>
