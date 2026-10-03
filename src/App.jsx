@@ -131,7 +131,14 @@ const subjects = [
     id: "Hệ điều hành",
 
     quizzes: [
-
+      {
+        id: "video",
+        title: "Video",
+        type: "video",
+        documents: [
+  { title: "Làm việc với VirtualBox & Ubuntu (Phần 1)", file: "https://www.youtube.com/watch?v=OqlQnR9IdzA" },
+],
+      },
       {
         id: "lecture",
         title: "Lecture Slides",
