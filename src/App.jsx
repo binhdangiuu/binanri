@@ -138,6 +138,7 @@ const subjects = [
         type: "video",
         documents: [
   { title: "VIDEO 01: Hướng dẫn cài máy ảo để chạy Lab", file: "https://www.youtube.com/watch?v=OqlQnR9IdzA" },
+  { title: "VIDEO 02: Làm việc với VirtualBox & Ubuntu (P2)", file: "https://www.youtube.com/watch?v=iAjhVz_FQMU" },
 ],
       },
 
@@ -540,7 +541,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 3/10/2026 • 14:29:30 (Video 1 added)
+            Last Updated: 4/10/2026 • 23:06:17 (Video 02 added)
           </p>
         </div>
 
