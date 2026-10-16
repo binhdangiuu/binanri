@@ -1,0 +1,2004 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2018 · Chapter 7 — Synchronization Examples</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#1E5F99; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar-wrap{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(74,46,64,0.55); padding:12px 14px 11px; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ position:relative; font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 14px 7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper-deep); color:#fff; border-color:var(--copper-deep); }
+  .tab-btn.visited:not(.active){ box-shadow: inset 0 -2px 0 0 #ffffff55; }
+
+  .progress-row{ display:flex; align-items:center; gap:11px; margin-top:10px; }
+  .progress-track{ flex:1; height:7px; border-radius:999px; background:#ffffff1f; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--copper) 0%, #FFB454 50%, var(--teal) 100%); transition:width .4s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:#ffffffb0; white-space:nowrap; min-width:96px; text-align:right; }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:18ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(74,46,64,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:20px; margin:36px 0 10px; }
+
+  p.en{ margin:22px 0 10px; font-family:"Newsreader",serif; font-size:17px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 22px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:10px 14px 10px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13.5px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:24px 0; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:24px 0; font-size:15.5px; }
+  .codeblock{ background:var(--ink); color:#F3E6EF; border-radius:12px; padding:16px 20px; margin:16px 0 24px; overflow-x:auto; }
+  .codeblock .clabel{ display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#FFB4D6; margin-bottom:8px; }
+  .codeblock pre{ margin:0; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.65; white-space:pre; }
+  .codeblock .kw{ color:#7FD3FF; } .codeblock .fn{ color:#FFD37F; } .codeblock .cm{ color:#8A9BA8; font-style:italic; } .codeblock .tp{ color:#B3F0C0; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:6px 0 24px; max-width:520px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:440px; margin:6px 0 24px; }
+  .stack .layer{ padding:14px 18px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.users, .layer.apps, .layer.hw{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:6px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:6px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+  .res-card .vi-mini, .compare-box .vi-mini{ display:block; margin-top:7px; padding-top:7px; border-top:1px dashed var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; line-height:1.5; color:var(--teal-deep); }
+  .res-card .vi-mini::before, .compare-box .vi-mini::before{ content:"VN"; display:inline-block; font-size:8.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:0 5px; border-radius:4px; margin-right:6px; vertical-align:middle; }
+
+  .env-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin:6px 0 24px; }
+  .env-card{ border:1px solid var(--grid); border-radius:12px; padding:16px; background:var(--paper-deep); }
+  .env-badge{ display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:8px; background:var(--teal-tint); color:var(--teal-deep); font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600; margin-bottom:10px; }
+  .env-card h4{ margin:0 0 6px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .env-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+  .flowchip{ display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); margin:2px 4px 2px 0; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:6px 0 24px; max-width:560px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:110px; border:1px solid var(--grid); border-radius:10px; padding:14px 10px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .boundary-box{ border:1px solid var(--grid); border-radius:var(--radius); overflow:hidden; margin:6px 0 24px; }
+  .boundary-half{ padding:18px 20px; }
+  .boundary-half.user{ background:var(--copper-tint); } .boundary-half.kernel{ background:var(--teal-tint); }
+  .boundary-half .role{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+  .boundary-half.user .role{ color:var(--copper-deep); } .boundary-half.kernel .role{ color:var(--teal-deep); }
+  .boundary-line{ display:flex; align-items:center; gap:10px; padding:6px 20px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); background:var(--paper); border-top:1px dashed var(--grid); border-bottom:1px dashed var(--grid); }
+  .boundary-line .rule{ flex:1; border-top:1px dashed var(--grid); }
+
+  .core-grid{ display:flex; gap:6px; margin:6px 0 6px; max-width:520px; flex-wrap:wrap; }
+  .core-box{ flex:1; min-width:100px; border:1px solid var(--grid); border-radius:8px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:11.5px; text-align:center; }
+  .core-box .core-label{ font-weight:600; color:var(--teal-deep); margin-bottom:4px; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .vi-mini,
+  body.vi-hidden .note,
+  body.vi-hidden .recap .rline{ display:none; }
+
+  .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  .term:hover, .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFC9E3; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .rings-wrap{ display:flex; align-items:center; gap:28px; margin:10px 0 24px; flex-wrap:wrap; }
+  .rings{ position:relative; width:210px; height:210px; flex-shrink:0; }
+  .rings .ring{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:1px solid var(--grid); display:flex; align-items:center; justify-content:center; }
+  .rings .r4{ width:210px; height:210px; background:var(--paper-deep); }
+  .rings .r3{ width:158px; height:158px; background:#FFE0EE; }
+  .rings .r2{ width:106px; height:106px; background:var(--teal-tint); }
+  .rings .r1{ width:54px; height:54px; background:var(--teal); }
+  .rings .r1 span{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; color:#fff; text-align:center; font-weight:600; line-height:1.2; }
+  .rings-legend{ display:flex; flex-direction:column; gap:9px; font-family:"IBM Plex Mono",monospace; font-size:12.5px; }
+  .rl-item{ display:flex; align-items:center; gap:8px; }
+  .rl-item .sw{ width:14px; height:14px; border-radius:50%; border:1px solid var(--grid); flex-shrink:0; }
+  .rl-item .sw.r4{ background:var(--paper-deep); } .rl-item .sw.r3{ background:#FFE0EE; } .rl-item .sw.r2{ background:var(--teal-tint); } .rl-item .sw.r1{ background:var(--teal); }
+
+  .seqlist{ margin:6px 0 24px; max-width:540px; counter-reset:seq; }
+  .seqlist .sitem{ display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-top:1px dashed var(--grid); }
+  .seqlist .sitem:first-child{ border-top:none; }
+  .seqlist .snum{ counter-increment:seq; flex-shrink:0; width:23px; height:23px; border-radius:50%; background:var(--copper); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:11.5px; display:flex; align-items:center; justify-content:center; font-weight:700; margin-top:1px; }
+  .seqlist .snum::before{ content: counter(seq); }
+  .seqlist .stext{ font-family:"IBM Plex Mono",monospace; font-size:12.8px; color:var(--ink); padding-top:2px; line-height:1.5; }
+
+  .term-mock{ max-width:460px; margin:6px 0 24px; border-radius:10px; overflow:hidden; box-shadow:0 12px 28px -16px rgba(74,46,64,.45); }
+  .term-mock .tm-bar{ background:#2b2530; padding:8px 12px; display:flex; gap:6px; }
+  .term-mock .tm-dot{ width:10px; height:10px; border-radius:50%; }
+  .term-mock .tm-dot.r{ background:#ff5f56; } .term-mock .tm-dot.y{ background:#ffbd2e; } .term-mock .tm-dot.g{ background:#27c93f; }
+  .term-mock .tm-body{ background:#241f29; color:#e8dce3; font-family:"IBM Plex Mono",monospace; font-size:12.5px; padding:14px 16px; line-height:1.75; white-space:pre-wrap; }
+  .term-mock .tm-prompt{ color:#7FC4F0; }
+  .term-mock .tm-out{ color:#c7a8bb; }
+  .term-mock .tm-com{ color:#7bd88f; }
+
+  .phone-mock{ max-width:220px; margin:6px auto 24px; border:8px solid var(--ink); border-radius:28px; padding:14px 10px; background:var(--paper-deep); }
+  .phone-mock .pm-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .phone-mock .pm-icon{ aspect-ratio:1; border-radius:12px; background:var(--teal-tint); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .phone-mock .pm-icon:nth-child(3n+2){ background:var(--copper-tint); }
+
+  table.cmp-table{ width:100%; max-width:600px; border-collapse:collapse; margin:6px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+  .table-scroll{ overflow-x:auto; margin:6px 0 24px; }
+  .table-scroll table.cmp-table{ margin:0; min-width:520px; }
+  .exercise{ background:var(--paper-deep); border:1px solid var(--grid); border-left:4px solid var(--copper); border-radius:12px; padding:20px 22px; margin:22px 0; }
+  .exercise h4{ margin:0 0 10px; font-size:16.5px; color:var(--copper-deep); }
+  .exercise table.cmp-table{ margin:10px 0 14px; font-size:13px; }
+  .exercise details{ margin-top:12px; border-top:1px dashed var(--grid); padding-top:10px; }
+  .exercise summary{ cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--teal-deep); font-weight:600; }
+  .exercise summary:hover{ color:var(--copper-deep); }
+  .exercise .ans-table{ margin-top:10px; }
+  .exercise .ans-note{ font-size:13px; color:var(--ink-soft); margin-top:8px; }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:20px 0 24px; max-width:560px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .tree{ display:flex; flex-direction:column; align-items:center; gap:6px; margin:10px 0 24px; }
+  .tree .trow{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .tree .tnode{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:8px 12px; border-radius:8px; border:1px solid var(--grid); background:var(--paper-deep); text-align:center; }
+  .tree .tnode.root{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .tree .tconn{ color:var(--ink-soft); font-size:12px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar-wrap{ position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 12px 6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+    .rings-wrap{ justify-content:center; }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+
+  .summary-box{ margin-top:36px; border:1.5px solid var(--grid); border-radius:14px; padding:24px 26px; background:var(--paper-raised, #fff); }
+  .summary-box .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:14px; }
+  .summary-box ul{ margin:0 0 18px; padding-left:20px; }
+  .summary-box li{ margin:6px 0; font-size:14.5px; line-height:1.55; }
+  .selfcheck{ margin-top:18px; border-top:1px dashed var(--grid); padding-top:18px; }
+  .selfcheck .sc-title{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--teal-deep); margin-bottom:10px; }
+  .selfcheck label{ display:flex; align-items:flex-start; gap:9px; padding:5px 0; font-size:14px; cursor:pointer; }
+  .selfcheck input[type="checkbox"]{ margin-top:3px; flex-shrink:0; width:15px; height:15px; accent-color:var(--teal-deep); cursor:pointer; }
+  .selfcheck label:has(input:checked){ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--grid); }
+
+  .quiz-result{ margin-top:28px; border:1.5px solid var(--grid); border-radius:14px; padding:24px 26px; background:var(--paper-raised, #fff); text-align:center; }
+  .qr-score{ font-family:"Space Grotesk",sans-serif; font-size:26px; font-weight:700; margin-bottom:10px; }
+  .qr-breakdown{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:18px; line-height:1.6; text-align:left; max-width:520px; margin-left:auto; margin-right:auto; }
+  .qr-breakdown .qr-wrong-item{ color:var(--copper, #b5542a); }
+  .qr-retry{ font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-weight:600; border:1.5px solid var(--teal-deep); background:var(--teal-deep); color:#fff; border-radius:999px; padding:10px 22px; cursor:pointer; transition:opacity .15s ease; }
+  .qr-retry:hover{ opacity:0.85; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2018 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="boundedbuffer">Bounded-Buffer</button>
+    <button class="tab-btn" data-tab="readerswriters">Readers-Writers</button>
+    <button class="tab-btn" data-tab="diningphil">Dining-Philosophers</button>
+    <button class="tab-btn" data-tab="winlinux">Windows &amp; Linux</button>
+    <button class="tab-btn" data-tab="posix">POSIX Sync</button>
+    <button class="tab-btn" data-tab="java">Java Sync</button>
+    <button class="tab-btn" data-tab="alternative">Alternative Approaches</button>
+    <button class="tab-btn" data-tab="exercises">Exercises</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/10 tab · 0%</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 7 · Synchronization Examples</span>
+    <h1>The theory is done — now <em>3 classical problems</em> and the real APIs</h1>
+    <p class="lede">Chapter 6 armed us with the tools: mutex locks, semaphores, monitors. This chapter applies them to three classical synchronization problems (bounded-buffer, readers-writers, dining-philosophers), then surveys how Windows, Linux, POSIX, and Java actually implement synchronization in real code — closing with three alternative approaches.</p>
+    <span class="vi">Chương 6 trang bị cho ta bộ công cụ: mutex lock, semaphore, monitor. Chương này áp dụng những công cụ đó vào 3 bài toán đồng bộ kinh điển (bounded-buffer, readers-writers, dining-philosophers), rồi khảo sát cách Windows, Linux, POSIX và Java hiện thực hóa đồng bộ trong code thật — và kết thúc bằng 3 hướng tiếp cận thay thế.</span>
+    <div class="tagrow">
+      <span class="tag user">Classical problems: producer–consumer, readers–writers, dining philosophers</span>
+      <span class="tag kernel">Real platforms: Windows, Linux, POSIX, Java</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="boundedbuffer"><div class="kicker">01 · Classic problem</div><h3>Bounded-Buffer Problem</h3><p>n buffer dùng chung giữa producer và consumer — giải bằng 3 semaphore: mutex, full, empty.</p></div>
+    <div class="card kernel" data-goto="readerswriters"><div class="kicker">02 · Classic problem</div><h3>Readers-Writers Problem</h3><p>Nhiều reader đọc cùng lúc được, nhưng writer phải độc quyền — 2 biến thể và vấn đề starvation.</p></div>
+    <div class="card user" data-goto="diningphil"><div class="kicker">03 · Classic problem</div><h3>Dining-Philosophers Problem</h3><p>5 triết gia, 5 chiếc đũa — ví dụ kinh điển nhất về deadlock, giải bằng semaphore rồi bằng monitor.</p></div>
+    <div class="card kernel" data-goto="winlinux"><div class="kicker">04 · Real systems</div><h3>Windows &amp; Linux Synchronization</h3><p>Dispatcher object của Windows, atomic variable và spinlock của Linux.</p></div>
+    <div class="card user" data-goto="posix"><div class="kicker">05 · Real systems</div><h3>POSIX Synchronization</h3><p>pthread mutex, named/unnamed semaphore, condition variable — API chuẩn UNIX/Linux/macOS.</p></div>
+    <div class="card kernel" data-goto="java"><div class="kicker">06 · Real systems</div><h3>Java Synchronization</h3><p>synchronized, entry set/wait set, ReentrantLock, Semaphore, Condition.</p></div>
+    <div class="card user" data-goto="alternative"><div class="kicker">07 · Beyond locks</div><h3>Alternative Approaches</h3><p>Transactional Memory, OpenMP #pragma, và lập trình hàm (functional programming).</p></div>
+    <div class="card kernel" data-goto="exercises"><div class="kicker">08 · Practice</div><h3>Exercises</h3><p>2 câu hỏi "tìm lỗi" nguyên bản từ slide + 1 câu tự biên soạn — deadlock, starvation, mutex-vs-condvar.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.7</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Classical problems</h4><p>Illustrate classic problems of synchronization including the Bounded-Buffer, Readers-Writers, and Dining-Philosophers Problems.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Windows &amp; Linux</h4><p>Describe the tools used by Linux and Windows in solving synchronization problems.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>POSIX &amp; Java</h4><p>Illustrate how POSIX and Java APIs are used to solve synchronization problems.</p></div></div>
+    <div class="outline-item"><div class="idx">+ bonus</div><div><h4>Alternative approaches <span style="font-weight:400;font-size:0.8em;opacity:0.7;">(not in the slide's own L.O. list — added by this page)</span></h4><p>Design and develop solutions to synchronization problems using POSIX and Java synchronization APIs, and alternative approaches such as transactional memory, OpenMP, and functional languages.</p></div></div>
+  </div>
+
+  <div class="summary-box">
+    <div class="label">Summary — Silberschatz Ch.7 (slide 47–48)</div>
+    <ul>
+      <li class="en">Classic problems of process synchronization include the <b>bounded-buffer</b>, <b>readers-writers</b>, and <b>dining-philosophers</b> problems. Solutions to these problems can be developed using the tools from Chapter 6: mutex locks, semaphores, monitors, and condition variables.</li>
+      <li class="vi">Các bài toán đồng bộ kinh điển gồm <b>bounded-buffer</b>, <b>readers-writers</b>, và <b>dining-philosophers</b>. Lời giải cho các bài toán này được xây dựng từ các công cụ ở Chương 6: mutex lock, semaphore, monitor, và condition variable.</li>
+      <li class="en">Windows uses <b>dispatcher objects</b> (and <b>events</b>) to implement its synchronization tools.</li>
+      <li class="vi">Windows dùng <b>dispatcher object</b> (và <b>event</b>) để hiện thực các công cụ đồng bộ của nó.</li>
+      <li class="en">Linux protects against race conditions with a variety of approaches: <b>atomic variables</b>, <b>spinlocks</b>, and <b>mutex locks</b>.</li>
+      <li class="vi">Linux chống race condition bằng nhiều cách: <b>biến atomic</b>, <b>spinlock</b>, và <b>mutex lock</b>.</li>
+      <li class="en">The POSIX API provides mutex locks, semaphores, and condition variables — with two forms of semaphores, <b>named</b> (easily shared between unrelated processes by name) and <b>unnamed</b> (needs a region of shared memory to be shared across processes).</li>
+      <li class="vi">POSIX API cung cấp mutex lock, semaphore, và condition variable — với 2 dạng semaphore: <b>named</b> (dễ dùng chung giữa các tiến trình không liên quan, chỉ cần biết tên) và <b>unnamed</b> (muốn dùng chung giữa các tiến trình thì cần đặt trong vùng nhớ chia sẻ).</li>
+      <li class="en">Java has a rich synchronization library: <b>monitors</b> at the language level (the <b>synchronized</b> keyword), plus <b>reentrant locks</b>, <b>semaphores</b>, and <b>condition variables</b> via its API.</li>
+      <li class="vi">Java có thư viện đồng bộ phong phú: <b>monitor</b> ở cấp ngôn ngữ (từ khóa <b>synchronized</b>), cùng <b>reentrant lock</b>, <b>semaphore</b>, và <b>condition variable</b> qua API.</li>
+      <li class="en">Alternative approaches to the critical-section problem include <b>transactional memory</b>, <b>OpenMP</b>, and <b>functional languages</b> — functional languages are especially interesting because, unlike procedural languages, they do not maintain mutable state and are therefore generally immune to race conditions.</li>
+      <li class="vi">Các hướng tiếp cận thay thế cho bài toán critical-section gồm <b>transactional memory</b>, <b>OpenMP</b>, và <b>ngôn ngữ hàm (functional)</b> — ngôn ngữ hàm đặc biệt thú vị vì, khác với ngôn ngữ thủ tục, chúng không duy trì trạng thái có thể thay đổi nên nhìn chung miễn nhiễm với race condition.</li>
+    </ul>
+    <div class="selfcheck">
+      <div class="sc-title">✅ Tự kiểm tra trước khi qua chương tiếp theo</div>
+      <label><input type="checkbox"><span>Giải thích được vì sao bounded-buffer cần đúng 3 semaphore (mutex, empty, full) chứ không phải 1 hay 2.</span></label>
+      <label><input type="checkbox"><span>Phân biệt được 2 biến thể reader-priority / writer-priority của readers-writers, và ai có thể bị starve ở mỗi biến thể.</span></label>
+      <label><input type="checkbox"><span>Vẽ lại được vòng deadlock của dining-philosophers và nêu được ít nhất 1 cách phá vòng.</span></label>
+      <label><input type="checkbox"><span>Giải thích đúng chiều signaled ⟷ non-signaled của dispatcher object trong Windows.</span></label>
+      <label><input type="checkbox"><span>Nêu được khác biệt giữa named và unnamed semaphore trong POSIX, và ý nghĩa tham số pshared.</span></label>
+      <label><input type="checkbox"><span>Giải thích được vì sao nên dùng while thay vì if khi chờ trên condition variable trong trường hợp tổng quát — và vì sao ví dụ doWork() của Java lại dùng if hợp lệ.</span></label>
+      <label><input type="checkbox"><span>So sánh được transactional memory, OpenMP, và lập trình hàm như 3 hướng "né" khóa truyền thống.</span></label>
+    </div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: BOUNDED-BUFFER PROBLEM -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-boundedbuffer" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🪣</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Classic problem</div>
+        <h2>n slots, multiple producers/consumers, three semaphores</h2>
+        <span class="vi">n buffer, nhiều producer/consumer, 3 semaphore</span>
+      </div>
+    </div>
+    <p class="intro">The first of the three "classical problems of synchronization" — illustrating a whole large class of real-world concurrency-control problems.</p>
+    <span class="vi">Đây là bài toán đầu tiên trong 3 "bài toán đồng bộ kinh điển" — là ví dụ minh họa cho cả 1 lớp lớn các bài toán kiểm soát đồng thời trong thực tế.</span>
+
+    <p class="en">We already met the bounded-buffer problem informally in Chapter 6. Here it's formalized: a pool of <b>n buffers</b>, each able to hold one item. The <b>mutex</b> semaphore provides mutual exclusion for accesses to the buffer pool and is initialized to the value <b>1</b>.</p>
+    <span class="vi">Ta đã gặp bài toán bounded-buffer 1 cách không chính thức ở Chương 6. Ở đây nó được hình thức hóa: 1 bể chứa <b>n buffer</b>, mỗi buffer giữ được 1 item. Semaphore <b>mutex</b> cung cấp loại trừ tương hỗ (mutual exclusion) cho việc truy cập bể buffer, khởi tạo giá trị <b>1</b>.</span>
+
+    <div class="illus">
+      <div class="emo">🥐</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Tủ bánh có đúng n ô trống trong tiệm bánh. Thợ làm bánh (producer) đặt bánh mới vào ô trống; khách (consumer) lấy bánh ra khỏi ô đã có hàng. Nếu tủ đầy, thợ phải đợi; nếu tủ trống, khách phải đợi.</div>
+    </div>
+
+    <p class="en">The <b>empty</b> and <b>full</b> semaphores count the number of empty and full buffers respectively. <b>empty</b> is initialized to the value <b>n</b>; <b>full</b> is initialized to the value <b>0</b>.</p>
+    <span class="vi">2 semaphore <b>empty</b> và <b>full</b> đếm số buffer rỗng và số buffer đầy. <b>empty</b> khởi tạo bằng <b>n</b>; <b>full</b> khởi tạo bằng <b>0</b>.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">mutex = 1</div><p>Mutual exclusion lock on reading/writing the buffer — with multiple producers and consumers, only one of them may touch the buffer at a time.</p><p class="vi-mini">Khóa loại trừ tương hỗ khi đọc/ghi buffer — với nhiều producer/consumer, chỉ 1 bên được thao tác buffer tại 1 thời điểm.</p></div>
+      <div class="res-card"><div class="rk">empty = n</div><p>Counts empty slots. The producer must wait(empty) before adding an item — if it's 0, it must wait.</p><p class="vi-mini">Đếm số ô còn trống. Producer phải wait(empty) trước khi bỏ hàng vào — nếu = 0 thì phải đợi.</p></div>
+      <div class="res-card"><div class="rk">full = 0</div><p>Counts full slots. The consumer must wait(full) before removing an item — if it's 0, it must wait.</p><p class="vi-mini">Đếm số ô đã có hàng. Consumer phải wait(full) trước khi lấy hàng ra — nếu = 0 thì phải đợi.</p></div>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Shared data</span>
+      <pre>Semaphore mutex = 1;
+Semaphore empty = n;
+Semaphore full  = 0;</pre>
+    </div>
+
+    <p class="en">The structure of the producer process: it first waits for an empty slot (<b>wait(empty)</b>), then acquires exclusive access (<b>wait(mutex)</b>) to actually place the item, releases the lock (<b>signal(mutex)</b>), and finally announces one more full slot (<b>signal(full)</b>).</p>
+    <span class="vi">Cấu trúc tiến trình producer: đầu tiên chờ 1 ô trống (<b>wait(empty)</b>), rồi xin quyền truy cập độc quyền (<b>wait(mutex)</b>) để thực sự đặt item vào, nhả khóa (<b>signal(mutex)</b>), và cuối cùng báo có thêm 1 ô đầy (<b>signal(full)</b>).</span>
+
+    <div class="codeblock">
+      <span class="clabel">Producer</span>
+      <pre>while (true) {
+    <span class="cm">/* produce an item in next_produced */</span>
+
+    wait(empty);
+    wait(mutex);
+
+    <span class="cm">/* add next_produced to the buffer */</span>
+
+    signal(mutex);
+    signal(full);
+}</pre>
+    </div>
+
+    <p class="en">The consumer's structure mirrors it exactly: wait for a full slot (<b>wait(full)</b>), acquire exclusive access (<b>wait(mutex)</b>), remove the item, release the lock (<b>signal(mutex)</b>), then announce one more empty slot (<b>signal(empty)</b>).</p>
+    <span class="vi">Cấu trúc consumer đối xứng hoàn toàn: chờ 1 ô đầy (<b>wait(full)</b>), xin quyền truy cập độc quyền (<b>wait(mutex)</b>), lấy item ra, nhả khóa (<b>signal(mutex)</b>), rồi báo có thêm 1 ô trống (<b>signal(empty)</b>).</span>
+
+    <div class="codeblock">
+      <span class="clabel">Consumer</span>
+      <pre>while (true) {
+    wait(full);
+    wait(mutex);
+
+    <span class="cm">/* remove an item from buffer to next_consumed */</span>
+
+    signal(mutex);
+    signal(empty);
+
+    <span class="cm">/* consume the item in next_consumed */</span>
+}</pre>
+    </div>
+
+    <div class="note">
+      <b>Vì sao đúng thứ tự này quan trọng</b>
+      wait(empty) và wait(full) PHẢI đứng trước wait(mutex) — nếu đảo ngược thứ tự (wait(mutex) trước), 1 tiến trình có thể giữ mutex rồi bị block vĩnh viễn ở wait(empty)/wait(full) bên trong, trong khi tiến trình kia không thể vào để giải phóng — đây chính là mầm mống của deadlock, ta sẽ gặp lại ý tưởng này ở ví dụ Dining-Philosophers.
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎟️</div>
+      <div class="cap"><b>Ví dụ đời thường</b>empty giống "số vé trống còn lại", full giống "số vé đã có khách". mutex giống "chìa khóa phòng" — chỉ 1 người cầm chìa khóa tại 1 thời điểm, dù là người bán hay người mua vé.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">3 semaphore: mutex=1, empty=n, full=0</span><span class="rchip">wait(empty/full) LUÔN trước wait(mutex)</span><span class="rchip">producer: empty→mutex→...→mutex→full</span><span class="rchip">consumer: full→mutex→...→mutex→empty</span>
+      </div>
+      <p class="rline">Bounded-buffer là bài toán "khuôn mẫu" — hiểu kỹ thứ tự 2 semaphore đếm (empty/full) đứng trước semaphore khóa (mutex) sẽ giúp đọc hiểu nhanh mọi bài toán sản xuất–tiêu thụ khác.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: READERS-WRITERS PROBLEM -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-readerswriters" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📖</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Classic problem</div>
+        <h2>Many readers at once, but a writer needs exclusivity</h2>
+        <span class="vi">Nhiều người đọc cùng lúc được — nhưng ghi thì phải một mình</span>
+      </div>
+    </div>
+    <p class="intro">A database is shared among several processes. Some processes only want to <b>read</b> the database (readers), some want to <b>update</b> the data (writers).</p>
+    <span class="vi">Một cơ sở dữ liệu (database) được chia sẻ giữa nhiều tiến trình. Một số tiến trình chỉ muốn <b>đọc</b> database (readers), một số muốn <b>cập nhật</b> dữ liệu (writers).</span>
+
+    <p class="en">If two readers access the shared data simultaneously, no adverse effect results. But if a writer and some other process (a reader or a writer) access the database simultaneously, chaos may ensue. To ensure these difficulties do not arise, we require writers to have <b>exclusive access</b> to the shared database.</p>
+    <span class="vi">Nếu 2 reader cùng truy cập dữ liệu chung đồng thời, không có hậu quả xấu nào xảy ra. Nhưng nếu 1 writer và 1 tiến trình khác (reader hoặc writer) cùng truy cập database đồng thời, hỗn loạn có thể xảy ra. Để đảm bảo điều này không xảy ra, ta yêu cầu writer phải có quyền truy cập <b>độc quyền</b> vào database dùng chung.</span>
+
+    <div class="illus">
+      <div class="emo">📚</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Phòng đọc thư viện: nhiều người cùng ngồi đọc chung 1 cuốn sách tham khảo (đặt trên giá, không ai mang về) — không vấn đề gì. Nhưng nếu thủ thư muốn sửa lại trang thông tin trong sách đó, phòng phải tạm vắng hoàn toàn người đọc khác để tránh đọc nhầm nội dung đang bị sửa dở.</div>
+    </div>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">rw_mutex = 1</div><p>Semaphore shared between readers and writers — a writer holds it for the whole write; the first reader acquires it, the last reader releases it.</p><p class="vi-mini">Semaphore dùng chung giữa reader và writer — writer giữ nó trong suốt lúc ghi; reader đầu tiên chiếm, reader cuối cùng nhả.</p></div>
+      <div class="res-card"><div class="rk">mutex = 1</div><p>Protects only the read_count counter — ensures only one reader updates read_count at a time.</p><p class="vi-mini">Chỉ bảo vệ riêng biến đếm read_count — đảm bảo chỉ 1 reader cập nhật read_count tại 1 thời điểm.</p></div>
+      <div class="res-card"><div class="rk">read_count = 0</div><p>Counts how many readers are currently reading. When it goes 0→1, the reader locks rw_mutex. When it goes 1→0, the reader releases rw_mutex.</p><p class="vi-mini">Đếm số reader hiện đang đọc. Khi từ 0→1, reader khóa rw_mutex. Khi từ 1→0, reader mở lại rw_mutex.</p></div>
+    </div>
+
+    <p class="en">The structure of a writer process is the simplest part: wait for the shared lock, do the write, release it.</p>
+    <span class="vi">Cấu trúc tiến trình writer là phần đơn giản nhất: chờ khóa dùng chung, thực hiện ghi, nhả khóa.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Writer</span>
+      <pre>while (true) {
+    wait(rw_mutex);
+
+    <span class="cm">/* writing is performed */</span>
+
+    signal(rw_mutex);
+}</pre>
+    </div>
+
+    <p class="en">The reader's structure is trickier: only the <b>first</b> reader to arrive needs to lock <b>rw_mutex</b> (so no writer can start), and only the <b>last</b> reader to leave needs to unlock it (so a waiting writer can finally proceed). In between, readers come and go freely.</p>
+    <span class="vi">Cấu trúc reader phức tạp hơn: chỉ reader <b>đầu tiên</b> đến mới cần khóa <b>rw_mutex</b> (để không writer nào bắt đầu được); chỉ reader <b>cuối cùng</b> rời đi mới cần mở khóa (để 1 writer đang chờ cuối cùng được tiến hành). Ở giữa, các reader ra vào tự do.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Reader</span>
+      <pre>while (true) {
+    wait(mutex);
+    read_count++;
+    if (read_count == 1)
+        wait(rw_mutex);  <span class="cm">/* reader đầu tiên khóa writer lại */</span>
+    signal(mutex);
+
+    <span class="cm">/* reading is performed */</span>
+
+    wait(mutex);
+    read_count--;
+    if (read_count == 0)
+        signal(rw_mutex);  <span class="cm">/* reader cuối cùng mở lại cho writer */</span>
+    signal(mutex);
+}</pre>
+    </div>
+
+    <svg viewBox="0 0 600 190" style="max-width:600px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="300" y="18" text-anchor="middle" font-size="12" fill="#4A2E40" font-weight="600">read_count đi 0 → 1 → 2 → 1 → 0 (3 reader lồng nhau)</text>
+      <line x1="40" y1="40" x2="40" y2="170" stroke="#8A5F78" stroke-dasharray="3,3"/>
+      <rect x="70"  y="55" width="460" height="24" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="80" y="71" font-size="10.5" fill="#1E5F99">Reader A: read_count 0→1 — wait(rw_mutex) [khóa writer]</text>
+      <rect x="150" y="85" width="380" height="24" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="160" y="101" font-size="10.5" fill="#1E5F99">Reader B: read_count 1→2 — không đụng rw_mutex</text>
+      <rect x="230" y="115" width="300" height="24" rx="5" fill="#7FC4F026" stroke="#4FA4DD"/>
+      <text x="240" y="131" font-size="10.5" fill="#1E5F99">Reader C: read_count 2→3 — không đụng rw_mutex</text>
+      <rect x="70" y="148" width="460" height="24" rx="5" fill="#FF6FA51f" stroke="#E8407F"/>
+      <text x="80" y="164" font-size="10.5" fill="#C22A63">Writer D phải đợi tới khi read_count về lại 0 — signal(rw_mutex)</text>
+    </svg>
+
+    <h3 class="subhead">Two variations &amp; the starvation problem</h3>
+    <span class="vi">Hai biến thể &amp; vấn đề starvation</span>
+
+    <p class="en">The structure above is known as the <b>first readers-writers problem</b>: no reader should be kept waiting unless a writer has already obtained permission to use the shared object. In other words, no reader should wait for other readers to finish simply because a writer is waiting.</p>
+    <span class="vi"><b>Bài toán readers-writers thứ nhất</b>: không reader nào phải chờ trừ khi 1 writer đã được cấp quyền trước đó. Nói cách khác, không reader nào phải chờ các reader khác đọc xong chỉ vì có 1 writer đang đợi.</span>
+
+    <p class="en">The <b>second readers-writers problem</b> requires that, once a writer is ready, that writer performs its write as soon as possible. In other words, if a writer is waiting to access the object, no new readers may start reading.</p>
+    <span class="vi"><b>Bài toán readers-writers thứ hai</b> yêu cầu: khi 1 writer đã sẵn sàng, writer đó phải được ghi càng sớm càng tốt. Nói cách khác, nếu có 1 writer đang chờ truy cập, không reader mới nào được phép bắt đầu đọc.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">First readers-writers</div>
+        <p>Reader-priority: a writer may wait indefinitely if new readers keep arriving.</p>
+        <p class="vi-mini">Ưu tiên reader: writer có thể chờ vô thời hạn nếu luôn có reader mới liên tục đến.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Second readers-writers</div>
+        <p>Writer-priority: a reader may wait indefinitely if new writers keep arriving.</p>
+        <p class="vi-mini">Ưu tiên writer: reader có thể chờ vô thời hạn nếu luôn có writer mới liên tục đến.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Starvation</b>
+      Lời giải cho cả 2 bài toán đều có thể dẫn tới starvation. Ở trường hợp thứ nhất, writer có thể starve; ở trường hợp thứ hai, reader có thể starve. Vì lý do này, các biến thể khác của bài toán đã được đề xuất, mỗi biến thể đều "live" — nghĩa là cả reader lẫn writer đều không bị starve.
+    </div>
+
+    <p class="en">The reader-writer lock is most useful in the following situations: (1) applications where it is easy to identify which processes only read shared data and which only write, and (2) applications with more readers than writers — since reader-writer locks are typically more costly to establish than semaphores or mutex locks.</p>
+    <span class="vi">Reader-writer lock hữu ích nhất trong các tình huống: (1) ứng dụng dễ xác định tiến trình nào chỉ đọc, tiến trình nào chỉ ghi dữ liệu chung, và (2) ứng dụng có số reader nhiều hơn writer — vì reader-writer lock thường tốn chi phí khởi tạo cao hơn semaphore hay mutex lock thông thường.</span>
+
+    <div class="illus">
+      <div class="emo">🏦</div>
+      <div class="cap"><b>Ví dụ đời thường</b>App ngân hàng: hàng ngàn người cùng xem số dư tài khoản của mình (đọc) mỗi giây — rất nhiều reader. Chỉ hệ thống backend mới thực sự ghi thay đổi số dư — rất ít writer. Readers-writers lock phù hợp hơn hẳn so với 1 mutex chung cho mọi thao tác.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">read_count: 0→1 khóa rw_mutex, →0 mở lại</span><span class="rchip">mutex chỉ bảo vệ read_count</span><span class="rchip">First = ưu tiên reader (writer có thể starve)</span><span class="rchip">Second = ưu tiên writer (reader có thể starve)</span>
+      </div>
+      <p class="rline">Chìa khóa để nhớ code reader: chỉ reader ĐẦU TIÊN và reader CUỐI CÙNG mới chạm vào rw_mutex — ở giữa, các reader hoàn toàn độc lập với nhau.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: DINING-PHILOSOPHERS PROBLEM -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-diningphil" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🍜</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Classic problem</div>
+        <h2>5 philosophers, 5 chopsticks, and the most famous deadlock example in the field</h2>
+        <span class="vi">5 triết gia, 5 chiếc đũa, và ví dụ deadlock nổi tiếng nhất ngành</span>
+      </div>
+    </div>
+    <p class="intro">Five philosophers sit around a circular table, each with a bowl of rice in front of them. Between each pair of neighboring philosophers is one chopstick — five chopsticks for five people.</p>
+    <span class="vi">Năm triết gia ngồi quanh 1 bàn tròn, mỗi người có 1 bát cơm (bowl of rice) trước mặt. Giữa mỗi 2 triết gia liền kề là 1 chiếc đũa (chopstick) — tổng cộng 5 chiếc đũa cho 5 người.</span>
+
+    <p class="en">Each philosopher spends her life alternating between <b>thinking</b> and <b>eating</b>. When a philosopher gets hungry, she tries to pick up the two chopsticks closest to her — but a chopstick can be picked up only if it is not already in the hand of a neighbor.</p>
+    <span class="vi">Mỗi triết gia dành cả đời luân phiên giữa <b>suy nghĩ</b> (thinking) và <b>ăn</b> (eating). Khi 1 triết gia đói, cô ấy cố nhặt 2 chiếc đũa gần mình nhất — nhưng chỉ nhặt được 1 chiếc đũa nếu nó chưa nằm trong tay người hàng xóm.</span>
+
+    <svg viewBox="0 0 320 320" style="max-width:320px;width:100%;margin:6px auto 24px;display:block;font-family:'IBM Plex Mono',monospace;">
+      <circle cx="160" cy="160" r="95" fill="#FFF6FB" stroke="#FFD3E8"/>
+      <circle cx="160" cy="160" r="45" fill="#FFE0EE" stroke="#8A5F78"/>
+      <text x="160" y="164" text-anchor="middle" font-size="11" fill="#4A2E40">bowl of rice ×5</text>
+      <g font-size="10.5" font-weight="600">
+        <circle cx="160" cy="45" r="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="160" y="49" text-anchor="middle" fill="#C22A63">P0</text>
+        <circle cx="267" cy="113" r="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="267" y="117" text-anchor="middle" fill="#C22A63">P1</text>
+        <circle cx="228" cy="243" r="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="228" y="247" text-anchor="middle" fill="#C22A63">P2</text>
+        <circle cx="92" cy="243" r="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="92" y="247" text-anchor="middle" fill="#C22A63">P3</text>
+        <circle cx="53" cy="113" r="22" fill="#FF6FA51f" stroke="#E8407F"/><text x="53" y="117" text-anchor="middle" fill="#C22A63">P4</text>
+      </g>
+      <g stroke="#1E5F99" stroke-width="3" stroke-linecap="round">
+        <line x1="205" y1="60" x2="245" y2="95"/>
+        <line x1="255" y1="150" x2="245" y2="195"/>
+        <line x1="190" y1="250" x2="130" y2="250"/>
+        <line x1="75" y1="195" x2="65" y2="150"/>
+        <line x1="75" y1="95" x2="115" y2="60"/>
+      </g>
+      <text x="160" y="300" text-anchor="middle" font-size="10" fill="#8A5F78">5 chopstick[i] nằm giữa Pi và P(i+1)%5</text>
+    </svg>
+
+    <div class="illus">
+      <div class="emo">🥢</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Bạn và 4 người bạn ngồi ăn lẩu, nhưng chỉ có 5 đôi đũa dùng chung, mỗi người chỉ với được 2 chiếc đũa ngay cạnh mình (trái và phải). Nếu ai cũng đói và cùng nhặt chiếc đũa bên tay phải trước, không ai còn chiếc đũa thứ 2 để gắp — cả bàn ngồi nhìn nhau.</div>
+    </div>
+
+    <h3 class="subhead">The semaphore algorithm — and why it breaks</h3>
+    <span class="vi">Thuật toán dùng semaphore — và vì sao nó hỏng</span>
+
+    <p class="en">One simple solution is to represent each chopstick with a semaphore. A philosopher tries to grab a chopstick by executing a <b>wait()</b> operation on that semaphore and releases her chopsticks by executing <b>signal()</b>.</p>
+    <span class="vi">1 lời giải đơn giản là biểu diễn mỗi chiếc đũa bằng 1 semaphore. Triết gia cố nhặt 1 chiếc đũa bằng cách gọi <b>wait()</b> trên semaphore đó, và nhả đũa bằng cách gọi <b>signal()</b>.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Shared data</span>
+      <pre>Semaphore chopstick[5];  <span class="cm">// mỗi phần tử khởi tạo = 1</span></pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Philosopher i (thuật toán nguyên bản — có lỗi!)</span>
+      <pre>while (true) {
+    wait(chopstick[i]);
+    wait(chopstick[(i + 1) % 5]);
+
+    <span class="cm">/* eat for a while */</span>
+
+    signal(chopstick[i]);
+    signal(chopstick[(i + 1) % 5]);
+
+    <span class="cm">/* think for a while */</span>
+}</pre>
+    </div>
+
+    <div class="hook">
+      <b>❓ Question from the original slide</b>
+      "What is the problem with this algorithm?" — think it through before reading on.
+      <span class="vi">Đây đúng nguyên văn câu hỏi slide đặt ra. Gợi ý: hãy hình dung điều gì xảy ra nếu CẢ 5 triết gia cùng đói và cùng hành động gần như đồng thời.</span>
+    </div>
+
+    <p class="en">Although this solution guarantees that no two neighboring philosophers are eating simultaneously, it nevertheless must be rejected because it could create a <b>deadlock</b>. Suppose that all five philosophers become hungry at the same time and each grabs her left chopstick. All the elements of <b>chopstick</b> will now be equal to 0. When each philosopher tries to grab her right chopstick, she will be delayed forever.</p>
+    <span class="vi">Dù lời giải này đảm bảo không 2 triết gia liền kề nào cùng ăn đồng thời, nó vẫn phải bị loại bỏ vì có thể gây ra <b>deadlock</b>. Giả sử cả 5 triết gia cùng đói 1 lúc và mỗi người nhặt chiếc đũa bên trái. Tất cả phần tử của <b>chopstick</b> giờ đều bằng 0. Khi mỗi người cố nhặt tiếp chiếc đũa bên phải, họ sẽ bị trì hoãn mãi mãi.</span>
+
+    <svg viewBox="0 0 560 150" style="max-width:560px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="280" y="16" text-anchor="middle" font-size="11.5" fill="#C22A63" font-weight="600">Deadlock cycle: mỗi Pi giữ chopstick[i], chờ chopstick[(i+1)%5]</text>
+      <g font-size="10" font-weight="600" fill="#C22A63">
+        <circle cx="80"  cy="80" r="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="80"  y="84" text-anchor="middle">P0</text>
+        <circle cx="200" cy="80" r="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="200" y="84" text-anchor="middle">P1</text>
+        <circle cx="320" cy="80" r="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="320" y="84" text-anchor="middle">P2</text>
+        <circle cx="440" cy="80" r="26" fill="#FF6FA51f" stroke="#E8407F"/><text x="440" y="84" text-anchor="middle">P3</text>
+      </g>
+      <g stroke="#8A5F78" fill="none" marker-end="url(#dlR)">
+        <path d="M106 80 h 68"/>
+        <path d="M226 80 h 68"/>
+        <path d="M346 80 h 68"/>
+      </g>
+      <path d="M440 106 C 440 135, 80 135, 80 106" stroke="#8A5F78" fill="none" marker-end="url(#dlR)"/>
+      <defs><marker id="dlR" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+      <text x="166" y="72" font-size="9" fill="#8A5F78" text-anchor="middle">chờ đũa</text>
+      <text x="286" y="72" font-size="9" fill="#8A5F78" text-anchor="middle">chờ đũa</text>
+      <text x="406" y="72" font-size="9" fill="#8A5F78" text-anchor="middle">chờ đũa</text>
+    </svg>
+
+    <h3 class="subhead">A monitor-based solution</h3>
+    <span class="vi">Lời giải bằng monitor</span>
+
+    <p class="en">We illustrate the monitor concept by presenting a deadlock-free solution. Each philosopher, before starting to eat, must invoke the <b>pickup()</b> operation; this act may result in the suspension of the philosopher. Each philosopher's dining is simulated by the following sequence of actions.</p>
+    <span class="vi">Ta minh họa khái niệm monitor bằng cách trình bày 1 lời giải không còn deadlock. Mỗi triết gia, trước khi bắt đầu ăn, phải gọi thao tác <b>pickup()</b>; hành động này có thể khiến triết gia bị tạm dừng (suspend). Việc ăn uống của mỗi triết gia được mô phỏng bằng trình tự hành động sau.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Cách gọi</span>
+      <pre>DiningPhilosophers.pickup(i);
+
+    <span class="cm">/**
+     * EAT
+     */</span>
+
+DiningPhilosophers.putdown(i);</pre>
+    </div>
+
+    <p class="en">The key idea: a philosopher may pick up her chopsticks only if <b>both</b> neighbors are not eating. The monitor tracks each philosopher's <b>state</b> — THINKING, HUNGRY, or EATING — and a philosopher may move to the EATING state only if her left and right neighbors are not in that state.</p>
+    <span class="vi">Ý tưởng cốt lõi: 1 triết gia chỉ được nhặt đũa nếu <b>cả hai</b> người hàng xóm đều không đang ăn. Monitor theo dõi <b>trạng thái</b> của mỗi triết gia — THINKING, HUNGRY, hoặc EATING — và 1 triết gia chỉ được chuyển sang EATING nếu người hàng xóm trái và phải đều không ở trạng thái đó.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Monitor solution</span>
+      <pre>monitor DiningPhilosophers
+{
+    enum {THINKING, HUNGRY, EATING} state[5];
+    condition self[5];
+
+    void pickup(int i) {
+        state[i] = HUNGRY;
+        test(i);
+        if (state[i] != EATING)
+            self[i].wait();
+    }
+
+    void putdown(int i) {
+        state[i] = THINKING;
+        test((i + 4) % 5);
+        test((i + 1) % 5);
+    }
+
+    void test(int i) {
+        if ((state[(i + 4) % 5] != EATING) &&
+            (state[i] == HUNGRY) &&
+            (state[(i + 1) % 5] != EATING)) {
+            state[i] = EATING;
+            self[i].signal();
+        }
+    }
+
+    initialization_code() {
+        for (int i = 0; i < 5; i++)
+            state[i] = THINKING;
+    }
+}</pre>
+    </div>
+
+    <p class="en">A philosopher may proceed to eat only if neither neighbor is currently eating — <b>test(i)</b> checks exactly that, and sets the state to EATING + signals if the condition holds. <b>pickup()</b> waits on the condition variable <b>self[i]</b> only if <b>test(i)</b> could not immediately grant permission.</p>
+    <span class="vi">1 triết gia chỉ được tiến hành ăn nếu không người hàng xóm nào đang ăn — <b>test(i)</b> kiểm tra đúng điều đó, và đặt trạng thái thành EATING + gọi signal nếu điều kiện thỏa. <b>pickup()</b> chờ trên condition variable <b>self[i]</b> chỉ khi <b>test(i)</b> không thể cấp phép ngay lập tức.</span>
+
+    <div class="note">
+      <b>No deadlock, but starvation is possible</b>
+      Lời giải monitor này đảm bảo không còn deadlock — nhưng vẫn có thể xảy ra starvation: về mặt lý thuyết, 1 triết gia có thể mãi mãi đói nếu 2 hàng xóm của cô ấy cứ luân phiên nhau ăn mà không bao giờ cùng rảnh.
+    </div>
+
+    <div class="illus">
+      <div class="emo">🤝</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như 1 người quản lý bàn ăn (monitor) đứng quan sát: chỉ cho phép 1 người gắp đồ ăn nếu CẢ 2 người ngồi cạnh đều đang không gắp — nếu chưa đủ điều kiện, người đó phải đứng đợi, và người quản lý sẽ gọi tên khi tới lượt.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">5 philosophers, 5 chopstick[i]=1</span><span class="rchip">Semaphore nguyên bản: nhặt trái rồi phải → deadlock nếu cả 5 cùng đói</span><span class="rchip">Monitor: pickup/putdown/test theo state[5]</span><span class="rchip">Monitor hết deadlock nhưng vẫn có thể starvation</span>
+      </div>
+      <p class="rline">Dining-Philosophers là ví dụ kinh điển nhất để dạy deadlock — nhớ chính xác: lời giải semaphore ngây thơ KHÔNG sai về mutual exclusion, nó chỉ sai về progress (deadlock).</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: WINDOWS & LINUX SYNCHRONIZATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-winlinux" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🪟</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · Real systems</div>
+        <h2>Two real kernels, two different philosophies</h2>
+        <span class="vi">Hai nhân hệ điều hành thật, hai triết lý khác nhau</span>
+      </div>
+    </div>
+    <p class="intro">Now we leave textbook theory behind and look at how Windows and Linux actually implement synchronization inside their own kernels.</p>
+    <span class="vi">Giờ ta rời khỏi lý thuyết sách giáo khoa và xem Windows và Linux thực sự hiện thực đồng bộ hóa bên trong nhân (kernel) của chúng như thế nào.</span>
+
+    <h3 class="subhead">Windows kernel synchronization</h3>
+    <span class="vi">Windows kernel synchronization</span>
+
+    <p class="en">The Windows operating system is a multithreaded kernel that provides support for real-time applications and multiple processors. On <b>uniprocessor</b> systems, Windows avoids race conditions on kernel data by temporarily <b>masking interrupts</b> for kernel code accessing global data — on <b>multiprocessor</b> systems, Windows protects access to global resources using <b>spinlocks</b>.</p>
+    <span class="vi">Hệ điều hành Windows là 1 kernel đa luồng (multithreaded), hỗ trợ ứng dụng thời gian thực và nhiều bộ xử lý. Trên hệ <b>uniprocessor</b>, Windows tránh race condition trên dữ liệu kernel bằng cách tạm thời <b>che (mask) ngắt</b> cho đoạn code kernel truy cập dữ liệu toàn cục — trên hệ <b>multiprocessor</b>, Windows bảo vệ quyền truy cập tài nguyên toàn cục bằng <b>spinlock</b>.</span>
+
+    <div class="note">
+      <b>Quan trọng</b>
+      Kernel không bao giờ cho phép 1 luồng đang giữ spinlock bị preempt — luồng giữ khóa sẽ chạy tới khi tự nhả khóa. Vì vậy spinlock chỉ được giữ trong thời gian rất ngắn, tránh làm nghẽn các bộ xử lý khác.
+    </div>
+
+    <p class="en">For thread synchronization outside the kernel, Windows provides <b>dispatcher objects</b>. Using a dispatcher object, a thread synchronizes according to several different mechanisms, including mutex locks, semaphores, events, and timers. Dispatcher objects may be either in a <b>signaled</b> state or a <b>non-signaled</b> state.</p>
+    <span class="vi">Để đồng bộ luồng bên ngoài kernel, Windows cung cấp <b>dispatcher object</b>. Dùng dispatcher object, 1 luồng có thể đồng bộ theo nhiều cơ chế khác nhau, gồm mutex lock, semaphore, event, và timer. Dispatcher object có thể ở trạng thái <b>signaled</b> (đã báo hiệu) hoặc <b>non-signaled</b> (chưa báo hiệu).</span>
+
+    <p class="en">A thread acquires a mutex lock by calling a <b>wait()</b> function on the mutex object. If the mutex is currently <b>signaled</b> (meaning it is unlocked/available), the calling thread acquires it, becomes the mutex's owner, and the state changes to <b>non-signaled</b>. The owner releases the mutex lock by invoking a <b>release()</b> function, changing the state back to <b>signaled</b>.</p>
+    <span class="vi">1 luồng chiếm mutex lock bằng cách gọi hàm <b>wait()</b> trên mutex object. Nếu mutex đang ở trạng thái <b>signaled</b> (tức đang rảnh/mở khóa), luồng gọi sẽ chiếm được nó, trở thành chủ (owner) của mutex, và trạng thái chuyển sang <b>non-signaled</b>. Chủ sở hữu nhả mutex lock bằng cách gọi hàm <b>release()</b>, chuyển trạng thái trở lại <b>signaled</b>.</span>
+
+    <svg viewBox="0 0 420 150" style="max-width:420px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <circle cx="105" cy="75" r="55" fill="#7FC4F026" stroke="#4FA4DD" stroke-width="1.5"/>
+      <text x="105" y="70" text-anchor="middle" font-size="12" fill="#1E5F99" font-weight="600">non-signaled</text>
+      <text x="105" y="86" text-anchor="middle" font-size="9.5" fill="#1E5F99">(đang bị khóa)</text>
+      <circle cx="315" cy="75" r="55" fill="#FF6FA51f" stroke="#E8407F" stroke-width="1.5"/>
+      <text x="315" y="70" text-anchor="middle" font-size="12" fill="#C22A63" font-weight="600">signaled</text>
+      <text x="315" y="86" text-anchor="middle" font-size="9.5" fill="#C22A63">(đang rảnh)</text>
+      <path d="M163 58 C 220 30, 250 30, 258 55" fill="none" stroke="#8A5F78" marker-end="url(#wR)"/>
+      <text x="210" y="28" text-anchor="middle" font-size="9" fill="#8A5F78">owner thread releases mutex lock</text>
+      <path d="M258 95 C 250 120, 220 120, 163 92" fill="none" stroke="#8A5F78" marker-end="url(#wR)"/>
+      <text x="210" y="134" text-anchor="middle" font-size="9" fill="#8A5F78">thread acquires mutex lock</text>
+      <defs><marker id="wR" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+    </svg>
+
+    <p class="en">Events are similar to condition variables: they may notify a waiting thread when a desired condition occurs. <b>Timers</b> are another dispatcher object — they notify one or more threads when a specified amount of time has expired, which is useful for scheduling periodic work or timeouts without the thread having to poll a clock itself. Other dispatcher objects such as semaphores behave similarly to the corresponding synchronization tools we've already studied.</p>
+    <span class="vi">Event tương tự condition variable: chúng có thể báo cho 1 luồng đang chờ khi điều kiện mong muốn xảy ra. <b>Timer</b> là 1 dispatcher object khác — nó báo cho 1 hoặc nhiều luồng khi khoảng thời gian định trước đã trôi qua, hữu ích để lập lịch công việc định kỳ hoặc xử lý timeout mà luồng không cần tự poll đồng hồ. Các dispatcher object khác như semaphore hoạt động tương tự các công cụ đồng bộ tương ứng ta đã học.</span>
+
+    <div class="illus">
+      <div class="emo">🚦</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Đèn giao thông: "signaled" giống đèn xanh — ai đến trước được đi qua (chiếm) và đèn đổi thành đỏ (non-signaled) ngay. Người đi qua xong "nhả" bằng cách rời giao lộ, đèn trở lại xanh cho xe tiếp theo.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh — Windows</div>
+      <div class="rchips">
+        <span class="rchip">Uniprocessor: mask ngắt</span><span class="rchip">Multiprocessor: spinlock</span><span class="rchip">Dispatcher object: mutex, semaphore, event, timer</span><span class="rchip">signaled ⟷ non-signaled</span>
+      </div>
+      <p class="rline">Nhớ đúng hướng mũi tên: owner RELEASE → signaled (rảnh); thread ACQUIRE → non-signaled (bận). Dễ nhầm lẫn nếu không để ý ai là người thực hiện hành động.</p>
+    </div>
+
+    <h3 class="subhead">Linux synchronization</h3>
+    <span class="vi">Linux synchronization</span>
+
+    <p class="en">Prior to version 2.6, Linux was a <b>non-preemptive</b> kernel, meaning that a process running in kernel mode could not be preempted — even if a higher-priority process became available to run. Since version 2.6, the Linux kernel became fully <b>preemptive</b>, so a task can now be preempted when it is running in the kernel.</p>
+    <span class="vi">Trước phiên bản 2.6, Linux là kernel <b>non-preemptive</b> (không thể bị chiếm quyền trước), nghĩa là 1 tiến trình đang chạy ở kernel mode không thể bị ngắt — kể cả khi có tiến trình ưu tiên cao hơn sẵn sàng chạy. Từ phiên bản 2.6, kernel Linux trở thành <b>preemptive</b> (có thể bị chiếm quyền) hoàn toàn, 1 tác vụ giờ có thể bị preempt ngay cả khi đang chạy trong kernel.</span>
+
+    <p class="en">Linux provides its own kernel semaphore implementation (equivalent to the counting semaphores of Chapter 6), along with reader-writer versions. <b>"Non-preemptive" here does not mean the semaphore never blocks a thread</b> — a Linux semaphore can and does put a waiting thread to sleep when the resource is unavailable, exactly like the classical semaphore. Before version 2.6, Linux instead protected short critical sections by disabling interrupts; on multiprocessor (SMP) systems it also relies on spinlocks alongside semaphores.</p>
+    <span class="vi">Linux cung cấp 1 hiện thực semaphore kernel của riêng nó (tương đương counting semaphore ở Chương 6), cùng phiên bản reader-writer. <b>"Non-preemptive" ở đây không có nghĩa là semaphore không bao giờ làm luồng ngủ</b> — semaphore của Linux hoàn toàn có thể cho luồng đang chờ đi ngủ khi tài nguyên chưa sẵn sàng, giống hệt semaphore cổ điển. Trước phiên bản 2.6, Linux bảo vệ các critical section ngắn bằng cách tắt ngắt (interrupt); trên hệ đa xử lý (SMP) nó còn dựa thêm vào spinlock song song với semaphore.</span>
+
+    <p class="en">On systems with multiple processing cores, Linux uses spinlock-based locking to ensure that a thread does not block while holding a spinlock. On single-core systems, spinlocks are replaced by enabling and disabling kernel preemption instead.</p>
+    <span class="vi">Trên hệ có nhiều nhân xử lý, Linux dùng khóa dạng spinlock để đảm bảo 1 luồng không bị block trong lúc đang giữ spinlock. Trên hệ chỉ có 1 nhân, spinlock được thay thế bằng việc bật/tắt kernel preemption thay vào đó.</span>
+
+    <p class="en">Linux also provides <b>atomic variables</b> which guarantee that mathematical operations are performed atomically and not interrupted by any other task.</p>
+    <span class="vi">Linux còn cung cấp <b>biến atomic</b> đảm bảo các phép toán số học được thực hiện atomic và không bị tác vụ nào khác ngắt giữa chừng.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Khai báo biến atomic</span>
+      <pre>atomic_t counter;
+int value;</pre>
+    </div>
+
+    <div class="table-scroll">
+    <table class="cmp-table">
+      <tr><th>Thao tác atomic</th><th>Hiệu ứng tương đương</th></tr>
+      <tr><td><code>atomic_set(&amp;counter, 5);</code></td><td>counter = 5</td></tr>
+      <tr><td><code>atomic_add(10, &amp;counter);</code></td><td>counter = counter + 10</td></tr>
+      <tr><td><code>atomic_sub(4, &amp;counter);</code></td><td>counter = counter − 4</td></tr>
+      <tr><td><code>atomic_inc(&amp;counter);</code></td><td>counter = counter + 1</td></tr>
+      <tr><td><code>value = atomic_read(&amp;counter);</code></td><td>value = 12 <span style="color:var(--ink-soft);">(kết quả sau các bước trên: 5+10−4+1 = 12)</span></td></tr>
+    </table>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎰</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Biến atomic giống như máy đếm số vé tại quầy ngân hàng — dù 10 người cùng bấm nút lấy số cùng lúc, máy luôn đảm bảo mỗi người nhận đúng 1 số duy nhất, không bao giờ cấp trùng hay bỏ sót, vì thao tác "tăng số" bên trong máy là không thể bị ngắt giữa chừng.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh — Linux</div>
+      <div class="rchips">
+        <span class="rchip">Pre-2.6: non-preemptive kernel</span><span class="rchip">2.6+: fully preemptive</span><span class="rchip">SMP: spinlock + semaphore</span><span class="rchip">Single-core: bật/tắt kernel preemption thay spinlock</span><span class="rchip">atomic_t: set/add/sub/inc/read</span>
+      </div>
+      <p class="rline">So sánh nhanh: Windows chọn mask-interrupt (uniprocessor) / spinlock (multiprocessor); Linux chọn tắt kernel-preemption (single-core) / spinlock (SMP) — cùng ý tưởng cốt lõi, khác tên gọi.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: POSIX SYNCHRONIZATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-posix" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🐧</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · Real systems</div>
+        <h2>The standard API that UNIX, Linux and macOS all understand</h2>
+        <span class="vi">API chuẩn mà UNIX, Linux, và macOS đều hiểu</span>
+      </div>
+    </div>
+    <p class="intro">The POSIX API is widely used in operating systems such as UNIX, Linux, and macOS. POSIX provides mutex locks, semaphores, and condition variables.</p>
+    <span class="vi">POSIX API được dùng rộng rãi trong các hệ điều hành như UNIX, Linux, macOS. POSIX cung cấp mutex lock, semaphore, và condition variable.</span>
+
+    <h3 class="subhead">POSIX Mutex Locks</h3>
+    <span class="vi">POSIX Mutex Locks</span>
+
+    <p class="en">A mutex lock is created using the <b>pthread_mutex_init()</b> function, with the first parameter a pointer to the lock. Locking and releasing the lock are performed with <b>pthread_mutex_lock()</b> and <b>pthread_mutex_unlock()</b> respectively.</p>
+    <span class="vi">1 mutex lock được tạo bằng hàm <b>pthread_mutex_init()</b>, tham số đầu là con trỏ trỏ tới khóa. Khóa và nhả khóa được thực hiện bằng <b>pthread_mutex_lock()</b> và <b>pthread_mutex_unlock()</b>.</span>
+
+    <div class="codeblock">
+      <span class="clabel">pthread mutex — C</span>
+      <pre>#include &lt;pthread.h&gt;
+
+pthread_mutex_t mutex;
+
+<span class="cm">/* create and initialize the mutex lock */</span>
+pthread_mutex_init(&amp;mutex, NULL);
+
+<span class="cm">/* acquire the mutex lock */</span>
+pthread_mutex_lock(&amp;mutex);
+
+<span class="cm">/* critical section */</span>
+
+<span class="cm">/* release the mutex lock */</span>
+pthread_mutex_unlock(&amp;mutex);</pre>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🔑</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như 1 nhà vệ sinh công cộng có đúng 1 chìa khóa treo ở cửa: ai cần vào phải cầm chìa khóa (lock), xong việc thì treo chìa lại chỗ cũ (unlock) cho người tiếp theo.</div>
+    </div>
+
+    <h3 class="subhead">POSIX Semaphores</h3>
+    <span class="vi">POSIX Semaphores</span>
+
+    <p class="en">POSIX provides two versions — <b>named</b> and <b>unnamed</b>. Named semaphores can be used by unrelated processes, while unnamed semaphores cannot.</p>
+    <span class="vi">POSIX cung cấp 2 phiên bản — <b>named</b> (có tên) và <b>unnamed</b> (không tên). Named semaphore dùng được bởi các tiến trình không liên quan nhau; unnamed semaphore thì không.</span>
+
+    <p class="en">A named semaphore is created using <b>sem_open()</b>; other processes that want to use this semaphore must refer to it by its name, here passed as the string "SEM". The semaphore is acquired and released using <b>sem_wait()</b> and <b>sem_post()</b> — the equivalent of wait() and signal().</p>
+    <span class="vi">1 named semaphore được tạo bằng <b>sem_open()</b>; các tiến trình khác muốn dùng semaphore này phải tham chiếu tới nó bằng tên, ở đây là chuỗi "SEM". Semaphore được chiếm và nhả bằng <b>sem_wait()</b> và <b>sem_post()</b> — tương đương wait() và signal().</span>
+
+    <div class="codeblock">
+      <span class="clabel">POSIX Named Semaphore — C</span>
+      <pre>#include &lt;semaphore.h&gt;
+
+sem_t *sem;
+
+<span class="cm">/* Create the semaphore and initialize it to 1 */</span>
+sem = sem_open("SEM", O_CREAT, 0666, 1);
+
+<span class="cm">/* acquire the semaphore */</span>
+sem_wait(sem);
+
+<span class="cm">/* critical section */</span>
+
+<span class="cm">/* release the semaphore */</span>
+sem_post(sem);</pre>
+    </div>
+
+    <p class="en">Unnamed semaphores are created and initialized using <b>sem_init()</b> instead — the usage pattern of wait/signal around the critical section is otherwise identical. The second argument (<b>pshared</b>) controls sharing scope: <b>0</b> means the semaphore is shared only between threads of the same process; a nonzero value means it may also be shared between processes (typically via memory mapped with <b>mmap()</b>/<b>shmget()</b>). The third argument is the semaphore's initial value.</p>
+    <span class="vi">Unnamed semaphore được tạo và khởi tạo bằng <b>sem_init()</b> thay vào đó — cách dùng wait/signal quanh critical section thì hoàn toàn giống nhau. Tham số thứ 2 (<b>pshared</b>) quy định phạm vi chia sẻ: giá trị <b>0</b> nghĩa là semaphore chỉ dùng chung giữa các thread trong cùng 1 tiến trình; giá trị khác 0 nghĩa là có thể dùng chung giữa các tiến trình khác nhau (thường thông qua vùng nhớ chia sẻ bằng <b>mmap()</b>/<b>shmget()</b>). Tham số thứ 3 là giá trị khởi tạo của semaphore.</span>
+
+    <div class="codeblock">
+      <span class="clabel">POSIX Unnamed Semaphore — C</span>
+      <pre>#include &lt;semaphore.h&gt;
+
+sem_t sem;
+
+<span class="cm">/* Create the semaphore and initialize it to 1 */</span>
+sem_init(&amp;sem, 0, 1);
+
+<span class="cm">/* acquire the semaphore */</span>
+sem_wait(&amp;sem);
+
+<span class="cm">/* critical section */</span>
+
+<span class="cm">/* release the semaphore */</span>
+sem_post(&amp;sem);</pre>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Named — sem_open()</div>
+        <p>Has a name ("SEM") in the system. Usable by completely unrelated processes (not parent-child) — as long as they know the right name.</p>
+        <p class="vi-mini">Có tên ("SEM") trong hệ thống. Dùng được bởi các tiến trình hoàn toàn không liên quan (không phải cha-con) — miễn biết đúng tên.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Unnamed — sem_init()</div>
+        <p>Has no name of its own. Typically used between threads of the same process, or parent-child processes sharing memory.</p>
+        <p class="vi-mini">Không có tên riêng. Thường dùng giữa các thread trong cùng 1 tiến trình, hoặc tiến trình có quan hệ cha-con chia sẻ bộ nhớ chung.</p>
+      </div>
+    </div>
+
+    <h3 class="subhead">POSIX Condition Variables</h3>
+    <span class="vi">POSIX Condition Variables</span>
+
+    <p class="en">Since POSIX is typically used in C/C++ and these languages do not provide a monitor, POSIX <b>condition variables</b> are associated with a POSIX mutex lock to provide mutual exclusion. Condition variables are created and initialized with <b>pthread_cond_init()</b>.</p>
+    <span class="vi">Vì POSIX thường được dùng trong C/C++ và các ngôn ngữ này không cung cấp monitor, <b>condition variable</b> của POSIX được gắn kèm với 1 POSIX mutex lock để cung cấp loại trừ tương hỗ. Condition variable được tạo và khởi tạo bằng <b>pthread_cond_init()</b>.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Tạo mutex + condition variable</span>
+      <pre>pthread_mutex_t mutex;
+pthread_cond_t  cond_var;
+
+pthread_mutex_init(&amp;mutex, NULL);
+pthread_cond_init(&amp;cond_var, NULL);</pre>
+    </div>
+
+    <p class="en">A thread waiting for the condition <b>a == b</b> to become true must hold the mutex, then loop on <b>pthread_cond_wait()</b> — note the <b>while</b>, not <b>if</b>, for exactly the same reason Mesa-style monitors use while in Chapter 6.</p>
+    <span class="vi">1 luồng chờ điều kiện <b>a == b</b> trở thành true phải giữ mutex, rồi lặp trên <b>pthread_cond_wait()</b> — chú ý dùng <b>while</b>, không phải <b>if</b>, vì đúng lý do monitor kiểu Mesa dùng while ở Chương 6.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Chờ điều kiện a == b</span>
+      <pre>pthread_mutex_lock(&amp;mutex);
+while (a != b)
+    pthread_cond_wait(&amp;cond_var, &amp;mutex);
+
+pthread_mutex_unlock(&amp;mutex);</pre>
+    </div>
+
+    <p class="en">A thread that makes <b>a == b</b> become true signals the waiting thread while still holding the mutex, then releases it.</p>
+    <span class="vi">1 luồng khiến <b>a == b</b> trở thành true sẽ báo hiệu (signal) cho luồng đang chờ trong lúc vẫn đang giữ mutex, rồi mới nhả khóa.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Báo hiệu cho luồng đang chờ</span>
+      <pre>pthread_mutex_lock(&amp;mutex);
+a = b;
+pthread_cond_signal(&amp;cond_var);
+pthread_mutex_unlock(&amp;mutex);</pre>
+    </div>
+
+    <p class="en">In the POSIX thread library: <b>pthread_cond_signal()</b> is used to unblock a thread waiting on a condition variable — ignored if no thread is currently waiting. <b>pthread_cond_broadcast()</b> is used to unblock <b>all</b> threads waiting on the condition variable. <b>pthread_cond_wait()</b> must be called while the mutex is locked — it releases the mutex and causes the calling thread to block; when signaled, the thread is awakened and the mutex is reacquired.</p>
+    <span class="vi">Trong thư viện POSIX thread: <b>pthread_cond_signal()</b> dùng để đánh thức 1 luồng đang chờ trên condition variable — bị bỏ qua nếu hiện không có luồng nào đang chờ. <b>pthread_cond_broadcast()</b> dùng để đánh thức <b>tất cả</b> các luồng đang chờ trên condition variable. <b>pthread_cond_wait()</b> phải được gọi khi mutex đang khóa — nó nhả mutex và khiến luồng gọi bị block; khi được báo hiệu, luồng được đánh thức và mutex được chiếm lại.</span>
+
+    <div class="illus">
+      <div class="emo">🛎️</div>
+      <div class="cap"><b>Ví dụ đời thường</b>pthread_cond_signal giống như rung chuông gọi đúng 1 khách đang ngồi chờ trong phòng chờ nha sĩ; pthread_cond_broadcast giống như phát loa gọi TẤT CẢ mọi người trong phòng chờ cùng lúc vì phòng khám đã mở cửa trở lại.</div>
+    </div>
+
+    <h3 class="subhead">Example: mutex alone vs. mutex + condition variable</h3>
+    <span class="vi">Ví dụ: mutex một mình vs. mutex + condition variable</span>
+
+    <p class="en">The slides give a concrete "problem" example: using only a mutex lock and a busy-wait flag to synchronize two threads, instead of a proper condition variable.</p>
+    <span class="vi">Slide đưa ra 1 ví dụ "có vấn đề" cụ thể: chỉ dùng mutex lock và 1 cờ (flag) busy-wait để đồng bộ 2 luồng, thay vì dùng condition variable đúng cách.</span>
+
+    <div class="codeblock">
+      <span class="clabel">An example of mutex problem — nguyên văn code slide 28</span>
+      <pre>int thread_flag;
+pthread_mutex_t thread_flag_mutex;
+
+void initialize_flag() {
+    pthread_mutex_init(&amp;thread_flag_mutex, NULL);
+    thread_flag = 0;
+}
+
+<span class="cm">/* this function may be called by other threads */</span>
+void set_thread_flag(int flag_value) {
+    <span class="cm">/* Protect the flag with a mutex lock. */</span>
+    pthread_mutex_lock(&amp;thread_flag_mutex);
+    thread_flag = flag_value;
+    pthread_mutex_unlock(&amp;thread_flag_mutex);
+}
+
+void* thread_function(void* thread_arg) {
+    while (1) {
+        int flag_is_set;
+        <span class="cm">/* Protect the flag with a mutex lock. */</span>
+        pthread_mutex_lock(&amp;thread_flag_mutex);
+        flag_is_set = thread_flag;
+        pthread_mutex_unlock(&amp;thread_flag_mutex);
+
+        if (flag_is_set)
+            do_work();
+        <span class="cm">/* Else don't do anything. Just loop again. */</span>
+    }
+    return NULL;
+}</pre>
+    </div>
+
+    <div class="hook">
+      <b>❓ Question from the original slide</b>
+      "May cause starvation?" — why is this <b>while(1)</b> loop in thread_function() — re-locking the mutex, checking the flag, unlocking, and immediately looping again if it's not set — a problem?
+      <span class="vi">Đây là nguyên văn câu hỏi slide đặt ra ở cuối ví dụ busy-wait này.</span>
+    </div>
+
+    <p class="en">This is a textbook <b>busy wait</b>: thread_function() spins forever, repeatedly locking and unlocking <b>thread_flag_mutex</b> as fast as the CPU allows, with no pause between iterations. That wastes an entire CPU core doing nothing useful — and because it is constantly re-acquiring <b>thread_flag_mutex</b>, it can also delay <b>set_thread_flag()</b> (which needs the very same mutex to update the flag), potentially starving the thread that is trying to actually set the flag.</p>
+    <span class="vi">Đây là 1 ví dụ kinh điển của <b>busy waiting</b>: thread_function() lặp vô hạn, liên tục khóa rồi mở <b>thread_flag_mutex</b> nhanh hết mức CPU cho phép, không hề nghỉ giữa các vòng lặp. Điều này lãng phí nguyên 1 nhân CPU mà không làm gì hữu ích — và vì liên tục tranh giành <b>thread_flag_mutex</b>, nó còn có thể làm trễ chính <b>set_thread_flag()</b> (hàm cũng cần đúng mutex đó để cập nhật cờ), khiến luồng đang muốn set cờ bị "đói" (starve).</span>
+
+    <div class="note">
+      <b>Biến thể tự thêm (không phải của slide)</b>
+      Một cách khác để viết vòng lặp trên — vẫn là busy-wait nhưng ít tốn CPU hơn — là chèn 1 khoảng nghỉ ngắn giữa các lần kiểm tra: <span class="mono">pthread_mutex_unlock(&amp;mutex); sleep(...); pthread_mutex_lock(&amp;mutex);</span> bên trong while. Đây KHÔNG phải code gốc của slide — chỉ là 1 biến thể minh họa thêm, vẫn có cùng vấn đề về nguyên tắc (vẫn polling thay vì dùng condition variable), chỉ đỡ hao CPU hơn 1 chút.
+    </div>
+
+    <p class="en">The fixed version replaces the busy-wait loop with a proper <b>condition variable</b>: the waiting thread calls <b>pthread_cond_wait()</b> (which atomically unlocks the mutex and blocks — no CPU wasted), and <b>set_thread_flag()</b> calls <b>pthread_cond_signal()</b> to wake it immediately.</p>
+    <span class="vi">Phiên bản đã sửa thay vòng lặp busy-wait bằng 1 <b>condition variable</b> đúng cách: luồng đang chờ gọi <b>pthread_cond_wait()</b> (vừa mở mutex vừa block atomic — không tốn CPU), và <b>set_thread_flag()</b> gọi <b>pthread_cond_signal()</b> để đánh thức nó ngay lập tức.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Condition variable (cont.) — phiên bản đã sửa</span>
+      <pre>int thread_flag;
+pthread_mutex_t flag_mutex;
+pthread_cond_t  flag_cond;
+
+void initialize_flag() {
+    pthread_mutex_init(&amp;flag_mutex, NULL);
+    pthread_cond_init(&amp;flag_cond, NULL);
+    thread_flag = 0;
+}
+
+<span class="cm">/* this function may be called by other threads */</span>
+void set_thread_flag(int flag_value) {
+    pthread_mutex_lock(&amp;flag_mutex);
+    thread_flag = flag_value;
+    pthread_cond_signal(&amp;flag_cond);
+    pthread_mutex_unlock(&amp;flag_mutex);
+}
+
+void* thread_function(void* thread_arg) {
+    while (1) {
+        pthread_mutex_lock(&amp;flag_mutex);
+
+        while (!thread_flag)
+            pthread_cond_wait(&amp;flag_cond, &amp;flag_mutex);
+
+        pthread_mutex_unlock(&amp;flag_mutex);
+
+        do_work();
+    }
+    return NULL;
+}</pre>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">❌ Mutex + busy-wait flag</div>
+        <ul><li>Pure busy-wait, spins the CPU at 100%</li><li>Constantly re-contends the mutex, can delay the setter thread</li><li>Can starve unpredictably</li></ul>
+        <ul class="vi-mini"><li>Busy-wait thuần, chiếm CPU 100%</li><li>Liên tục tranh mutex, có thể làm trễ luồng gọi set</li><li>Có thể starve không đoán trước</li></ul>
+      </div>
+      <div class="compare-box">
+        <div class="ck">✅ Mutex + condition variable</div>
+        <ul><li>Thread truly sleeps while waiting (no CPU wasted)</li><li>Woken up IMMEDIATELY when signal() is called</li><li>No more starvation from polling</li></ul>
+        <ul class="vi-mini"><li>Thread ngủ thật sự khi chờ (không tốn CPU)</li><li>Được đánh thức NGAY khi signal() gọi</li><li>Không còn vấn đề starvation do polling</li></ul>
+      </div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">pthread_mutex_lock/unlock</span><span class="rchip">sem_open (named) vs sem_init (unnamed)</span><span class="rchip">condvar luôn đi kèm 1 mutex</span><span class="rchip">cond_wait dùng while, không if</span><span class="rchip">signal = đánh thức 1; broadcast = đánh thức tất cả</span>
+      </div>
+      <p class="rline">Bài học lớn nhất của tab này: busy-wait bằng flag (dù có thêm sleep hay không) LUÔN tệ hơn condition variable thật — cùng ý tưởng "chờ điều kiện" nhưng cách hiện thực quyết định có tốn CPU và có đáng tin cậy hay không.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: JAVA SYNCHRONIZATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-java" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">☕</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Real systems</div>
+        <h2>One language, four synchronization tools built in</h2>
+        <span class="vi">Một ngôn ngữ, bốn công cụ đồng bộ dựng sẵn</span>
+      </div>
+    </div>
+    <p class="intro">Java provides rich support for thread synchronization, including <b>monitors</b> (the <b>synchronized</b> keyword), <b>reentrant locks</b>, <b>semaphores</b>, and <b>condition variables</b>.</p>
+    <span class="vi">Java cung cấp hỗ trợ phong phú cho đồng bộ hóa luồng, gồm <b>monitor</b> (từ khóa <b>synchronized</b>), <b>reentrant lock</b>, <b>semaphore</b>, và <b>condition variable</b>.</span>
+
+    <h3 class="subhead">Java Monitors</h3>
+    <span class="vi">Java Monitors</span>
+
+    <p class="en">Every object has associated with it a single lock. A method that is declared <b>synchronized</b> requires ownership of the object's lock before it can run — ownership is acquired at method invocation and released automatically when the method exits. If a thread tries to invoke a synchronized method while another thread owns the lock, the calling thread blocks and is placed in the object's <b>entry set</b>.</p>
+    <span class="vi">Mỗi object có gắn liền 1 khóa (lock) duy nhất. 1 method được khai báo <b>synchronized</b> yêu cầu quyền sở hữu khóa của object trước khi được chạy — quyền sở hữu được chiếm khi gọi method và tự động nhả khi method kết thúc. Nếu 1 luồng cố gọi 1 method synchronized trong khi luồng khác đang giữ khóa, luồng gọi sẽ bị block và được đưa vào <b>entry set</b> của object.</span>
+
+    <svg viewBox="0 0 440 220" style="max-width:440px;width:100%;margin:6px 0 24px;font-family:'IBM Plex Mono',monospace;">
+      <text x="220" y="16" text-anchor="middle" font-size="11.5" fill="#4A2E40" font-weight="600">A thread that tries to acquire an unavailable lock is placed in the entry set</text>
+      <g>
+        <rect x="20"  y="60" width="56" height="56" rx="10" fill="#7FC4F026" stroke="#4FA4DD"/><text x="48" y="92" text-anchor="middle" font-size="18">🧵</text>
+        <rect x="90"  y="60" width="56" height="56" rx="10" fill="#7FC4F026" stroke="#4FA4DD"/><text x="118" y="92" text-anchor="middle" font-size="18">🧵</text>
+        <rect x="160" y="60" width="56" height="56" rx="10" fill="#7FC4F026" stroke="#4FA4DD"/><text x="188" y="92" text-anchor="middle" font-size="18">🧵</text>
+        <rect x="230" y="60" width="56" height="56" rx="10" fill="#7FC4F026" stroke="#4FA4DD"/><text x="258" y="92" text-anchor="middle" font-size="18">🧵</text>
+      </g>
+      <text x="153" y="135" text-anchor="middle" font-size="10.5" fill="#1E5F99" font-weight="600">entry set</text>
+      <path d="M286 88 h 40" stroke="#8A5F78" marker-end="url(#jR)"/>
+      <text x="306" y="78" text-anchor="middle" font-size="9.5" fill="#8A5F78">acquire lock</text>
+      <circle cx="380" cy="88" r="48" fill="#FFE0EE" stroke="#8A5F78"/>
+      <text x="380" y="80" text-anchor="middle" font-size="11" fill="#4A2E40" font-weight="600">object lock</text>
+      <text x="380" y="98" text-anchor="middle" font-size="18">🧵</text>
+      <text x="380" y="118" text-anchor="middle" font-size="9" fill="#8A5F78">owner</text>
+      <defs><marker id="jR" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8A5F78"/></marker></defs>
+    </svg>
+
+    <div class="illus">
+      <div class="emo">🏪</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Phòng thử đồ ở shop quần áo chỉ có 1 phòng: ai đang thử bên trong là "owner" giữ khóa; những người khác muốn vào phải đứng xếp hàng ở "entry set" bên ngoài cho tới khi người đang thử ra.</div>
+    </div>
+
+    <p class="en">A Bounded Buffer illustrates this: the class declares <b>insert()</b> and <b>remove()</b> as <b>synchronized</b> — only one of them (called by either a producer or a consumer) may be active on a given buffer instance at any moment.</p>
+    <span class="vi">Ví dụ Bounded Buffer minh họa điều này: lớp khai báo <b>insert()</b> và <b>remove()</b> là <b>synchronized</b> — chỉ 1 trong 2 (được gọi bởi producer hoặc consumer) được hoạt động trên 1 instance buffer tại bất kỳ thời điểm nào.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Bounded Buffer — khai báo lớp</span>
+      <pre>public class BoundedBuffer&lt;E&gt;
+{
+    private static final int BUFFER_SIZE = 5;
+
+    private int count, in, out;
+    private E[] buffer;
+
+    public BoundedBuffer() {
+        count = 0;
+        in = 0;
+        out = 0;
+        buffer = (E[]) new Object[BUFFER_SIZE];
+    }
+
+    <span class="cm">/* Producers call this method */</span>
+    public synchronized void insert(E item) {
+        <span class="cm">/* see the full implementation below */</span>
+    }
+
+    <span class="cm">/* Consumers call this method */</span>
+    public synchronized E remove() {
+        <span class="cm">/* see the full implementation below */</span>
+    }
+}</pre>
+    </div>
+
+    <p class="en">But <b>synchronized</b> alone is not enough — <b>insert()</b> must also wait while the buffer is full, and <b>remove()</b> must wait while it's empty. Java handles this with the universal <b>wait()</b>/<b>notify()</b> methods every object inherits.</p>
+    <span class="vi">Nhưng chỉ <b>synchronized</b> thôi là chưa đủ — <b>insert()</b> còn phải chờ khi buffer đầy, và <b>remove()</b> phải chờ khi buffer rỗng. Java xử lý điều này bằng 2 method phổ quát <b>wait()</b>/<b>notify()</b> mà mọi object đều kế thừa.</span>
+
+    <div class="codeblock">
+      <span class="clabel">insert() — đầy đủ</span>
+      <pre>/* Producers call this method */
+public synchronized void insert(E item) {
+    while (count == BUFFER_SIZE) {
+        try {
+            wait();
+        }
+        catch (InterruptedException ie) { }
+    }
+
+    buffer[in] = item;
+    in = (in + 1) % BUFFER_SIZE;
+    count++;
+
+    notify();
+}</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">remove() — đầy đủ</span>
+      <pre>/* Consumers call this method */
+public synchronized E remove() {
+    E item;
+
+    while (count == 0) {
+        try {
+            wait();
+        }
+        catch (InterruptedException ie) { }
+    }
+
+    item = buffer[out];
+    out = (out + 1) % BUFFER_SIZE;
+    count--;
+
+    notify();
+
+    return item;
+}</pre>
+    </div>
+
+    <p class="en"><b>wait()</b>: (1) the thread calling wait() releases the object lock, (2) the thread's state is set to blocked, and (3) the thread is placed in the <b>wait set</b> for the object.</p>
+    <span class="vi"><b>wait()</b>: (1) luồng gọi wait() nhả khóa object, (2) trạng thái luồng được đặt thành blocked, và (3) luồng được đưa vào <b>wait set</b> của object.</span>
+
+    <p class="en"><b>notify()</b>: (1) an arbitrary thread <b>T</b> is selected from the wait set, (2) T is moved from the wait set to the entry set, and (3) the state of T is set to runnable.</p>
+    <span class="vi"><b>notify()</b>: (1) 1 luồng bất kỳ <b>T</b> được chọn từ wait set, (2) T được chuyển từ wait set sang entry set, và (3) trạng thái của T được đặt thành runnable.</span>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">entry set</div>
+        <p>Threads waiting to acquire the lock for the first time — never yet inside.</p>
+        <p class="vi-mini">Các luồng đang chờ để CHIẾM khóa lần đầu — chưa bao giờ vào được bên trong.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">wait set</div>
+        <p>Threads that WERE already inside, voluntarily called wait() to give up the lock and wait on a condition — need notify() to return to the entry set.</p>
+        <p class="vi-mini">Các luồng ĐÃ từng vào bên trong, tự nguyện gọi wait() để nhường khóa và chờ điều kiện — cần được notify() để quay lại entry set.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Mặc định nên dùng while, không phải if</b>
+      Giống hệt lý do ở monitor kiểu Mesa (Chương 6) và pthread_cond_wait (tab POSIX) — sau khi được notify() đánh thức, điều kiện có thể đã bị 1 luồng khác chen vào thay đổi lại, hoặc do spurious wakeup. Code trên dùng while(count==...) chứ không phải if, để kiểm tra lại cho chắc. (Ngoại lệ: ví dụ doWork() ở tab Java bên dưới dùng if một cách hợp lệ — xem ghi chú ở đó để biết vì sao.)
+    </div>
+
+    <h3 class="subhead">Java Reentrant Locks</h3>
+    <span class="vi">Java Reentrant Locks</span>
+
+    <p class="en">The simplest strategy is to use a class implementing the <b>Lock</b> interface — the most common being <b>ReentrantLock</b>, which is similar to a mutex lock. <b>"Reentrant"</b> means a thread that already owns the lock may call <b>lock()</b> on it again without blocking itself — Java just increments an internal hold count, and the lock is only truly released once <b>unlock()</b> has been called the same number of times.</p>
+    <span class="vi">Chiến lược đơn giản nhất là dùng 1 lớp hiện thực interface <b>Lock</b> — phổ biến nhất là <b>ReentrantLock</b>, hoạt động tương tự mutex lock. <b>"Reentrant"</b> nghĩa là 1 luồng đã đang giữ khóa có thể gọi <b>lock()</b> thêm lần nữa mà không tự làm mình bị block — Java chỉ tăng 1 bộ đếm nội bộ, và khóa chỉ thật sự được nhả khi <b>unlock()</b> được gọi đủ số lần tương ứng.</span>
+
+    <div class="codeblock">
+      <span class="clabel">ReentrantLock — cách dùng</span>
+      <pre>Lock key = new ReentrantLock();
+
+key.lock();
+try {
+    <span class="cm">/* critical section */</span>
+}
+finally {
+    key.unlock();
+}</pre>
+    </div>
+
+    <p class="en">A typical use: calling <b>lock()</b> to acquire ownership and <b>unlock()</b> to release it — placed inside a <b>finally</b> clause, to ensure the lock is released even if an exception occurs in the critical section.</p>
+    <span class="vi">Cách dùng điển hình: gọi <b>lock()</b> để chiếm quyền sở hữu và <b>unlock()</b> để nhả — đặt trong khối <b>finally</b>, để đảm bảo khóa vẫn được nhả ngay cả khi có exception xảy ra trong critical section.</span>
+
+    <div class="illus">
+      <div class="emo">🧯</div>
+      <div class="cap"><b>Ví dụ đời thường</b>finally giống như quy định bắt buộc "dù có cháy nổ hay sự cố gì giữa chừng, trước khi rời phòng vẫn phải khóa cửa lại" — đảm bảo khóa luôn được trả, không để sự cố khiến tài nguyên bị kẹt mãi mãi ở trạng thái khóa.</div>
+    </div>
+
+    <h3 class="subhead">Java Semaphores</h3>
+    <span class="vi">Java Semaphores</span>
+
+    <p class="en">The <b>java.util.concurrent</b> package also provides a <b>Semaphore</b> implementation, constructed with an initial integer value.</p>
+    <span class="vi">Gói <b>java.util.concurrent</b> còn cung cấp hiện thực <b>Semaphore</b>, khởi tạo với 1 giá trị nguyên ban đầu.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Java Semaphore — constructor</span>
+      <pre>Semaphore(int value);</pre>
+    </div>
+
+    <div class="codeblock">
+      <span class="clabel">Java Semaphore — cách dùng</span>
+      <pre>Semaphore sem = new Semaphore(1);
+
+try {
+    sem.acquire();
+    <span class="cm">/* critical section */</span>
+}
+catch (InterruptedException ie) { }
+finally {
+    sem.release();
+}</pre>
+    </div>
+
+    <div class="note">
+      <b>Why if here, but while elsewhere?</b>
+      Ví dụ doWork() này dùng if theo đúng nguyên văn slide, vì mỗi condVars[threadNumber] được thiết kế để chỉ signal() đúng 1 luồng kế tiếp trong 1 vòng xoay cố định — về mặt logic bài toán, if là đủ cho kịch bản cụ thể này. Nhưng trong code thực tế nói chung, kể cả khi logic có vẻ "chắc ăn" như vậy, vẫn nên dùng while thay vì if: Java (giống Mesa-style monitor ở Chương 6) không đảm bảo tuyệt đối không có spurious wakeup, và nếu code sau này bị sửa đổi (thêm luồng, đổi logic signal) mà vẫn còn if, lỗi sẽ rất khó phát hiện. Xem ghi chú "Mặc định nên dùng while" bên dưới để biết lý do đầy đủ.
+    </div>
+
+    <p class="en"><b>acquire()</b> and <b>release()</b> correspond directly to <b>wait()</b> and <b>signal()</b> from the classical semaphore definition — again wrapped in try/finally for safety.</p>
+    <span class="vi"><b>acquire()</b> và <b>release()</b> tương ứng trực tiếp với <b>wait()</b> và <b>signal()</b> trong định nghĩa semaphore kinh điển — lại được bọc trong try/finally để an toàn.</span>
+
+    <h3 class="subhead">Java Condition Variables</h3>
+    <span class="vi">Java Condition Variables</span>
+
+    <p class="en">Condition variables are associated with a <b>ReentrantLock</b> using the <b>newCondition()</b> method. A thread waits by calling <b>await()</b>, and signals by calling <b>signal()</b>.</p>
+    <span class="vi">Condition variable được gắn với 1 <b>ReentrantLock</b> thông qua method <b>newCondition()</b>. 1 luồng chờ bằng cách gọi <b>await()</b>, và báo hiệu bằng cách gọi <b>signal()</b>.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Tạo condition variable</span>
+      <pre>Lock key = new ReentrantLock();
+Condition condVar = key.newCondition();</pre>
+    </div>
+
+    <p class="en">Example: five threads (numbered 0–4) must do work in strict turn order, using a shared <b>turn</b> variable and one condition variable per thread. A thread waits on its own <b>condVars[threadNumber]</b> unless it's already its turn; after doing its work, it advances <b>turn</b> and signals the next thread's condition variable.</p>
+    <span class="vi">Ví dụ: 5 luồng (đánh số 0–4) phải làm việc theo đúng thứ tự luân phiên, dùng 1 biến dùng chung <b>turn</b> và 1 condition variable riêng cho mỗi luồng. 1 luồng chờ trên chính <b>condVars[threadNumber]</b> của nó trừ khi đã tới lượt; sau khi làm xong, nó tăng <b>turn</b> và báo hiệu cho condition variable của luồng kế tiếp.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Java Condition Variables — ví dụ 5 luồng theo lượt</span>
+      <pre>/* threadNumber is the thread that wishes to do some work */
+public void doWork(int threadNumber)
+{
+    lock.lock();
+
+    try {
+        /**
+         * If it's not my turn, then wait
+         * until I'm signaled.
+         */
+        if (threadNumber != turn)
+            condVars[threadNumber].await();
+
+        /**
+         * Do some work for awhile ...
+         */
+
+        /**
+         * Now signal to the next thread.
+         */
+        turn = (turn + 1) % 5;
+        condVars[turn].signal();
+    }
+    catch (InterruptedException ie) { }
+    finally {
+        lock.unlock();
+    }
+}</pre>
+    </div>
+
+    <div class="illus">
+      <div class="emo">🎡</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống hệt vòng quay ngựa gỗ trong công viên: mỗi "ngựa" (luồng) chỉ được lên khi đúng lượt mình được gọi tên qua loa — xong lượt, người vận hành gọi tiếp đúng người kế tiếp theo vòng, chứ không gọi bừa.</div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">synchronized method = Java monitor</span><span class="rchip">entry set (chờ chiếm khóa) vs wait set (chờ điều kiện)</span><span class="rchip">wait()/notify() luôn kèm while</span><span class="rchip">ReentrantLock + finally{unlock()}</span><span class="rchip">Semaphore.acquire()/release()</span><span class="rchip">Condition.await()/signal() qua newCondition()</span>
+      </div>
+      <p class="rline">4 công cụ Java đồng bộ đều ánh xạ 1-1 với lý thuyết Chương 6: synchronized=monitor, ReentrantLock=mutex, Semaphore=semaphore, Condition=condition variable — chỉ khác cú pháp gọi.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: ALTERNATIVE APPROACHES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-alternative" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧭</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Beyond locks</div>
+        <h2>When locks are no longer the only option</h2>
+        <span class="vi">Khi lock không còn là lựa chọn duy nhất</span>
+      </div>
+    </div>
+    <p class="intro">With the emergence of multicore systems has come increased pressure to develop multithreaded applications — yet with that need come new concerns about how to best develop concurrent applications. The locking mechanisms we have used so far require programmers to access locks in a sequential consistent manner, which can be error-prone.</p>
+    <span class="vi">Cùng với sự xuất hiện của hệ thống đa nhân, áp lực phát triển ứng dụng đa luồng ngày càng tăng — và cùng với đó là các mối quan tâm mới về cách phát triển ứng dụng đồng thời tốt nhất. Các cơ chế khóa ta dùng từ đầu chương yêu cầu lập trình viên truy cập khóa theo đúng trình tự nhất quán, điều này rất dễ gây lỗi.</span>
+
+    <h3 class="subhead">Transactional Memory</h3>
+    <span class="vi">Transactional Memory</span>
+
+    <p class="en">A <b>memory transaction</b> is a sequence of read-write operations to memory that are performed atomically. Consider a function <b>update()</b> that must be called atomically. One option is to use mutex locks as we have seen.</p>
+    <span class="vi">1 <b>memory transaction</b> là 1 chuỗi thao tác đọc-ghi lên bộ nhớ được thực hiện atomic. Xét 1 hàm <b>update()</b> cần được gọi atomic. 1 lựa chọn là dùng mutex lock như đã thấy.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Cách cũ — mutex lock</span>
+      <pre>void update ()
+{
+    acquire();
+
+    <span class="cm">/* modify shared data */</span>
+
+    release();
+}</pre>
+    </div>
+
+    <p class="en">A transaction can be completed by enclosing statements in an <b>atomic{S}</b> block, which ensures that the statements in <b>S</b> are executed as a transaction — the system guarantees atomicity without the programmer explicitly managing a lock.</p>
+    <span class="vi">1 transaction có thể hoàn chỉnh bằng cách bọc các câu lệnh trong khối <b>atomic{S}</b>, đảm bảo các câu lệnh trong <b>S</b> được thực thi như 1 transaction — hệ thống tự đảm bảo tính atomic mà lập trình viên không cần tự quản lý khóa.</span>
+
+    <div class="codeblock">
+      <span class="clabel">Transactional memory — atomic block</span>
+      <pre>void update ()
+{
+    atomic {
+        <span class="cm">/* modify shared data */</span>
+    }
+}</pre>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Mutex lock (the familiar way)</div>
+        <p>The programmer manually manages acquire()/release() — easy to forget, easy to get the order wrong, easy to deadlock with multiple locks.</p>
+        <p class="vi-mini">Lập trình viên tự quản lý acquire()/release() — dễ quên, dễ đặt sai thứ tự, dễ deadlock khi có nhiều khóa.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Transactional memory</div>
+        <p>Just declare an atomic{} block — the system (hardware or software) takes care of guaranteeing atomicity.</p>
+        <p class="vi-mini">Chỉ cần khai báo khối atomic{} — hệ thống (phần cứng hoặc phần mềm) tự lo việc đảm bảo tính nguyên tử.</p>
+      </div>
+    </div>
+
+    <div class="illus">
+      <div class="emo">💳</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống giao dịch chuyển khoản ngân hàng thật: hoặc cả "trừ tiền người gửi" và "cộng tiền người nhận" cùng thành công, hoặc nếu có sự cố giữa chừng thì cả 2 đều bị hủy — không bao giờ có trạng thái nửa vời. Đó chính xác là ý nghĩa "transaction" (giao dịch) trong tên gọi.</div>
+    </div>
+
+    <h3 class="subhead">OpenMP</h3>
+    <span class="vi">OpenMP</span>
+
+    <p class="en">Recall from Chapter 4 that <b>OpenMP</b> is a set of compiler directives and an API that support parallel programming. OpenMP identifies parallel regions as blocks of code that may run in parallel. Within parallel regions, developers can use the <b>critical</b> pragma directive to specify a critical section.</p>
+    <span class="vi">Nhắc lại từ Chương 4, <b>OpenMP</b> là 1 tập các chỉ thị trình biên dịch (compiler directive) và API hỗ trợ lập trình song song. OpenMP xác định các vùng song song (parallel region) là các khối code có thể chạy song song. Bên trong vùng song song, lập trình viên có thể dùng chỉ thị pragma <b>critical</b> để khai báo 1 critical section.</span>
+
+    <div class="codeblock">
+      <span class="clabel">OpenMP — #pragma omp critical</span>
+      <pre>#pragma omp critical
+{
+    count += value;
+}</pre>
+    </div>
+
+    <p class="en">When a thread reaches the region identified by <b>#pragma omp critical</b>, it waits until no other thread is executing in that section before proceeding — the runtime system automatically provides mutual exclusion for code inside the critical section.</p>
+    <span class="vi">Khi 1 luồng chạm tới vùng được đánh dấu bởi <b>#pragma omp critical</b>, nó đợi tới khi không còn luồng nào khác đang thực thi trong vùng đó mới được tiếp tục — runtime hệ thống tự động cung cấp loại trừ tương hỗ cho code bên trong critical section.</span>
+
+    <div class="illus">
+      <div class="emo">🏷️</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như chỉ cần dán 1 tấm biển "khu vực giới hạn — chỉ 1 người được vào" trước cửa, thay vì tự tay lắp đặt ổ khóa và phân phát chìa khóa — bảo vệ (compiler/runtime) sẽ tự động đảm bảo quy tắc đó được tuân thủ.</div>
+    </div>
+
+    <h3 class="subhead">Functional Programming Languages</h3>
+    <span class="vi">Functional Programming Languages</span>
+
+    <p class="en">Loosely defined, a <b>functional language</b> does not maintain state — once a variable has been defined and assigned a value, it cannot change. Because functional languages disallow state, by definition they do not have the data race issue that imperative languages must contend with, since no shared data is being modified.</p>
+    <span class="vi">Hiểu đơn giản, 1 <b>ngôn ngữ hàm (functional language)</b> không duy trì trạng thái (state) — khi 1 biến đã được định nghĩa và gán giá trị, nó không thể thay đổi nữa. Vì ngôn ngữ hàm không cho phép trạng thái, theo định nghĩa chúng không gặp vấn đề data race như ngôn ngữ mệnh lệnh (imperative) phải đối mặt, vì không có dữ liệu dùng chung nào bị sửa đổi.</span>
+
+    <p class="en">Two well-known functional languages that support concurrent/parallel programming are <b>Erlang</b> and <b>Scala</b>. With no mutable state, race conditions simply cannot occur — the synchronization problem is sidestepped entirely rather than solved with locks.</p>
+    <span class="vi">2 ngôn ngữ hàm nổi tiếng hỗ trợ lập trình đồng thời/song song là <b>Erlang</b> và <b>Scala</b>. Vì không có trạng thái thay đổi được (mutable state), race condition đơn giản là không thể xảy ra — bài toán đồng bộ bị né tránh hoàn toàn thay vì được giải bằng khóa.</span>
+
+    <div class="illus">
+      <div class="emo">🧮</div>
+      <div class="cap"><b>Ví dụ đời thường</b>Giống như công thức toán x + y = z: kết quả z không bao giờ "bị người khác âm thầm sửa" sau khi đã tính ra, vì nó không phải 1 ô nhớ có thể ghi đè — nó chỉ là 1 giá trị cố định được suy ra từ x và y. Không có gì để "tranh chấp" cả.</div>
+    </div>
+
+    <div class="compare-row">
+      <div class="compare-box">
+        <div class="ck">Imperative (C, Java, …)</div>
+        <p>A variable can be overwritten many times → needs a lock/semaphore/monitor to protect it when multiple threads write.</p>
+        <p class="vi-mini">Biến có thể bị ghi đè nhiều lần → cần lock/semaphore/monitor để bảo vệ khi nhiều luồng cùng ghi.</p>
+      </div>
+      <div class="compare-box">
+        <div class="ck">Functional (Erlang, Scala, …)</div>
+        <p>A variable is immutable once assigned → no "overwrite" to contend over → sidesteps the synchronization problem entirely.</p>
+        <p class="vi-mini">Biến bất biến (immutable) sau khi gán → không có "ghi đè" nào để tranh chấp → né hẳn vấn đề đồng bộ.</p>
+      </div>
+    </div>
+
+    <div class="recap">
+      <div class="rtitle">📌 Ghi nhớ nhanh</div>
+      <div class="rchips">
+        <span class="rchip">Transactional memory: atomic{S}</span><span class="rchip">OpenMP: #pragma omp critical</span><span class="rchip">Functional: immutable → không race</span>
+      </div>
+      <p class="rline">Cả 3 hướng đều chung 1 tinh thần: giảm gánh nặng quản lý khóa thủ công khỏi vai lập trình viên — hoặc để hệ thống tự lo (transactional memory, OpenMP), hoặc loại bỏ hẳn nguyên nhân gây race ngay từ thiết kế ngôn ngữ (functional).</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: EXERCISES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-exercises" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📝</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">08 · Practice</div>
+        <h2>2 "find-the-bug" questions from the slides + 1 original</h2>
+        <span class="vi">2 câu hỏi "tìm lỗi" nguyên bản từ slide + 1 câu tự biên soạn — tự phân tích trước khi mở đáp án</span>
+      </div>
+    </div>
+    <p class="intro">Cả 3 bài dưới đây dựng lại đúng những câu hỏi slide gốc đặt ra giữa chừng ("What's the problem with this algorithm?", "May cause starvation?") cộng thêm 1 bài tự luyện về thứ tự semaphore. Tự suy luận trước khi bấm "Xem đáp án".</p>
+    <span class="vi">Cố gắng tự trả lời trước — càng vật lộn với đề bài, càng nhớ lâu.</span>
+
+    <div class="exercise">
+      <h4>Exercise 1 — Dining-Philosophers: lỗi của thuật toán semaphore ngây thơ</h4>
+      <div class="codeblock" style="margin:0 0 12px;">
+        <pre>Semaphore chopstick[5];  <span class="cm">// mỗi phần tử khởi tạo = 1</span>
+
+while (true) {
+    wait(chopstick[i]);
+    wait(chopstick[(i + 1) % 5]);
+
+    <span class="cm">/* eat for a while */</span>
+
+    signal(chopstick[i]);
+    signal(chopstick[(i + 1) % 5]);
+
+    <span class="cm">/* think for a while */</span>
+}</pre>
+      </div>
+      <p>What is the problem with this algorithm? Assume all five philosophers become hungry at almost exactly the same moment.</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p class="ans-note">Nếu cả 5 triết gia cùng nhặt chiếc đũa <b>bên trái</b> của mình gần như đồng thời, tất cả 5 phần tử của <span style="font-family:'IBM Plex Mono',monospace;">chopstick[]</span> đều về 0. Khi mỗi người cố nhặt tiếp chiếc đũa bên phải (<span style="font-family:'IBM Plex Mono',monospace;">wait(chopstick[(i+1)%5])</span>), họ bị chặn mãi mãi — vì chiếc đũa đó đang nằm trong tay người hàng xóm, người cũng đang chờ y hệt.</p>
+        <p class="ans-note">Đây là <b>deadlock</b> theo đúng nghĩa: 5 tiến trình tạo thành 1 vòng chờ khép kín (circular wait) — mỗi người giữ 1 tài nguyên (đũa trái), chờ 1 tài nguyên người khác đang giữ (đũa phải). Lưu ý: thuật toán KHÔNG vi phạm mutual exclusion (không 2 người cùng cầm 1 đũa) — nó chỉ vi phạm progress/không có cơ chế tránh circular wait.</p>
+        <p class="ans-note">Lời giải monitor ở tab Dining-Philosophers khắc phục đúng vấn đề này bằng cách chỉ cho phép 1 triết gia chuyển sang EATING khi CẢ 2 hàng xóm đều không đang ăn — không ai có thể giữ "nửa chừng" tài nguyên.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 2 — POSIX: vì sao vòng lặp busy-wait này có thể gây starvation?</h4>
+      <div class="codeblock" style="margin:0 0 12px;">
+        <pre>void* thread_function(void* thread_arg) {
+    while (1) {
+        int flag_is_set;
+        pthread_mutex_lock(&amp;thread_flag_mutex);
+        flag_is_set = thread_flag;
+        pthread_mutex_unlock(&amp;thread_flag_mutex);
+
+        if (flag_is_set)
+            do_work();
+        <span class="cm">/* Else don't do anything. Just loop again. */</span>
+    }
+    return NULL;
+}</pre>
+      </div>
+      <p>May cause starvation? Why is this while(1) loop — re-locking thread_flag_mutex, checking the flag, unlocking, and immediately looping again if it's not set — a problem compared to using a condition variable?</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <p class="ans-note">Đây là <b>busy waiting</b> thuần: thread_function() lặp vô hạn, liên tục khóa rồi mở <span style="font-family:'IBM Plex Mono',monospace;">thread_flag_mutex</span> nhanh hết mức CPU cho phép, không hề nghỉ giữa các vòng lặp. Nó tốn nguyên 1 nhân CPU mà không làm gì hữu ích khi flag chưa được set.</p>
+        <p class="ans-note">Tệ hơn, vì liên tục tranh giành <span style="font-family:'IBM Plex Mono',monospace;">thread_flag_mutex</span>, nó còn có thể làm trễ chính <span style="font-family:'IBM Plex Mono',monospace;">set_thread_flag()</span> (hàm cũng cần đúng mutex đó để cập nhật cờ) — khiến luồng muốn set cờ bị cạnh tranh mutex liên tục, về lý thuyết có thể bị trì hoãn bất thường, gần giống starvation.</p>
+        <p class="ans-note">Lời giải đúng (xem tab POSIX Sync) là dùng <span style="font-family:'IBM Plex Mono',monospace;">pthread_cond_wait()</span>: nó atomic vừa nhả mutex vừa đưa luồng vào ngủ thật sự (không tốn CPU), và được đánh thức NGAY khi <span style="font-family:'IBM Plex Mono',monospace;">pthread_cond_signal()</span> được gọi — không còn phải spin liên tục để kiểm tra.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 3 — Bounded-Buffer: điều gì xảy ra nếu đổi thứ tự 2 semaphore?</h4>
+      <div class="compare-row" style="margin:0 0 12px;">
+        <div class="compare-box">
+          <div class="ck">Producer ĐÚNG (như slide)</div>
+          <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">wait(empty);
+wait(mutex);
+...
+signal(mutex);
+signal(full);</pre>
+        </div>
+        <div class="compare-box">
+          <div class="ck">Producer bị đổi thứ tự (SAI)</div>
+          <pre style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin:0;">wait(mutex);
+wait(empty);
+...
+signal(mutex);
+signal(full);</pre>
+        </div>
+      </div>
+      <p>Suppose the buffer is full (empty = 0, full = n). The producer runs first, then the consumer. Using the reordered producer version (right) — what happens?</p>
+      <details>
+        <summary>Xem đáp án</summary>
+        <div class="table-scroll">
+        <table class="cmp-table ans-table">
+          <tr><th>Bước</th><th>Tiến trình</th><th>Hành động</th><th>Kết quả</th></tr>
+          <tr><td>S0</td><td>Producer</td><td>wait(mutex) — mutex: 1→0</td><td>Producer giữ mutex, tiếp tục</td></tr>
+          <tr><td>S1</td><td>Producer</td><td>wait(empty) — empty đang = 0</td><td>Producer bị BLOCK, nhưng vẫn đang giữ mutex!</td></tr>
+          <tr><td>S2</td><td>Consumer</td><td>muốn chạy wait(full) rồi wait(mutex)...</td><td>wait(mutex) bị chặn — mutex đang do Producer giữ</td></tr>
+        </table>
+        </div>
+        <p class="ans-note">Kết quả: <b>deadlock</b>. Producer giữ <span style="font-family:'IBM Plex Mono',monospace;">mutex</span> nhưng bị kẹt ở <span style="font-family:'IBM Plex Mono',monospace;">wait(empty)</span> vì buffer đầy. Consumer là bên duy nhất có thể giải phóng 1 ô (tăng empty), nhưng Consumer cần <span style="font-family:'IBM Plex Mono',monospace;">mutex</span> để làm việc đó — mà mutex đang bị Producer giữ chặt. Cả 2 cùng chờ nhau vĩnh viễn.</p>
+        <p class="ans-note">Đây chính là lý do slide luôn đặt <span style="font-family:'IBM Plex Mono',monospace;">wait(empty)</span>/<span style="font-family:'IBM Plex Mono',monospace;">wait(full)</span> (semaphore ĐẾM tài nguyên) TRƯỚC <span style="font-family:'IBM Plex Mono',monospace;">wait(mutex)</span> (semaphore KHÓA) — quy tắc chung: không bao giờ giữ 1 khóa loại trừ tương hỗ trong lúc có thể bị block chờ tài nguyên mà chỉ bên khác mới giải phóng được.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 7</h2>
+    <p class="intro">19 câu, từ bounded-buffer tới functional programming.</p>
+    <div class="quiz-score" id="quizScore">0 / 19 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+    <div class="quiz-result" id="quizResult" hidden>
+      <div class="qr-score" id="qrScoreText"></div>
+      <div class="qr-breakdown" id="qrBreakdown"></div>
+      <button type="button" class="qr-retry" id="quizRetryBtn">🔄 Làm lại </button>
+    </div>
+  </section>
+
+  <footer>Xin chào, mình là admin. Gọi mình là Whis-san nhé!</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','boundedbuffer','readerswriters','diningphil','winlinux','posix','java','alternative','exercises','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const PROGRESS_KEY = 'os-ch7-visited';
+  let visitedSet = new Set();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    if (Array.isArray(saved)) visitedSet = new Set(saved.filter(t => panelIds.includes(t)));
+  } catch(e) {}
+
+  function updateProgress(){
+    const total = panelIds.length;
+    const done = visitedSet.size;
+    const pct = Math.round((done / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = done + '/' + total + ' tab · ' + pct + '%';
+  }
+
+  function markVisited(name){
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+    if (!visitedSet.has(name)){
+      visitedSet.add(name);
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(visitedSet))); } catch(e) {}
+    }
+    updateProgress();
+  }
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    markVisited(name);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+  visitedSet.forEach(name => {
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+  });
+  updateProgress();
+  markVisited('overview');
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch7-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "bounded-buffer problem": ["n buffers shared between a producer and consumer, each holding one item.", "n buffer dùng chung giữa producer và consumer, mỗi buffer giữ 1 item."],
+      "readers-writers problem": ["Multiple readers may access shared data concurrently, but a writer needs exclusive access.", "Nhiều reader có thể truy cập dữ liệu chung đồng thời, nhưng writer cần truy cập độc quyền."],
+      "dining-philosophers problem": ["Five philosophers share five chopsticks around a table — a classic illustration of deadlock.", "5 triết gia dùng chung 5 chiếc đũa quanh bàn — ví dụ kinh điển minh họa deadlock."],
+      "mutex": ["Binary semaphore (0/1) providing mutual exclusion around a critical section.", "Semaphore nhị phân (0/1) cung cấp loại trừ tương hỗ quanh critical section."],
+      "empty": ["Counting semaphore tracking how many buffer slots are currently empty.", "Semaphore đếm theo dõi số ô buffer hiện đang trống."],
+      "full": ["Counting semaphore tracking how many buffer slots currently hold an item.", "Semaphore đếm theo dõi số ô buffer hiện đang có item."],
+      "rw_mutex": ["Semaphore shared by readers and writers; held by a writer while writing, and by the first/last reader.", "Semaphore dùng chung giữa reader và writer; writer giữ khi ghi, reader đầu/cuối giữ khi đọc."],
+      "read_count": ["Counts how many readers are currently reading; controls when rw_mutex is locked/unlocked.", "Đếm số reader hiện đang đọc; quyết định khi nào rw_mutex bị khóa/mở."],
+      "starvation": ["Indefinite blocking — a process may never get the resource it's waiting for.", "Bị chặn vô thời hạn — 1 tiến trình có thể không bao giờ nhận được tài nguyên đang chờ."],
+      "deadlock": ["Two or more processes wait indefinitely for an event only one of them can cause.", "2 hay nhiều tiến trình chờ vô thời hạn 1 sự kiện mà chỉ chính họ mới gây ra được."],
+      "circular wait": ["Each process in a cycle holds one resource while waiting for the next process's resource.", "Mỗi tiến trình trong 1 vòng giữ 1 tài nguyên trong khi chờ tài nguyên của tiến trình kế tiếp."],
+      "dispatcher object": ["Windows kernel object (mutex, semaphore, event, timer) used for thread synchronization.", "Đối tượng kernel Windows (mutex, semaphore, event, timer) dùng để đồng bộ luồng."],
+      "signaled": ["Dispatcher-object state meaning the object is available / unlocked.", "Trạng thái dispatcher object nghĩa là object đang rảnh / mở khóa."],
+      "non-signaled": ["Dispatcher-object state meaning the object is currently owned / locked.", "Trạng thái dispatcher object nghĩa là object đang bị chiếm / khóa."],
+      "spinlock": ["A lock where a waiting thread busy-waits (spins) instead of blocking.", "1 khóa mà luồng chờ busy-wait (quay vòng) thay vì bị block."],
+      "atomic variable": ["A Linux data type (atomic_t) providing atomic math operations not interruptible by other tasks.", "1 kiểu dữ liệu Linux (atomic_t) cung cấp phép toán atomic, không bị ngắt bởi tác vụ khác."],
+      "preemptive kernel": ["A kernel that allows a process running in kernel mode to be preempted.", "1 kernel cho phép tiến trình đang chạy ở kernel mode bị ngắt (preempt)."],
+      "pthread_mutex_lock()": ["POSIX call that acquires a mutex lock, blocking if it's already held.", "Lệnh POSIX chiếm 1 mutex lock, block nếu đã bị giữ."],
+      "sem_open()": ["POSIX call that creates/opens a named semaphore, usable by unrelated processes.", "Lệnh POSIX tạo/mở 1 named semaphore, dùng được bởi các tiến trình không liên quan."],
+      "sem_init()": ["POSIX call that creates an unnamed semaphore, typically shared among threads of one process.", "Lệnh POSIX tạo 1 unnamed semaphore, thường dùng chung giữa các luồng của 1 tiến trình."],
+      "pthread_cond_wait()": ["Atomically releases the mutex and blocks the calling thread until signaled.", "Atomic vừa nhả mutex vừa block luồng gọi cho tới khi được signal."],
+      "pthread_cond_signal()": ["Unblocks one thread waiting on a condition variable; ignored if none is waiting.", "Đánh thức 1 luồng đang chờ trên condition variable; bị bỏ qua nếu không ai đang chờ."],
+      "pthread_cond_broadcast()": ["Unblocks all threads currently waiting on a condition variable.", "Đánh thức tất cả các luồng hiện đang chờ trên condition variable."],
+      "busy waiting": ["Repeatedly checking a condition in a loop instead of truly sleeping.", "Liên tục kiểm tra 1 điều kiện trong vòng lặp thay vì ngủ thật sự."],
+      "entry set": ["The set of threads blocked waiting to first acquire an object's lock in Java.", "Tập các luồng bị block đang chờ CHIẾM lần đầu khóa của 1 object trong Java."],
+      "wait set": ["The set of threads that called wait() and are waiting to be notified in Java.", "Tập các luồng đã gọi wait() và đang chờ được notify() trong Java."],
+      "synchronized": ["Java keyword requiring a thread to own an object's lock before the method body runs.", "Từ khóa Java yêu cầu luồng phải sở hữu khóa của object trước khi chạy thân method."],
+      "reentrantlock": ["A Java Lock implementation similar to a mutex lock, with explicit lock()/unlock().", "1 hiện thực Lock của Java tương tự mutex lock, với lock()/unlock() tường minh."],
+      "semaphore (java)": ["java.util.concurrent class with acquire()/release(), matching classical wait()/signal().", "Lớp java.util.concurrent với acquire()/release(), tương ứng wait()/signal() kinh điển."],
+      "condition (java)": ["Java condition variable created via lock.newCondition(), using await()/signal().", "Condition variable của Java tạo qua lock.newCondition(), dùng await()/signal()."],
+      "transactional memory": ["A memory transaction (atomic{S} block) executes a sequence of reads/writes atomically.", "1 memory transaction (khối atomic{S}) thực thi 1 chuỗi đọc/ghi atomic."],
+      "openmp": ["A compiler-directive API for parallel programming; #pragma omp critical marks a critical section.", "1 API chỉ thị trình biên dịch cho lập trình song song; #pragma omp critical đánh dấu critical section."],
+      "functional language": ["A language with no mutable state — once assigned, a variable cannot change, avoiding data races.", "1 ngôn ngữ không có trạng thái thay đổi được — biến không đổi sau khi gán, tránh được data race."],
+      "test(i)": ["Monitor helper in the Dining-Philosophers solution that grants EATING only if neither neighbor is eating.", "Hàm phụ trong lời giải Dining-Philosophers chỉ cho phép EATING nếu cả 2 hàng xóm đều không đang ăn."],
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    const Glookup = {};
+    Object.keys(G).forEach(k => { Glookup[k.toLowerCase()] = k; });
+    function resolveKey(text){
+      if (G[text]) return text;
+      const lk = Glookup[text.toLowerCase()];
+      return lk || null;
+    }
+
+    document.querySelectorAll('p.en b, .note b, .illus b, .hook b, .mono').forEach(el => {
+      const text = el.textContent.trim();
+      const key = resolveKey(text);
+      if (!key) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = key;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+
+  {q:"Trong bounded-buffer problem, semaphore nào được khởi tạo bằng n (số buffer)?",
+   opts:["empty — đếm số ô trống, ban đầu tất cả n ô đều trống", "mutex, vì nó phải đếm đúng số buffer đang được dùng tại một thời điểm bất kỳ trong toàn bộ vòng đời chương trình", "full, vì ban đầu toàn bộ buffer được xem như đã có sẵn dữ liệu chờ tiêu thụ ngay từ lúc khởi tạo chương trình", "Không semaphore nào cả, n chỉ dùng để khai báo kích thước mảng buffer trong C mà thôi"], correct:0,
+   exp:"empty được khởi tạo = n vì ban đầu toàn bộ n buffer đều trống. full khởi tạo = 0, mutex khởi tạo = 1."},
+  {q:"Vì sao wait(empty) phải đứng TRƯỚC wait(mutex) trong producer, không phải ngược lại?",
+   opts:["Vì trình biên dịch C bắt buộc thứ tự khai báo semaphore phải theo đúng thứ tự xuất hiện trong code nguồn của chương trình gốc", "Để tránh producer giữ mutex rồi bị block ở wait(empty), khiến consumer không vào được để giải phóng ô trống", "Không có lý do kỹ thuật đặc biệt, hai thứ tự hoàn toàn tương đương nhau về mặt an toàn", "Để tiết kiệm bộ nhớ do chỉ cấp phát semaphore theo đúng thứ tự được gọi tới lần đầu"], correct:1,
+   exp:"Nếu đảo ngược, producer có thể giữ mutex trong lúc bị block chờ empty — mà chỉ consumer (cần mutex) mới giải phóng được empty, dẫn tới deadlock."},
+  {q:"Trong readers-writers problem, biến mutex (khác rw_mutex) dùng để bảo vệ điều gì?",
+   opts:["Toàn bộ nội dung database dùng chung giữa mọi reader và writer tại mọi thời điểm trong suốt quá trình chạy", "Chỉ riêng thao tác ghi của writer, hoàn toàn tách biệt khỏi các reader đang đọc dữ liệu cùng lúc đó", "Riêng biến đếm read_count — tránh 2 reader cùng cập nhật read_count cùng lúc", "Không có mục đích rõ ràng, chỉ tồn tại vì lý do lịch sử trong thiết kế gốc của thuật toán"], correct:2,
+   exp:"mutex chỉ bảo vệ việc đọc/ghi read_count. rw_mutex mới là khóa thật sự ngăn reader và writer đụng độ trên database."},
+  {q:"Theo code reader trong readers-writers problem, reader nào gọi wait(rw_mutex)?",
+   opts:["Mọi reader đều phải gọi, không phân biệt thứ tự đến trước hay sau trong hàng đợi", "Reader cuối cùng khi read_count chuyển từ giá trị 1 về lại 0 duy nhất", "Không reader nào gọi wait(rw_mutex) — chỉ writer mới gọi hàm này mà thôi", "Reader đầu tiên khi read_count chuyển từ 0 sang 1"], correct:3,
+   exp:"Chỉ reader ĐẦU TIÊN (read_count 0→1) gọi wait(rw_mutex) để khóa writer lại; reader CUỐI CÙNG (read_count 1→0) mới signal(rw_mutex) để mở lại."},
+  {q:"First readers-writers problem và Second readers-writers problem khác nhau ở điểm nào?",
+   opts:["First ưu tiên reader (writer có thể starve); Second ưu tiên writer (reader có thể starve)", "First dùng semaphore, Second bắt buộc phải dùng monitor để cài đặt được đúng theo chuẩn quy định chính thức", "First chỉ áp dụng cho hệ 1 nhân xử lý, Second chỉ áp dụng cho hệ nhiều nhân xử lý", "Không có khác biệt thực sự, chỉ là 2 cách gọi tên khác nhau cho cùng 1 thuật toán"], correct:0,
+   exp:"First: không reader nào phải chờ trừ khi writer đã được cấp quyền trước — writer có thể starve nếu reader đến liên tục. Second: writer được ưu tiên ngay khi sẵn sàng — reader có thể starve."},
+  {q:"Trong Dining-Philosophers, thuật toán semaphore ngây thơ (chopstick[5]) có thể dẫn tới gì nếu cả 5 triết gia cùng đói đồng thời?",
+   opts:["Hoàn toàn an toàn, vì mutual exclusion luôn được đảm bảo tuyệt đối trong mọi trường hợp xảy ra", "Deadlock — mỗi người giữ đũa trái, cùng chờ đũa phải đang bị người kế bên giữ", "Livelock — các triết gia liên tục nhường đũa qua lại cho nhau không ngừng nghỉ suốt cả buổi ăn", "Race condition trên chính biến đếm số lượng đũa hiện đang được sử dụng tại bàn ăn lúc đó"], correct:1,
+   exp:"Nếu cả 5 cùng wait(chopstick[i]) (đũa trái) gần như đồng thời, mọi phần tử chopstick[] về 0 — tiếp theo wait(chopstick[(i+1)%5]) (đũa phải) khiến tất cả bị chặn vĩnh viễn, tạo circular wait."},
+  {q:"Trong lời giải monitor của Dining-Philosophers, hàm test(i) làm gì?",
+   opts:["Xóa toàn bộ trạng thái của 5 triết gia và khởi tạo lại từ đầu mỗi khi được gọi tới", "In ra màn hình trạng thái hiện tại của triết gia i để lập trình viên debug dễ dàng hơn", "Đặt state[i] = EATING và signal() nếu cả 2 hàng xóm của i đều không đang EATING", "Luôn luôn cho phép triết gia i ăn ngay lập tức bất kể trạng thái 2 hàng xóm ra sao"], correct:2,
+   exp:"test(i) kiểm tra state[(i+4)%5] và state[(i+1)%5] đều khác EATING, rồi mới đặt state[i]=EATING và gọi self[i].signal()."},
+  {q:"Lời giải monitor cho Dining-Philosophers loại bỏ được deadlock, nhưng vẫn còn nguy cơ nào?",
+   opts:["Deadlock vẫn y nguyên không hề thay đổi so với thuật toán semaphore ban đầu đã trình bày", "Tràn bộ nhớ do mảng condition self[5] phải cấp phát động liên tục trong lúc chạy chương trình", "Không còn nguy cơ nào cả — lời giải monitor hoàn toàn tuyệt đối an toàn trong mọi trường hợp", "Starvation — 1 triết gia có thể mãi đói nếu 2 hàng xóm luân phiên ăn không bao giờ cùng rảnh"], correct:3,
+   exp:"Slide gốc ghi rõ: 'No deadlock, but starvation is possible' — về lý thuyết 1 triết gia có thể chờ vô thời hạn nếu 2 hàng xóm cứ thay nhau chiếm quyền ăn."},
+  {q:"Trên hệ multiprocessor, Windows bảo vệ truy cập tài nguyên toàn cục trong kernel bằng gì?",
+   opts:["Spinlocks — khóa khiến luồng chờ busy-wait thay vì bị block hoàn toàn", "Che hoàn toàn mọi ngắt phần cứng của toàn bộ hệ thống trong suốt quá trình chạy kernel", "Chỉ dùng đúng 1 dispatcher object semaphore chung cho tất cả tài nguyên không phân biệt loại", "Không cần cơ chế bảo vệ nào đặc biệt vì phần cứng hiện đại tự động xử lý việc này"], correct:0,
+   exp:"Trên multiprocessor, Windows dùng spinlock; trên uniprocessor, Windows tạm mask ngắt cho code kernel truy cập dữ liệu toàn cục."},
+  {q:"Dispatcher object của Windows chuyển từ trạng thái signaled sang non-signaled khi nào?",
+   opts:["Khi hệ thống khởi động lại hoàn toàn và tất cả object được cấp phát lại từ đầu", "Khi 1 luồng chiếm (acquire) được mutex lock đang ở trạng thái rảnh", "Khi owner thread gọi release để nhả mutex lock đang giữ trong tay mình", "Dispatcher object không bao giờ đổi trạng thái sau khi được tạo ra lần đầu tiên"], correct:1,
+   exp:"owner thread RELEASE → signaled (rảnh); thread ACQUIRE lock đang signaled → chuyển thành non-signaled (bận), và luồng đó trở thành owner mới."},
+  {q:"Từ phiên bản 2.6 trở đi, kernel Linux có đặc điểm gì so với trước đó?",
+   opts:["Vẫn giữ nguyên hoàn toàn non-preemptive giống hệt mọi phiên bản Linux trước đó từng có", "Loại bỏ hoàn toàn khái niệm semaphore ra khỏi toàn bộ source code của kernel chính thức", "Trở thành fully preemptive — có thể bị ngắt ngay cả khi đang chạy trong kernel mode", "Chỉ còn hỗ trợ đúng duy nhất kiến trúc vi xử lý đơn nhân, bỏ hẳn hỗ trợ đa nhân"], correct:2,
+   exp:"Trước 2.6: non-preemptive kernel. Từ 2.6: kernel Linux trở thành fully preemptive, 1 tác vụ có thể bị preempt ngay cả khi đang chạy trong kernel."},
+  {q:"atomic_inc(&counter) trên biến atomic_t của Linux tương đương phép toán nào?",
+   opts:["counter = 0, luôn luôn reset giá trị bộ đếm về lại điểm khởi tạo ban đầu của nó", "counter = counter * 2, nhân đôi giá trị hiện có của biến đếm atomic đó lên", "Không có hiệu ứng gì vì atomic_inc chỉ dùng để đọc giá trị, tuyệt đối không ghi", "counter = counter + 1, thực thi atomic không thể bị ngắt giữa chừng"], correct:3,
+   exp:"atomic_inc(&counter) tương đương counter = counter + 1, nhưng được đảm bảo thực thi atomic, không thể bị tác vụ khác xen vào giữa chừng."},
+  {q:"pthread_cond_wait(&cond_var, &mutex) trong POSIX làm gì khi được gọi?",
+   opts:["Atomic vừa nhả mutex, vừa block luồng gọi; khi được signal, mutex được tự động chiếm lại", "Chỉ đơn thuần kiểm tra điều kiện rồi trả về ngay lập tức, không hề block luồng gọi lại dù chỉ 1 giây", "Xóa hoàn toàn condition variable cond_var ra khỏi bộ nhớ ngay sau khi gọi xong lệnh", "Tự động gọi signal() cho chính condition variable đó ngay trong cùng 1 lệnh gọi"], correct:0,
+   exp:"pthread_cond_wait phải gọi khi mutex đang khóa — nó atomic nhả mutex và block luồng; khi được pthread_cond_signal() đánh thức, mutex được tự động chiếm lại trước khi hàm trả về."},
+  {q:"Khác biệt chính giữa sem_open() và sem_init() trong POSIX semaphore là gì?",
+   opts:["Cả 2 hàm hoàn toàn giống hệt nhau, chỉ khác tên gọi theo quy ước đặt tên lịch sử để lại mà thôi, không hơn không kém", "sem_open tạo named semaphore dùng được bởi tiến trình không liên quan; sem_init tạo unnamed semaphore", "sem_init chỉ dùng được trên Windows, còn sem_open chỉ dùng được trên Linux thuần túy", "sem_open luôn khởi tạo giá trị semaphore bằng 0, còn sem_init luôn khởi tạo bằng 1"], correct:1,
+   exp:"sem_open() tạo named semaphore (có tên, ví dụ \"SEM\"), dùng được bởi các tiến trình không liên quan. sem_init() tạo unnamed semaphore, thường dùng giữa các thread cùng 1 tiến trình."},
+  {q:"Vì sao ví dụ 'mutex problem' (while(1) khóa mutex, đọc flag, mở khóa, lặp lại) trong slide lại có vấn đề?",
+   opts:["Vì cú pháp pthread_mutex_lock() bị viết sai hoàn toàn so với chuẩn POSIX quy định rõ ràng", "Vì mutex trong C không hề tồn tại, đây chỉ là ví dụ giả định không chạy được thực tế nào cả", "Vì đây là busy-wait thuần — tốn hết 1 nhân CPU, và liên tục tranh mutex với chính luồng set flag", "Vì hàm initialize_flag() quên khởi tạo giá trị ban đầu cho biến thread_flag_mutex quan trọng"], correct:2,
+   exp:"thread_function() spin vô hạn, liên tục khóa/mở thread_flag_mutex để kiểm tra flag — đây là busy-wait thuần, tốn CPU, và vì liên tục tranh mutex nên còn có thể làm trễ set_thread_flag(), so với dùng pthread_cond_wait() đúng cách (thread ngủ thật, không tốn CPU)."},
+  {q:"Trong Java, 1 luồng cố gọi method synchronized trong khi object đang bị khóa sẽ được đưa vào đâu?",
+   opts:["wait set, giống hệt các luồng đã từng gọi wait() trước đó trên cùng 1 object", "Bị hủy (terminate) ngay lập tức vì Java không cho phép tranh chấp khóa xảy ra", "Không bị ảnh hưởng gì, Java tự động cho phép nhiều luồng cùng chạy song song trong synchronized", "entry set — chờ để lần đầu chiếm được khóa của object đang bị giữ"], correct:3,
+   exp:"entry set chứa các luồng đang CHỜ CHIẾM khóa lần đầu. wait set khác — chứa các luồng ĐÃ vào bên trong rồi tự nguyện gọi wait() để chờ điều kiện."},
+  {q:"Vì sao code insert()/remove() trong Bounded Buffer của Java dùng while(count==...) thay vì if?",
+   opts:["Vì sau khi notify() đánh thức, điều kiện có thể đã bị luồng khác chen vào thay đổi lại — cần kiểm tra lại", "Vì cú pháp while là bắt buộc duy nhất Java hỗ trợ bên trong method synchronized theo đúng đặc tả ngôn ngữ chính thức", "Vì if() chạy chậm hơn while() đáng kể về hiệu năng trên hầu hết các JVM hiện nay", "Không có lý do kỹ thuật nào cả, 2 cách viết hoàn toàn tương đương nhau trong mọi trường hợp"], correct:0,
+   exp:"Giống hệt lý do Mesa-style monitor (Chương 6) và pthread_cond_wait dùng while: sau khi được notify() đánh thức, 1 luồng khác có thể đã chen vào thay đổi điều kiện trước khi luồng này thực sự chạy lại."},
+  {q:"ReentrantLock trong Java thường được dùng kèm khối finally để làm gì?",
+   opts:["Tăng tốc độ thực thi của critical section bằng cách bỏ qua một số bước kiểm tra không cần thiết", "Đảm bảo unlock() luôn được gọi, kể cả khi có exception xảy ra trong critical section", "Tự động tạo thêm 1 ReentrantLock mới mỗi khi khối finally được chạy tới trong chương trình", "Không có mục đích đặc biệt, chỉ là 1 thói quen coding không ảnh hưởng gì tới logic"], correct:1,
+   exp:"key.unlock() đặt trong finally đảm bảo khóa luôn được nhả, kể cả khi critical section ném ra exception — tránh tài nguyên bị kẹt vĩnh viễn ở trạng thái khóa."},
+  {q:"Transactional memory (khối atomic{S}) và OpenMP (#pragma omp critical) có điểm chung nào về triết lý thiết kế?",
+   opts:["Cả 2 đều yêu cầu lập trình viên tự tay gọi acquire()/release() y hệt mutex lock truyền thống đã học trước đó", "Cả 2 chỉ hoạt động được trên các ngôn ngữ lập trình hàm như Erlang hoặc Scala mà thôi", "Cả 2 đều để hệ thống/runtime tự đảm bảo tính đúng đắn, giảm việc quản lý khóa thủ công của lập trình viên", "Cả 2 đều loại bỏ hoàn toàn khái niệm critical section ra khỏi chương trình"], correct:2,
+   exp:"Thay vì tự quản lý acquire()/release() như mutex lock truyền thống, cả transactional memory (atomic{S}) và OpenMP (#pragma omp critical) đều để compiler/runtime tự đảm bảo tính nguyên tử."}
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  const quizResultEl = document.getElementById('quizResult');
+  const qrScoreText = document.getElementById('qrScoreText');
+  const qrBreakdown = document.getElementById('qrBreakdown');
+  const quizRetryBtn = document.getElementById('quizRetryBtn');
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let correctCount = 0;
+  let answeredCount = 0;
+  const wrongLog = [];
+
+  function renderQuiz(){
+    quizRoot.innerHTML = '';
+    quizResultEl.hidden = true;
+    correctCount = 0;
+    answeredCount = 0;
+    wrongLog.length = 0;
+    quizScoreEl.textContent = '0 / ' + QUIZ.length + ' đã trả lời đúng';
+    quizScoreEl.hidden = false;
+
+    QUIZ.forEach((item, i) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'q';
+      qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+
+      // shuffle option order for this attempt, remapping the correct index
+      const order = shuffle(item.opts.map((_, oi) => oi));
+      const shuffledCorrectPos = order.indexOf(item.correct);
+
+      const optsWrap = document.createElement('div');
+      order.forEach((originalIndex, displayPos) => {
+        const b = document.createElement('button');
+        b.className = 'opt';
+        b.type = 'button';
+        b.textContent = item.opts[originalIndex];
+        b.addEventListener('click', () => {
+          if (b.disabled) return;
+          const allOpts = optsWrap.querySelectorAll('.opt');
+          allOpts.forEach(o => o.disabled = true);
+          if (displayPos === shuffledCorrectPos){
+            b.classList.add('correct');
+            correctCount++;
+          } else {
+            b.classList.add('wrong');
+            allOpts[shuffledCorrectPos].classList.add('correct');
+            wrongLog.push(i + 1);
+          }
+          answeredCount++;
+          quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+          const ex = qDiv.querySelector('.explain');
+          ex.classList.add('show');
+
+          if (answeredCount === QUIZ.length){
+            showResults();
+          }
+        });
+        optsWrap.appendChild(b);
+      });
+      qDiv.appendChild(optsWrap);
+      const explain = document.createElement('div');
+      explain.className = 'explain';
+      explain.textContent = item.exp;
+      qDiv.appendChild(explain);
+      quizRoot.appendChild(qDiv);
+    });
+  }
+
+  function showResults(){
+    const pct = Math.round((correctCount / QUIZ.length) * 100);
+    let verdict = 'Cần ôn lại thêm 💪';
+    if (pct >= 90) verdict = 'Xuất sắc! 🎉';
+    else if (pct >= 70) verdict = 'Khá tốt 👍';
+    else if (pct >= 50) verdict = 'Tạm ổn, nên xem lại vài phần 🙂';
+    qrScoreText.textContent = 'Kết quả: ' + correctCount + ' / ' + QUIZ.length + ' (' + pct + '%) — ' + verdict;
+    if (wrongLog.length){
+      qrBreakdown.innerHTML = 'Các câu đã trả lời sai: <span class="qr-wrong-item">Câu ' + wrongLog.join(', Câu ') + '</span> — kéo lên xem lại phần giải thích của từng câu.';
+    } else {
+      qrBreakdown.textContent = 'Không sai câu nào — làm lại nếu muốn thử bộ thứ tự đáp án khác!';
+    }
+    quizResultEl.hidden = false;
+    quizResultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  quizRetryBtn.addEventListener('click', renderQuiz);
+
+  renderQuiz();
+</script>
+</body>
+</html>

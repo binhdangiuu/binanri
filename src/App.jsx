@@ -172,7 +172,7 @@ const subjects = [
   { id: "ch4", title: "Chapter 4 - Threads", file: "/lectures/os-ch4-lecture.html" },
   { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: "/lectures/os-ch5-lecture.html" },
   { id: "ch6", title: "Chapter 6 - Synchronization Tools", file: "/lectures/os-ch6-lecture.html" },
-  { id: "ch7", title: "Chapter 7 - Synchronization 2", file: null },
+  { id: "ch7", title: "Chapter 7 - Synchronization 2", file: "/lectures/os-ch7-lecture.html" },
   { id: "ch8", title: "Chapter 8 - Main Memory", file: null },
   { id: "ch9", title: "Chapter 9 - Virtual Memory", file: null },
   { id: "ch10A", title: "Chapter 10A - File System Interface", file: null },
@@ -541,7 +541,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 4/10/2026 • 23:06:17 (Video 02 added)
+            Last Updated: 16/10/2026 • 20:27:15 (Lecture Notes chapter 7 added)
           </p>
         </div>
 
