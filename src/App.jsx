@@ -193,8 +193,10 @@ const subjects = [
       {
         id: "lab-2",
         title: "Lab 2 - Thầy Nguyễn Phương Duy",
-        questionsCount: 5,
-        comingSoon: true,
+        type: "pdf",
+        documents: [
+          { title: "Lab 2 - Process", file: "/pdfs/lecture/Lab_2_Process.pdf" },
+        ],
       },
 
       {
@@ -541,7 +543,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 16/10/2026 • 20:27:15 (Lecture Notes chapter 7 added)
+            Last Updated: 21/10/2026 • 15:02:10 (Lab 2 added)
           </p>
         </div>
 
@@ -590,7 +592,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-2" icon="🎥" title="Ghi chú nhỏ">
-              Mình tải xong phần 1 rùi, chiều nay mình quay phần 2, xong mình sẽ làm Lecture Notes chap7 á. 1 lần làm Lecture Notes nó lâu lắm nên cậu hãy cố gắng học nha.
+              Sori nhe mình hơi bận nên push Lab2 hơi trễ ạ.
             </BubbleNote>
           )}
         </div>
