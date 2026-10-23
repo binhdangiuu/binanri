@@ -196,6 +196,7 @@ const subjects = [
         type: "pdf",
         documents: [
           { title: "Lab 2 - Process", file: "/pdfs/lecture/Lab_2_Process.pdf" },
+          { title: "Lab 2 - Process (Answer Key)", file: "/pdfs/lecture/Lab_2_Process_Answer_Key.pdf" },
         ],
       },
 
@@ -543,7 +544,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 21/10/2026 • 15:02:10 (Lab 2 added)
+            Last Updated: 23/10/2026 • 22:50:23 (Lab 2 Answer Key added)
           </p>
         </div>
 
@@ -592,7 +593,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-2" icon="🎥" title="Ghi chú nhỏ">
-              Sori nhe mình hơi bận nên push Lab2 hơi trễ ạ.
+              Mình thật sự mong rằng một ngày nào đó, khi cả hai đã bỏ qua hết mọi thứ và khúc mắc trong lòng, mình mong rằng mình và cậu sẽ trở thành những người bạn tốt, những người tri kỉ của nhau. Vì chúng ta là song tử bảo bình mà ^^
             </BubbleNote>
           )}
         </div>
