@@ -196,7 +196,7 @@ const subjects = [
         type: "pdf",
         documents: [
           { title: "Lab 2 - Process", file: "/pdfs/lecture/Lab_2_Process.pdf" },
-          { title: "Lab 2 - Process (Answer Key)", file: "/pdfs/lecture/Lab_2_Process_Answer_Key.pdf" },
+          { title: "Lab 2 - Process (Answer Key)", file: "/pdfs/lecture/Lab_2_Process_AnswerKey.pdf" },
         ],
       },
 
