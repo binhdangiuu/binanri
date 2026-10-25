@@ -576,11 +576,9 @@ export default function App() {
         </div>
 
         {/* HEADER */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 mb-10">
+        <div className="flex flex-row flex-wrap items-center justify-center text-center gap-4 sm:gap-8 mb-10">
           <h1 className="font-[var(--font-display)] text-4xl sm:text-5xl font-extrabold text-sunflower-deep leading-none drop-shadow-sm">
-            ÔN TẬP
-            <br />
-            THUI
+            BINANRI
           </h1>
           <div className="font-[var(--font-display)] text-xl sm:text-2xl font-semibold text-sky-deep bg-cream/70 border border-blush-deep rounded-2xl px-5 py-3 shadow-sm">
             Mong cho mỗi ngày của Anri đều là mỗi ngày hạnh phúc.
