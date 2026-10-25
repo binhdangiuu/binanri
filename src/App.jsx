@@ -12,6 +12,7 @@ import graph from "./data/graph"
 import hk251DSA from "./data/hk251dsa"
 import osReviewCh1To2 from "./data/os-review-ch1-2"
 import BubbleNote from "./BubbleNote"
+import cpu from "./data/cpu"
 const subjects = [
 
   {
@@ -246,8 +247,9 @@ const subjects = [
       {
         id: "cpu",
         title: "CPU (ôn thi Chapter 3 - Chapter 7)",
-        questionsCount: 158,
-        comingSoon: true,
+        questionsCount: cpu.length,
+        comingSoon: false,
+        questions: cpu
       },
 
       {
@@ -544,7 +546,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 23/10/2026 • 22:50:23 (Lab 2 Answer Key added)
+            Last Updated: 25/10/2026 • 08:50:39 (Final Exam Chap03 - Chap07 added)
           </p>
         </div>
 
