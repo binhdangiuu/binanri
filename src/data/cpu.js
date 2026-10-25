@@ -19,7 +19,7 @@ const cpu = [
     }
   },
   {
-    "question": "Cho đoạn chương trình C++ sau:\n\nint main() {\n    int *a = new int(2);\n}\n\nPhát biểu nào sau đây là đúng?",
+    "question": "Cho đoạn chương trình C++ sau. Phát biểu nào sau đây là đúng?",
     "options": [
       "Biến con trỏ a nằm trong Heap, còn giá trị 2 nằm trong Stack.",
       "Biến con trỏ a nằm trong Stack, còn vùng nhớ chứa giá trị 2 nằm trong Heap.",
@@ -28,14 +28,15 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Given the following C++ code:\n\nint main() {\n    int *a = new int(2);\n}\n\nWhich statement is correct?",
+      "question": "Given the following C++ code, which statement is correct?",
       "options": [
         "Pointer a lives in the Heap, and the value 2 lives in the Stack.",
         "Pointer a lives in the Stack, and the memory holding value 2 lives in the Heap.",
         "Both a and the value 2 live in the Stack.",
         "Both a and the value 2 live in the Heap."
       ]
-    }
+    },
+    "context": "int main() {\n    int *a = new int(2);\n}"
   },
   {
     "question": "Phát biểu nào sau đây đúng về khái niệm passive và active trong hệ điều hành?",
@@ -209,7 +210,7 @@ const cpu = [
     }
   },
   {
-    "question": "Cho đoạn chương trình UNIX/Linux sau:\n\nint main() {\n    pid_t pid = fork();\n\n    if (pid == 0) {\n        // Child process\n        return 0;\n    }\n    else {\n        sleep(10);\n    }\n}\n\nĐiều gì sẽ xảy ra sau khi tiến trình con kết thúc?",
+    "question": "Cho đoạn chương trình UNIX/Linux sau. Điều gì sẽ xảy ra sau khi tiến trình con kết thúc?",
     "options": [
       "Tiến trình con trở thành orphan process.",
       "Tiến trình con trở thành zombie process.",
@@ -218,17 +219,18 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Given the following UNIX/Linux program:\n\nint main() {\n    pid_t pid = fork();\n\n    if (pid == 0) {\n        // Child process\n        return 0;\n    }\n    else {\n        sleep(10);\n    }\n}\n\nWhat happens after the child process ends?",
+      "question": "Given the following UNIX/Linux program, what happens after the child process ends?",
       "options": [
         "The child becomes an orphan process.",
         "The child becomes a zombie process.",
         "The parent process is terminated immediately.",
         "The child automatically calls exec()."
       ]
-    }
+    },
+    "context": "int main() {\n    pid_t pid = fork();\n\n    if (pid == 0) {\n        // Child process\n        return 0;\n    }\n    else {\n        sleep(10);\n    }\n}"
   },
   {
-    "question": "Xét đoạn chương trình C/C++ sau:\n\n#include <stdio.h>\n#include <unistd.h>\n\nint main() {\n    fork();\n\n    if (fork() == 0) {\n        fork();\n        printf(\"A \");\n    } else {\n        fork();\n        fork();\n        printf(\"B \");\n    }\n\n    return 0;\n}\n\nHỏi chương trình in ra tổng cộng bao nhiêu lần ký tự \"A \" và \"B \"?",
+    "question": "Xét đoạn chương trình C/C++ sau. Hỏi chương trình in ra tổng cộng bao nhiêu lần ký tự \"A \" và \"B \"?",
     "options": [
       "4 lần A và 8 lần B",
       "1 lần A và 3 lần B",
@@ -237,14 +239,15 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "Consider the following C/C++ program:\n\n#include <stdio.h>\n#include <unistd.h>\n\nint main() {\n    fork();\n\n    if (fork() == 0) {\n        fork();\n        printf(\"A \");\n    } else {\n        fork();\n        fork();\n        printf(\"B \");\n    }\n\n    return 0;\n}\n\nHow many times does the program print \"A \" and \"B \" in total?",
+      "question": "Consider the following C/C++ program. How many times does it print \"A \" and \"B \" in total?",
       "options": [
         "4 times A and 8 times B",
         "1 time A and 3 times B",
         "2 times A and 3 times B",
         "3 times A and 3 times B"
       ]
-    }
+    },
+    "context": "#include <stdio.h>\n#include <unistd.h>\n\nint main() {\n    fork();\n\n    if (fork() == 0) {\n        fork();\n        printf(\"A \");\n    } else {\n        fork();\n        fork();\n        printf(\"B \");\n    }\n\n    return 0;\n}"
   },
   {
     "question": "Trong UNIX/Linux, ý nghĩa chính của hàm exec() là gì?",
@@ -285,7 +288,7 @@ const cpu = [
     }
   },
   {
-    "question": "Xét đoạn chương trình C trong UNIX/Linux:\n\nint x = 5;\n\nint main() {\n    pid_t pid = fork();\n\n    if (pid == 0) {\n        x = 10;\n    } else {\n        x = 20;\n        wait(NULL);\n    }\n}\n\nPhát biểu nào sau đây đúng?",
+    "question": "Xét đoạn chương trình C trong UNIX/Linux sau. Phát biểu nào sau đây đúng?",
     "options": [
       "Hai tiến trình cha và con cùng chia sẻ biến x, nên giá trị cuối cùng của x là 20.",
       "Sau fork(), tiến trình cha và con có không gian bộ nhớ riêng, nên thay đổi x không ảnh hưởng lẫn nhau.",
@@ -294,14 +297,15 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Consider the following UNIX/Linux C program:\n\nint x = 5;\n\nint main() {\n    pid_t pid = fork();\n\n    if (pid == 0) {\n        x = 10;\n    } else {\n        x = 20;\n        wait(NULL);\n    }\n}\n\nWhich statement is correct?",
+      "question": "Consider the following UNIX/Linux C program. Which statement is correct?",
       "options": [
         "The parent and child share variable x, so its final value is 20.",
         "After fork(), the parent and child have separate memory spaces, so changing x in one does not affect the other.",
         "The child directly overwrites the parent's variable x.",
         "The value of x is always kept in sync between the two processes at runtime."
       ]
-    }
+    },
+    "context": "int x = 5;\n\nint main() {\n    pid_t pid = fork();\n\n    if (pid == 0) {\n        x = 10;\n    } else {\n        x = 20;\n        wait(NULL);\n    }\n}"
   },
   {
     "question": "Phát biểu nào sau đây đúng về cơ chế Shared Memory trong giao tiếp giữa các tiến trình?",
@@ -532,7 +536,7 @@ const cpu = [
     }
   },
   {
-    "question": "Áp dụng Định luật Amdahl, một chương trình có 30% phần công việc phải thực hiện tuần tự, phần còn lại có thể song song hóa hoàn toàn. Hệ thống sử dụng 4 lõi xử lý.\nMức tăng tốc tối đa (speedup) gần đúng là bao nhiêu?",
+    "question": "Áp dụng Định luật Amdahl, một chương trình có 30% phần công việc phải thực hiện tuần tự, phần còn lại có thể song song hóa hoàn toàn. Hệ thống sử dụng 4 lõi xử lý. Mức tăng tốc tối đa (speedup) gần đúng là bao nhiêu?",
     "options": [
       "1.54",
       "2.00",
@@ -541,7 +545,7 @@ const cpu = [
     ],
     "answer": "D",
     "en": {
-      "question": "Applying Amdahl's Law, a program has 30% of its work that must run sequentially, and the rest can be fully parallelized. The system has 4 processing cores.\nWhat is the approximate maximum speedup?",
+      "question": "Applying Amdahl's Law, a program has 30% of its work that must run sequentially, and the rest can be fully parallelized. The system has 4 processing cores. What is the approximate maximum speedup?",
       "options": [
         "1.54",
         "2.00",
@@ -723,7 +727,7 @@ const cpu = [
     }
   },
   {
-    "question": "Cho 3 tiến trình sau (đơn vị: giây).\nÁp dụng thuật toán lập lịch FCFS (First Come First Serve), hãy tính Average Waiting Time của các tiến trình.",
+    "question": "Cho 3 tiến trình sau (đơn vị: giây). Áp dụng thuật toán lập lịch FCFS (First Come First Serve), hãy tính Average Waiting Time của các tiến trình.",
     "options": [
       "3.00",
       "4.33",
@@ -732,7 +736,7 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Given the following 3 processes (unit: seconds).\nUsing FCFS (First Come First Serve) scheduling, compute the Average Waiting Time of the processes.",
+      "question": "Given the following 3 processes (unit: seconds). Using FCFS (First Come First Serve) scheduling, compute the Average Waiting Time of the processes.",
       "options": [
         "3.00",
         "4.33",
@@ -743,7 +747,7 @@ const cpu = [
     "context": "Process | Arrival Time | Burst Time\nP1 | 0 | 5\nP2 | 1 | 6\nP3 | 2 | 3"
   },
   {
-    "question": "Cho 3 tiến trình sau (đơn vị: giây).\nÁp dụng thuật toán lập lịch SJF (Shortest Job First - Non-preemptive), hãy tính Average Waiting Time của các tiến trình.",
+    "question": "Cho 3 tiến trình sau (đơn vị: giây). Áp dụng thuật toán lập lịch SJF (Shortest Job First - Non-preemptive), hãy tính Average Waiting Time của các tiến trình.",
     "options": [
       "2.33",
       "3.00",
@@ -752,7 +756,7 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "Given the following 3 processes (unit: seconds).\nUsing SJF (Shortest Job First - Non-preemptive) scheduling, compute the Average Waiting Time of the processes.",
+      "question": "Given the following 3 processes (unit: seconds). Using SJF (Shortest Job First - Non-preemptive) scheduling, compute the Average Waiting Time of the processes.",
       "options": [
         "2.33",
         "3.00",
@@ -763,7 +767,7 @@ const cpu = [
     "context": "Process | Arrival Time | Burst Time\nP1 | 0 | 5\nP2 | 1 | 6\nP3 | 2 | 3"
   },
   {
-    "question": "Cho 3 tiến trình sau (đơn vị: giây) và thuật toán lập lịch Round Robin (RR) với quantum = 2.\nHãy tính Average Waiting Time của các tiến trình.",
+    "question": "Cho 3 tiến trình sau (đơn vị: giây) và thuật toán lập lịch Round Robin (RR) với quantum = 2. Hãy tính Average Waiting Time của các tiến trình.",
     "options": [
       "3.33",
       "4.00",
@@ -772,7 +776,7 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Given the following 3 processes (unit: seconds) and Round Robin (RR) scheduling with quantum = 2.\nCompute the Average Waiting Time of the processes.",
+      "question": "Given the following 3 processes (unit: seconds) and Round Robin (RR) scheduling with quantum = 2. Compute the Average Waiting Time of the processes.",
       "options": [
         "3.33",
         "4.00",
@@ -783,7 +787,7 @@ const cpu = [
     "context": "Process | Arrival Time | Burst Time\nP1 | 0 | 5\nP2 | 1 | 6\nP3 | 2 | 3"
   },
   {
-    "question": "Cho 4 tiến trình sau (đơn vị: ms).\nÁp dụng thuật toán SRTF (Shortest Remaining Time First - Preemptive SJF), hãy tính Average Turnaround Time.",
+    "question": "Cho 4 tiến trình sau (đơn vị: ms). Áp dụng thuật toán SRTF (Shortest Remaining Time First - Preemptive SJF), hãy tính Average Turnaround Time.",
     "options": [
       "10.25",
       "11.50",
@@ -792,7 +796,7 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "Given the following 4 processes (unit: ms).\nUsing SRTF (Shortest Remaining Time First - Preemptive SJF), compute the Average Turnaround Time.",
+      "question": "Given the following 4 processes (unit: ms). Using SRTF (Shortest Remaining Time First - Preemptive SJF), compute the Average Turnaround Time.",
       "options": [
         "10.25",
         "11.50",
@@ -803,7 +807,7 @@ const cpu = [
     "context": "Process | Arrival Time | Burst Time\nP1 | 0 | 8\nP2 | 1 | 4\nP3 | 2 | 9\nP4 | 3 | 5"
   },
   {
-    "question": "Xét các phát biểu về việc áp dụng các giải thuật định thời CPU trong thực tế:\n(1) FCFS phù hợp cho các hệ thống xử lý bó (batch processing).\n(2) Round Robin thường được dùng cho các hệ thống tương tác vì cải thiện response time.\n(3) Priority Scheduling thường xuất hiện trong hệ điều hành thời gian thực.\n(4) Multilevel Feedback Queue được sử dụng nhiều trong hệ điều hành hiện đại do có thể thích nghi với nhiều loại workload.\nCó bao nhiêu phát biểu đúng?",
+    "question": "Xét các phát biểu sau về việc áp dụng các giải thuật định thời CPU trong thực tế. Có bao nhiêu phát biểu đúng?",
     "options": [
       "1",
       "2",
@@ -812,14 +816,15 @@ const cpu = [
     ],
     "answer": "D",
     "en": {
-      "question": "Consider these statements about applying CPU scheduling algorithms in practice:\n(1) FCFS suits batch-processing systems.\n(2) Round Robin is often used for interactive systems because it improves response time.\n(3) Priority Scheduling often appears in real-time operating systems.\n(4) Multilevel Feedback Queue is widely used in modern operating systems because it adapts to many kinds of workload.\nHow many of these statements are correct?",
+      "question": "Consider the following statements about applying CPU scheduling algorithms in practice. How many of them are correct?",
       "options": [
         "1",
         "2",
         "3",
         "4"
       ]
-    }
+    },
+    "context": "(1) FCFS phù hợp cho các hệ thống xử lý bó (batch processing).\n(2) Round Robin thường được dùng cho các hệ thống tương tác vì cải thiện response time.\n(3) Priority Scheduling thường xuất hiện trong hệ điều hành thời gian thực.\n(4) Multilevel Feedback Queue được sử dụng nhiều trong hệ điều hành hiện đại do có thể thích nghi với nhiều loại workload."
   },
   {
     "question": "Chọn phát biểu đúng về ảnh hưởng của Quantum Time trong giải thuật Round Robin:",
@@ -841,7 +846,7 @@ const cpu = [
     }
   },
   {
-    "question": "Xét hai process cùng thao tác trên biến dùng chung counter:\n\nProducer:\ncounter++;\n\nConsumer:\ncounter--;\n\nBiết rằng mỗi phép toán tăng/giảm không thực hiện nguyên tử (atomic) mà gồm nhiều bước đọc, xử lý và ghi dữ liệu. Phát biểu nào sau đây đúng?",
+    "question": "Xét hai process cùng thao tác trên biến dùng chung counter (xem đoạn mã bên dưới). Biết rằng mỗi phép toán tăng/giảm không thực hiện nguyên tử (atomic) mà gồm nhiều bước đọc, xử lý và ghi dữ liệu. Phát biểu nào sau đây đúng?",
     "options": [
       "Giá trị cuối cùng của counter luôn không đổi.",
       "Có thể xảy ra dữ liệu không nhất quán do race condition.",
@@ -850,17 +855,18 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Consider two processes operating on a shared variable counter:\n\nProducer:\ncounter++;\n\nConsumer:\ncounter--;\n\nEach increment/decrement is not atomic but consists of several read-modify-write steps. Which statement is correct?",
+      "question": "Consider two processes operating on a shared variable counter (see code below). Each increment/decrement is not atomic but consists of several read-modify-write steps. Which statement is correct?",
       "options": [
         "The final value of counter is always unchanged.",
         "Inconsistent data can occur due to a race condition.",
         "The OS always automatically synchronizes the two processes.",
         "A race condition can only happen on a multicore system."
       ]
-    }
+    },
+    "context": "Producer:\ncounter++;\n\nConsumer:\ncounter--;"
   },
   {
-    "question": "Xét hai process P0 và P1 cùng gọi fork() để tạo process con. Hệ điều hành sử dụng biến dùng chung next_available_pid để cấp phát PID mới cho các process.\nNếu không có cơ chế mutual exclusion, điều gì có thể xảy ra?",
+    "question": "Xét hai process P0 và P1 cùng gọi fork() để tạo process con. Hệ điều hành sử dụng biến dùng chung next_available_pid để cấp phát PID mới cho các process. Nếu không có cơ chế mutual exclusion, điều gì có thể xảy ra?",
     "options": [
       "Hai process con có thể được cấp cùng một PID.",
       "Hệ điều hành luôn tự động tránh trùng PID.",
@@ -869,14 +875,15 @@ const cpu = [
     ],
     "answer": "A",
     "en": {
-      "question": "Processes P0 and P1 both call fork() to create a child. The OS uses a shared variable next_available_pid to assign new PIDs.\nWithout mutual exclusion, what could happen?",
+      "question": "Processes P0 and P1 both call fork() to create a child. The OS uses a shared variable next_available_pid to assign new PIDs. Without mutual exclusion, what could happen?",
       "options": [
         "The two child processes could be assigned the same PID.",
         "The OS always automatically avoids duplicate PIDs.",
         "One of the two processes will deadlock.",
         "PID duplication can only happen on a multi-CPU system."
       ]
-    }
+    },
+    "context": "next_available_pid"
   },
   {
     "question": "Cấu trúc thông thường của một tiến trình trong bài toán Critical Section gồm những phần nào?",
@@ -955,7 +962,7 @@ const cpu = [
     }
   },
   {
-    "question": "Xét lời giải đồng bộ sử dụng biến dùng chung turn:\n\nturn = i => P_i được phép vào critical section\n\nPhát biểu nào sau đây đúng về lời giải này?",
+    "question": "Xét lời giải đồng bộ sử dụng biến dùng chung turn (xem bên dưới). Phát biểu nào sau đây đúng về lời giải này?",
     "options": [
       "Thoả cả Mutual Exclusion và Progress.",
       "Vi phạm Mutual Exclusion nhưng thoả Progress.",
@@ -964,17 +971,18 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "Consider a synchronization solution using a shared variable turn:\n\nturn = i => P_i is allowed into the critical section\n\nWhich statement about this solution is correct?",
+      "question": "Consider a synchronization solution using a shared variable turn (see below). Which statement about this solution is correct?",
       "options": [
         "It satisfies both Mutual Exclusion and Progress.",
         "It violates Mutual Exclusion but satisfies Progress.",
         "It satisfies Mutual Exclusion but violates Progress.",
         "It violates both Mutual Exclusion and Bounded Waiting."
       ]
-    }
+    },
+    "context": "turn = i  =>  P_i được phép vào critical section"
   },
   {
-    "question": "Xét hai process sau sử dụng biến dùng chung turn:\n\nProcess P0\ndo {\n    while (turn != 0);\n    critical section\n    turn = 1;\n    remainder section\n} while (1);\n\nProcess P1\ndo {\n    while (turn != 1);\n    critical section\n    turn = 0;\n    remainder section\n} while (1);\n\nTrường hợp nào sau đây làm một process phải busy waiting vô hạn mặc dù critical section đang rỗng?",
+    "question": "Xét hai process sau sử dụng biến dùng chung turn (xem bên dưới). Trường hợp nào sau đây làm một process phải busy waiting vô hạn mặc dù critical section đang rỗng?",
     "options": [
       "turn = 0, P0 ở remainder section rất lâu và P1 muốn vào critical section.",
       "turn = 1, cả hai process cùng muốn vào critical section.",
@@ -983,17 +991,18 @@ const cpu = [
     ],
     "answer": "A",
     "en": {
-      "question": "Consider two processes using a shared variable turn:\n\nProcess P0\ndo {\n    while (turn != 0);\n    critical section\n    turn = 1;\n    remainder section\n} while (1);\n\nProcess P1\ndo {\n    while (turn != 1);\n    critical section\n    turn = 0;\n    remainder section\n} while (1);\n\nWhich case forces a process into infinite busy waiting even though the critical section is empty?",
+      "question": "Consider two processes using a shared variable turn (see below). Which case forces a process into infinite busy waiting even though the critical section is empty?",
       "options": [
         "turn = 0, P0 stays in its remainder section for a long time while P1 wants to enter the critical section.",
         "turn = 1, and both processes want to enter the critical section.",
         "turn is changed after every entry into the critical section.",
         "Both processes keep entering the critical section continuously."
       ]
-    }
+    },
+    "context": "Process P0\ndo {\n    while (turn != 0);\n    critical section\n    turn = 1;\n    remainder section\n} while (1);\n\nProcess P1\ndo {\n    while (turn != 1);\n    critical section\n    turn = 0;\n    remainder section\n} while (1);"
   },
   {
-    "question": "Xét lời giải đồng bộ sử dụng mảng cờ:\n\nflag[i] = true\n\nđể báo rằng process P_i muốn vào critical section.\n\nPhát biểu nào sau đây đúng?",
+    "question": "Xét lời giải đồng bộ sử dụng mảng cờ (xem bên dưới). Phát biểu nào sau đây đúng?",
     "options": [
       "Có thể xảy ra trường hợp cả P0 và P1 cùng chờ vô hạn.",
       "Hai process có thể đồng thời vào critical section.",
@@ -1002,17 +1011,18 @@ const cpu = [
     ],
     "answer": "A",
     "en": {
-      "question": "Consider a synchronization solution using a flag array:\n\nflag[i] = true\n\nto indicate that process P_i wants to enter the critical section.\n\nWhich statement is correct?",
+      "question": "Consider a synchronization solution using a flag array (see below). Which statement is correct?",
       "options": [
         "It's possible for both P0 and P1 to wait forever.",
         "Both processes can be in the critical section at the same time.",
         "The solution satisfies both Mutual Exclusion and Progress.",
         "The solution does not use busy waiting."
       ]
-    }
+    },
+    "context": "flag[i] = true   // báo rằng process P_i muốn vào critical section"
   },
   {
-    "question": "Xét đoạn chương trình sau:\n\nwhile (true){\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j);\n\n    /* critical section */\n\n    flag[i] = false;\n\n    /* remainder section */\n}\n\nĐoạn chương trình trên là lời giải nào cho bài toán Critical Section và có thoả mãn các tính chất nào?",
+    "question": "Xét đoạn chương trình sau. Đoạn chương trình trên là lời giải nào cho bài toán Critical Section và có thoả mãn các tính chất nào?",
     "options": [
       "Giải thuật Peterson, chỉ thoả Mutual Exclusion.",
       "Giải thuật Peterson, thoả cả Mutual Exclusion, Progress và Bounded Waiting.",
@@ -1021,17 +1031,18 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Consider the following program:\n\nwhile (true){\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j);\n\n    /* critical section */\n\n    flag[i] = false;\n\n    /* remainder section */\n}\n\nWhich Critical Section solution is this, and which properties does it satisfy?",
+      "question": "Consider the following program. Which Critical Section solution is this, and which properties does it satisfy?",
       "options": [
         "Peterson's algorithm, satisfying only Mutual Exclusion.",
         "Peterson's algorithm, satisfying Mutual Exclusion, Progress and Bounded Waiting.",
         "Dekker's algorithm, satisfying only Progress.",
         "The Test-and-Set algorithm, not satisfying Bounded Waiting."
       ]
-    }
+    },
+    "context": "while (true){\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j);\n\n    /* critical section */\n\n    flag[i] = false;\n\n    /* remainder section */\n}"
   },
   {
-    "question": "Xét hai process P0 và P1 sử dụng Peterson's Solution:\n\nwhile (true){\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j);\n\n    /* critical section */\n\n    flag[i] = false;\n\n    /* remainder section */\n}\n\nGiả sử ban đầu: flag[0] = flag[1] = false\nvà các bước thực thi xảy ra theo thứ tự:\nS1: P0 -> flag[0] = true\nS2: P1 -> flag[1] = true\nS3: P1 -> turn = 0\nS4: P0 -> turn = 1\nS5: P0 -> while\nS6: P1 -> while\n\nSau bước S6, process nào sẽ được vào critical section trước?",
+    "question": "Xét hai process P0 và P1 sử dụng Peterson's Solution (xem bên dưới). Sau bước S6, process nào sẽ được vào critical section trước?",
     "options": [
       "Chỉ P0",
       "Chỉ P1",
@@ -1040,14 +1051,15 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Consider P0 and P1 using Peterson's Solution:\n\nwhile (true){\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j);\n\n    /* critical section */\n\n    flag[i] = false;\n\n    /* remainder section */\n}\n\nAssume initially: flag[0] = flag[1] = false\nand execution proceeds in this order:\nS1: P0 -> flag[0] = true\nS2: P1 -> flag[1] = true\nS3: P1 -> turn = 0\nS4: P0 -> turn = 1\nS5: P0 -> while\nS6: P1 -> while\n\nAfter step S6, which process enters the critical section first?",
+      "question": "Consider P0 and P1 using Peterson's Solution (see below). After step S6, which process enters the critical section first?",
       "options": [
         "Only P0",
         "Only P1",
         "Both enter together",
         "Both are blocked"
       ]
-    }
+    },
+    "context": "while (true){\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j);\n\n    /* critical section */\n\n    flag[i] = false;\n\n    /* remainder section */\n}\n\nGiả sử ban đầu: flag[0] = flag[1] = false\nvà các bước thực thi xảy ra theo thứ tự:\nS1: P0 -> flag[0] = true\nS2: P1 -> flag[1] = true\nS3: P1 -> turn = 0\nS4: P0 -> turn = 1\nS5: P0 -> while\nS6: P1 -> while"
   },
   {
     "question": "Vì sao Peterson's Solution có thể không hoạt động chính xác trên các kiến trúc hiện đại?",
@@ -1164,7 +1176,7 @@ const cpu = [
     }
   },
   {
-    "question": "Đoạn mã sau đang hiện thực cơ chế đồng bộ nào:\n\nboolean available = true;\n\nacquire() {\n    while (!available)\n        ; /* busy waiting */\n    available = false;\n}\n\nrelease() {\n    available = true;\n}\n\nwhile (true) {\n    acquire();\n\n    critical section;\n\n    release();\n\n    remainder section;\n}",
+    "question": "Đoạn mã sau đang hiện thực cơ chế đồng bộ nào?",
     "options": [
       "Semaphore counting",
       "Peterson's Solution",
@@ -1173,17 +1185,18 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "Which synchronization mechanism does the following code implement?\n\nboolean available = true;\n\nacquire() {\n    while (!available)\n        ; /* busy waiting */\n    available = false;\n}\n\nrelease() {\n    available = true;\n}\n\nwhile (true) {\n    acquire();\n\n    critical section;\n\n    release();\n\n    remainder section;\n}",
+      "question": "Which synchronization mechanism does the following code implement?",
       "options": [
         "Counting semaphore",
         "Peterson's Solution",
         "Mutex Lock",
         "Monitor"
       ]
-    }
+    },
+    "context": "boolean available = true;\n\nacquire() {\n    while (!available)\n        ; /* busy waiting */\n    available = false;\n}\n\nrelease() {\n    available = true;\n}\n\nwhile (true) {\n    acquire();\n\n    critical section;\n\n    release();\n\n    remainder section;\n}"
   },
   {
-    "question": "Cho hai process sử dụng semaphore như sau:\n\nProcess P1:\nwhile (1) {\n    wait(S1);\n\n    Critical Section;\n\n    signal(S2);\n}\n\nProcess P2:\nwhile (1) {\n    wait(S2);\n\n    Critical Section;\n\n    signal(S1);\n}\n\nS1 = 1;\nS2 = 0;\n\nThứ tự thực thi các Critical Section sẽ là:",
+    "question": "Cho hai process sử dụng semaphore sau (xem bên dưới). Thứ tự thực thi các Critical Section sẽ là:",
     "options": [
       "P1, P1, P2, P2, ...",
       "P1, P2, P1, P2, ...",
@@ -1192,14 +1205,15 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "Given two processes using semaphores:\n\nProcess P1:\nwhile (1) {\n    wait(S1);\n\n    Critical Section;\n\n    signal(S2);\n}\n\nProcess P2:\nwhile (1) {\n    wait(S2);\n\n    Critical Section;\n\n    signal(S1);\n}\n\nS1 = 1;\nS2 = 0;\n\nWhat is the execution order of the critical sections?",
+      "question": "Given two processes using semaphores (see below). What is the execution order of the critical sections?",
       "options": [
         "P1, P1, P2, P2, ...",
         "P1, P2, P1, P2, ...",
         "P2, P1, P2, P1, ...",
         "Undetermined"
       ]
-    }
+    },
+    "context": "Process P1:\nwhile (1) {\n    wait(S1);\n\n    Critical Section;\n\n    signal(S2);\n}\n\nProcess P2:\nwhile (1) {\n    wait(S2);\n\n    Critical Section;\n\n    signal(S1);\n}\n\nS1 = 1;\nS2 = 0;"
   },
   {
     "question": "Chọn phát biểu đúng về Counting Semaphore và Binary Semaphore:",
@@ -1603,7 +1617,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK242] Tất cả các quá trình thực thi đều dùng chung 1 semaphore mutex với giá trị khởi tạo là 1. Các quá trình đều thực thi đoạn mã nguồn dưới đây. Hãy chọn câu phát biểu đúng?\n\nsemaphore mutex S\n...\nsignal( S )\n//critical section\nwait( S )\n...",
+    "question": "Tất cả các quá trình thực thi đều dùng chung 1 semaphore mutex với giá trị khởi tạo là 1. Các quá trình đều thực thi đoạn mã nguồn sau. Hãy chọn câu phát biểu đúng?",
     "options": [
       "Nhiều quá trình có thể thực thi vùng tranh chấp tại cùng một thời điểm.",
       "Tắc nghẽn (deadlock) sẽ xảy ra.",
@@ -1612,14 +1626,15 @@ const cpu = [
     ],
     "answer": "A",
     "en": {
-      "question": "[HK242] Every process shares one semaphore mutex initialized to 1. All processes run the code below. Which statement is correct?\n\nsemaphore mutex S\n...\nsignal( S )\n//critical section\nwait( S )\n...",
+      "question": "Every process shares one semaphore mutex initialized to 1. All processes run the code below. Which statement is correct?",
       "options": [
         "Multiple processes can be in the critical section at the same time.",
         "A deadlock will occur.",
         "Indefinite postponement (starvation) can occur.",
         "Mutual exclusion is guaranteed."
       ]
-    }
+    },
+    "context": "semaphore mutex S\n...\nsignal( S )\n//critical section\nwait( S )\n..."
   },
   {
     "question": "[HK242] Yêu cầu tiến trình cho một giải thuật đồng bộ hoá trên vùng tài nguyên bị tranh chấp có nghĩa là?",
@@ -1660,7 +1675,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK242] Cho 2 quá trình thực thi P1 và P2 như mô tả dưới đây. P1 và P2 cùng chạy với giá trị S1 và S2 được khởi tạo ngẫu nhiên. Hãy chọn phát biểu đúng.\n\nP1:\nwhile(S1==S2);\n//Critical section\nS1 = S2;\n\nP2:\nwhile(S1!=S2);\n//Critical section\nS2 = not(S1);",
+    "question": "Cho 2 quá trình thực thi P1 và P2 như mô tả sau. P1 và P2 cùng chạy với giá trị S1 và S2 được khởi tạo ngẫu nhiên. Hãy chọn phát biểu đúng.",
     "options": [
       "Đảm bảo điều kiện loại trừ tương hỗ (mutual exclusion) nhưng không thoả điều kiện tiến trình (progress).",
       "Đảm bảo thoả cả hai điều kiện loại trừ tương hỗ và tiến trình.",
@@ -1669,14 +1684,15 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "[HK242] Given processes P1 and P2 below, both run with S1 and S2 initialized randomly. Pick the correct statement.\n\nP1:\nwhile(S1==S2);\n//Critical section\nS1 = S2;\n\nP2:\nwhile(S1!=S2);\n//Critical section\nS2 = not(S1);",
+      "question": "Given processes P1 and P2 below, both run with S1 and S2 initialized randomly. Pick the correct statement.",
       "options": [
         "It guarantees mutual exclusion but not progress.",
         "It guarantees both mutual exclusion and progress.",
         "It guarantees progress but not mutual exclusion.",
         "None of the other options are correct."
       ]
-    }
+    },
+    "context": "P1:                      P2:\nwhile(S1==S2);           while(S1!=S2);\n//Critical section        //Critical section\nS1 = S2;                 S2 = not(S1);"
   },
   {
     "question": "[HK242] Lợi ích của cơ chế đa luồng thực thi trên các nền tảng đơn nhân và đa nhân là:",
@@ -1793,7 +1809,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK211] Cho hệ thống có 4 process như sau, sử dụng giải thuật Shortest Remaining Time First (SRTF). Process đến trước được ưu tiên khi hoà.\nTại thời điểm 4 quá trình nào đang thực thi",
+    "question": "[HK211] Cho hệ thống có 4 process như sau, sử dụng giải thuật Shortest Remaining Time First (SRTF). Process đến trước được ưu tiên khi hoà. Tại thời điểm 4 quá trình nào đang thực thi",
     "options": [
       "P3",
       "P1",
@@ -1802,7 +1818,7 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "[HK211] A system has 4 processes below, using Shortest Remaining Time First (SRTF). On a tie, the process that arrived earlier is favored.\nAt time 4, which process is running?",
+      "question": "[HK211] A system has 4 processes below, using Shortest Remaining Time First (SRTF). On a tie, the process that arrived earlier is favored. At time 4, which process is running?",
       "options": [
         "P3",
         "P1",
@@ -1813,7 +1829,7 @@ const cpu = [
     "context": "Process | Arrival Time | Burst Time\nP1 | 0 | 6\nP2 | 1 | 3\nP3 | 2 | 1\nP4 | 3 | 2"
   },
   {
-    "question": "[HK211] Cho các process sau:\n\nProcess P0\n{\n    while(true)\n    {\n        wait(s0);\n\n        print(\"Hello\");\n\n        signal(s1);\n        signal(s2);\n    }\n}\n\nProcess P1\n{\n    while(true)\n    {\n        wait(s1);\n        signal(s0);\n    }\n}\n\nProcess P2\n{\n    while(true)\n    {\n        wait(s2);\n        signal(s0);\n    }\n}\n\nGiả sử ban đầu: s0 = 1, s1 = 0, s2 = 0\n\nSố lần tối thiểu chuỗi \"Hello\" được in ra là:",
+    "question": "Cho các process sau (xem bên dưới). Số lần tối thiểu chuỗi \"Hello\" được in ra là:",
     "options": [
       "Ít nhất 2 lần",
       "Ít nhất 3 lần",
@@ -1822,14 +1838,15 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "[HK211] Given the processes below:\n\nProcess P0\n{\n    while(true)\n    {\n        wait(s0);\n\n        print(\"Hello\");\n\n        signal(s1);\n        signal(s2);\n    }\n}\n\nProcess P1\n{\n    while(true)\n    {\n        wait(s1);\n        signal(s0);\n    }\n}\n\nProcess P2\n{\n    while(true)\n    {\n        wait(s2);\n        signal(s0);\n    }\n}\n\nAssume initially: s0 = 1, s1 = 0, s2 = 0\n\nWhat is the minimum number of times \"Hello\" is printed?",
+      "question": "Given the processes below. What is the minimum number of times \"Hello\" is printed?",
       "options": [
         "At least 2 times",
         "At least 3 times",
         "Exactly 2 times",
         "Exactly 3 times"
       ]
-    }
+    },
+    "context": "Process P0\n{\n    while(true)\n    {\n        wait(s0);\n\n        print(\"Hello\");\n\n        signal(s1);\n        signal(s2);\n    }\n}\n\nProcess P1\n{\n    while(true)\n    {\n        wait(s1);\n        signal(s0);\n    }\n}\n\nProcess P2\n{\n    while(true)\n    {\n        wait(s2);\n        signal(s0);\n    }\n}\n\nGiả sử ban đầu: s0 = 1, s1 = 0, s2 = 0"
   },
   {
     "question": "[HK211] Tại sao các thread cần có thanh ghi (register) và stack riêng, trong khi code, data và files có thể chia sẻ?",
@@ -1908,7 +1925,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK211] Cho một hệ thống gồm 4 process có thông tin như sau:\nCác process được cấp phát CPU theo giải thuật Shortest Remaining Time First (SRTF). Tính thời gian đợi trung bình.",
+    "question": "[HK211] Cho một hệ thống gồm 4 process có thông tin như sau: Các process được cấp phát CPU theo giải thuật Shortest Remaining Time First (SRTF). Tính thời gian đợi trung bình.",
     "options": [
       "1,25",
       "2,75",
@@ -1917,7 +1934,7 @@ const cpu = [
     ],
     "answer": "D",
     "en": {
-      "question": "[HK211] A system has 4 processes with the following info:\nProcesses are scheduled with Shortest Remaining Time First (SRTF). Compute the average waiting time.",
+      "question": "[HK211] A system has 4 processes with the following info: Processes are scheduled with Shortest Remaining Time First (SRTF). Compute the average waiting time.",
       "options": [
         "1.25",
         "2.75",
@@ -2043,7 +2060,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK181] Cho đoạn mã sử dụng semaphore sau:\n\nSemaphore S1, S2;\nS1.value = 0;\nS2.value = 1;\n\nProcess P1:\nwhile(1) {\n    wait(S1);\n    // Critical section\n    signal(S2);\n}\n\nProcess P2:\nwhile(1) {\n    wait(S2);\n    // Critical section\n    signal(S1);\n}\n\nPhát biểu nào sau đây đúng?",
+    "question": "Cho đoạn mã sử dụng semaphore sau (xem bên dưới). Phát biểu nào sau đây đúng?",
     "options": [
       "P1 và P2 đều không thể vào vùng tranh chấp.",
       "P1 và P2 có thể đồng thời vào vùng tranh chấp.",
@@ -2052,14 +2069,15 @@ const cpu = [
     ],
     "answer": "D",
     "en": {
-      "question": "[HK181] Given the semaphore code below:\n\nSemaphore S1, S2;\nS1.value = 0;\nS2.value = 1;\n\nProcess P1:\nwhile(1) {\n    wait(S1);\n    // Critical section\n    signal(S2);\n}\n\nProcess P2:\nwhile(1) {\n    wait(S2);\n    // Critical section\n    signal(S1);\n}\n\nWhich statement is correct?",
+      "question": "Given the semaphore code below. Which statement is correct?",
       "options": [
         "Neither P1 nor P2 can ever enter the critical section.",
         "P1 and P2 can be in the critical section at the same time.",
         "P1 can never enter, but P2 can enter the critical section.",
         "P1 and P2 alternate entering the critical section."
       ]
-    }
+    },
+    "context": "Semaphore S1, S2;\nS1.value = 0;\nS2.value = 1;\n\nProcess P1:\nwhile(1) {\n    wait(S1);\n    // Critical section\n    signal(S2);\n}\n\nProcess P2:\nwhile(1) {\n    wait(S2);\n    // Critical section\n    signal(S1);\n}"
   },
   {
     "question": "[HK181] Trong thuật toán lập lịch Round Robin (RR), khi một tiến trình sử dụng hết quantum time, nó sẽ chuyển sang trạng thái nào?",
@@ -2291,7 +2309,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK181] 2 câu tiếp theo Cho các tiến trình P1, P2, P3, P4, P5 đều đến tại thời điểm 0 với bảng sau:\nTính Average Turnaround Time khi sử dụng Round Robin (quantum = 2).",
+    "question": "[HK181] 2 câu tiếp theo Cho các tiến trình P1, P2, P3, P4, P5 đều đến tại thời điểm 0 với bảng sau: Tính Average Turnaround Time khi sử dụng Round Robin (quantum = 2).",
     "options": [
       "4.4",
       "8.8",
@@ -2300,7 +2318,7 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "[HK181] Next 2 questions use processes P1..P5, all arriving at time 0, with the table below:\nCompute the Average Turnaround Time using Round Robin (quantum = 2).",
+      "question": "[HK181] Next 2 questions use processes P1..P5, all arriving at time 0, with the table below: Compute the Average Turnaround Time using Round Robin (quantum = 2).",
       "options": [
         "4.4",
         "8.8",
@@ -2426,7 +2444,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK181] Cho đoạn chương trình sau:\n\nint main(int argc, char * argv[])\n{\n    int pid = fork();\n\n    if (pid == 0)\n    {\n        fork();\n        fork();\n        printf(\"Chuc ban lam bai tot\\n\");\n    }\n    else\n    {\n        fork();\n    }\n}\n\nCó bao nhiêu dòng \"Chuc ban lam bai tot\" được in ra?",
+    "question": "Cho đoạn chương trình sau. Có bao nhiêu dòng \"Chuc ban lam bai tot\" được in ra?",
     "options": [
       "2",
       "3",
@@ -2435,14 +2453,15 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "[HK181] Given the following program:\n\nint main(int argc, char * argv[])\n{\n    int pid = fork();\n\n    if (pid == 0)\n    {\n        fork();\n        fork();\n        printf(\"Chuc ban lam bai tot\\n\");\n    }\n    else\n    {\n        fork();\n    }\n}\n\nHow many lines of \"Chuc ban lam bai tot\" are printed?",
+      "question": "Given the following program. How many lines of \"Chuc ban lam bai tot\" are printed?",
       "options": [
         "2",
         "3",
         "4",
         "8"
       ]
-    }
+    },
+    "context": "int main(int argc, char * argv[])\n{\n    int pid = fork();\n\n    if (pid == 0)\n    {\n        fork();\n        fork();\n        printf(\"Chuc ban lam bai tot\\n\");\n    }\n    else\n    {\n        fork();\n    }\n}"
   },
   {
     "question": "[HK181] Quá trình (process) là gì?",
@@ -2464,7 +2483,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK181] Cho đoạn chương trình sau:\n\nint main(int argc, char *argv[]){\n    int pid = fork();\n\n    if (pid == 0) {\n        fork();\n        fork();\n        fork();\n    }\n    else {\n        fork();\n        fork();\n    }\n}\n\nHỏi có bao nhiêu process được tạo ra?",
+    "question": "Cho đoạn chương trình sau. Hỏi có bao nhiêu process được tạo ra?",
     "options": [
       "6",
       "8",
@@ -2473,17 +2492,18 @@ const cpu = [
     ],
     "answer": "D",
     "en": {
-      "question": "[HK181] Given the following program:\n\nint main(int argc, char *argv[]){\n    int pid = fork();\n\n    if (pid == 0) {\n        fork();\n        fork();\n        fork();\n    }\n    else {\n        fork();\n        fork();\n    }\n}\n\nHow many processes are created in total?",
+      "question": "Given the following program. How many processes are created in total?",
       "options": [
         "6",
         "8",
         "10",
         "12"
       ]
-    }
+    },
+    "context": "int main(int argc, char *argv[]){\n    int pid = fork();\n\n    if (pid == 0) {\n        fork();\n        fork();\n        fork();\n    }\n    else {\n        fork();\n        fork();\n    }\n}"
   },
   {
-    "question": "[HK181] Hệ thống có 4 process như sau, sử dụng thuật toán SRTF (Shortest Remaining Time First). Nếu nhiều process có cùng remaining time thì process đến trước được ưu tiên.\nHãy tính Average Waiting Time.",
+    "question": "[HK181] Hệ thống có 4 process như sau, sử dụng thuật toán SRTF (Shortest Remaining Time First). Nếu nhiều process có cùng remaining time thì process đến trước được ưu tiên. Hãy tính Average Waiting Time.",
     "options": [
       "5.15",
       "5.25",
@@ -2492,7 +2512,7 @@ const cpu = [
     ],
     "answer": "B",
     "en": {
-      "question": "[HK181] A system has 4 processes below, scheduled with SRTF (Shortest Remaining Time First). On a tie in remaining time, the process that arrived earlier is favored.\nCompute the Average Waiting Time.",
+      "question": "[HK181] A system has 4 processes below, scheduled with SRTF (Shortest Remaining Time First). On a tie in remaining time, the process that arrived earlier is favored. Compute the Average Waiting Time.",
       "options": [
         "5.15",
         "5.25",
@@ -2960,7 +2980,7 @@ const cpu = [
     }
   },
   {
-    "question": "[HK161] Dữ kiện sau đây dùng cho 3 câu tiếp sau đây: Hệ thống có 4 process với thời điểm đến và CPU burst như sau.\nSử dụng FCFS, thời gian đợi trung bình là:",
+    "question": "[HK161] Dữ kiện sau đây dùng cho 3 câu tiếp sau đây: Hệ thống có 4 process với thời điểm đến và CPU burst như sau. Sử dụng FCFS, thời gian đợi trung bình là:",
     "options": [
       "5.25",
       "6.25",
@@ -2969,7 +2989,7 @@ const cpu = [
     ],
     "answer": "C",
     "en": {
-      "question": "[HK161] The following data is used for the next 3 questions: a system has 4 processes with arrival times and CPU bursts as below.\nUsing FCFS, the average waiting time is:",
+      "question": "[HK161] The following data is used for the next 3 questions: a system has 4 processes with arrival times and CPU bursts as below. Using FCFS, the average waiting time is:",
       "options": [
         "5.25",
         "6.25",
