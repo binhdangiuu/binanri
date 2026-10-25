@@ -245,6 +245,15 @@ const subjects = [
       },
 
       {
+        id: "introduction2",
+        title: "Bản PDF của Introduction (ôn thi Chapter 1 - Chapter 2)",
+        type: "pdf",
+        documents: [
+          { title: "Võ Tiến HK252 (legit nhe hihi, cho cậu còn xem cách giải chứ =))))) )", file: "/pdfs/lecture/Intro.pdf" },
+        ],
+      },
+
+      {
         id: "cpu",
         title: "CPU (ôn thi Chapter 3 - Chapter 7)",
         questionsCount: cpu.length,
@@ -253,9 +262,25 @@ const subjects = [
       },
 
       {
+        id: "cpu2",
+        title: "Bản PDF của CPU (ôn thi Chapter 3 - Chapter 7)",
+        type: "pdf",
+        documents: [
+          { title: "Võ Tiến HK252 (legit nhe hihi, cho cậu còn xem cách giải chứ =))))) )", file: "/pdfs/lecture/CPU.pdf" },
+        ],
+      },
+
+      {
         id: "storage",
         title: "Storage (ôn thi Chapter 8 - Chapter 10B)",
         questionsCount: 158,
+        comingSoon: true,
+      },
+
+      {
+        id: "hk251",
+        title: "Một số câu trong đề thi HK251",
+        questionsCount: 36,
         comingSoon: true,
       },
 
@@ -546,7 +571,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 25/10/2026 • 08:50:39 (Final Exam Chap03 - Chap07 added)
+            Last Updated: 25/10/2026 • 10:48:20 (Final Exam Chap03 - Chap07 added)
           </p>
         </div>
 
