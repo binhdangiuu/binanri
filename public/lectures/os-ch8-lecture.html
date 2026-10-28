@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2018 · Chapter 8 — Main Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#1E5F99; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar-wrap{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(22,50,79,0.55); padding:12px 14px 11px; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ position:relative; font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 14px 7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper-deep); color:#fff; border-color:var(--copper-deep); }
+  .tab-btn.visited:not(.active){ box-shadow: inset 0 -2px 0 0 #ffffff55; }
+
+  .progress-row{ display:flex; align-items:center; gap:11px; margin-top:10px; }
+  .progress-track{ flex:1; height:7px; border-radius:999px; background:#ffffff1f; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--copper) 0%, #FFCF80 50%, var(--teal) 100%); transition:width .4s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:#ffffffb0; white-space:nowrap; min-width:96px; text-align:right; }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:20ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(22,50,79,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:21px; margin:40px 0 4px; padding-top:28px; border-top:2px solid var(--grid); display:flex; align-items:center; gap:10px; }
+  .subhead .shnum{ font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:700; color:#fff; background:var(--ink); border-radius:7px; padding:3px 8px; flex-shrink:0; }
+  section.hero + .subhead, .panel-head + p.intro + .subhead, .tab-panel > p.intro + .subhead{ border-top:none; padding-top:0; margin-top:28px; }
+
+  p.en{ margin:20px 0 8px; font-family:"Newsreader",serif; font-size:16.5px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 14px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:9px 14px 9px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:16px 0 24px; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:16px 0 24px; font-size:15.5px; }
+  .codeblock{ background:var(--ink); color:#E3EEF7; border-radius:12px; padding:16px 20px; margin:12px 0 24px; overflow-x:auto; }
+  .codeblock .clabel{ display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#FFCF80; margin-bottom:8px; }
+  .codeblock pre{ margin:0; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.65; white-space:pre; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:4px 0 24px; max-width:560px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:460px; margin:4px 0 24px; }
+  .stack .layer{ padding:12px 16px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.plain{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:4px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:4px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+  .res-card .vi-mini, .compare-box .vi-mini{ display:block; margin-top:7px; padding-top:7px; border-top:1px dashed var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; line-height:1.5; color:var(--teal-deep); }
+  .res-card .vi-mini::before, .compare-box .vi-mini::before{ content:"VN"; display:inline-block; font-size:8.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:0 5px; border-radius:4px; margin-right:6px; vertical-align:middle; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:4px 0 24px; max-width:620px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:96px; border:1px solid var(--grid); border-radius:10px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:16px 0 24px; max-width:600px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .bitfield{ display:flex; max-width:560px; margin:4px 0 24px; border-radius:10px; overflow:hidden; border:1px solid var(--ink-soft); }
+  .bitfield .bf{ flex:none; padding:12px 10px; text-align:center; font-family:"IBM Plex Mono",monospace; border-right:1px solid var(--ink-soft); }
+  .bitfield .bf:last-child{ border-right:none; }
+  .bitfield .bf .bn{ font-weight:700; font-size:14px; }
+  .bitfield .bf .bl{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
+  .bitfield .bf.seg{ background:var(--copper-tint); }
+  .bitfield .bf.pg{ background:var(--teal-tint); }
+  .bitfield .bf.off{ background:var(--paper-deep); }
+
+  table.cmp-table{ width:100%; max-width:620px; border-collapse:collapse; margin:4px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+  .table-scroll{ overflow-x:auto; margin:4px 0 24px; }
+  .table-scroll table.cmp-table{ margin:0; min-width:420px; }
+
+  .exercise{ background:var(--paper-deep); border:1px solid var(--grid); border-left:4px solid var(--copper); border-radius:12px; padding:20px 22px; margin:22px 0; }
+  .exercise h4{ margin:0 0 10px; font-size:16.5px; color:var(--copper-deep); }
+  .exercise table.cmp-table{ margin:10px 0 14px; font-size:13px; }
+  .exercise details{ margin-top:12px; border-top:1px dashed var(--grid); padding-top:10px; }
+  .exercise summary{ cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--teal-deep); font-weight:600; }
+  .exercise summary:hover{ color:var(--copper-deep); }
+  .exercise .ans-table{ margin-top:10px; }
+  .exercise .ans-note{ font-size:13px; color:var(--ink-soft); margin-top:8px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .vi-mini,
+  body.vi-hidden .note{ display:none; }
+
+  .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  .term:hover, .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFDBA6; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar-wrap{ position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 12px 6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+
+  @media print{
+    body{ background:#fff !important; }
+    .tabbar-wrap{ position:static; background:#fff; box-shadow:none; border:1px solid #ccc; }
+    .tab-btn{ color:var(--ink); border-color:#ccc; }
+    .tab-btn.active{ background:var(--paper-deep); color:var(--ink); }
+    .vi-toggle, .hint-icon, .progress-row{ display:none; }
+    .tab-panel[hidden]{ display:block !important; page-break-before:always; }
+    .card{ box-shadow:none; }
+    .glossary-tip{ display:none !important; }
+    a[href]::after{ content:""; }
+  }
+
+  .summary-box{ margin-top:36px; border:1.5px solid var(--grid); border-radius:14px; padding:24px 26px; background:#fff; }
+  .summary-box .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:14px; }
+  .summary-box ul{ margin:0 0 18px; padding-left:20px; }
+  .summary-box li{ margin:6px 0; font-size:14.5px; line-height:1.55; }
+  .selfcheck{ margin-top:18px; border-top:1px dashed var(--grid); padding-top:18px; }
+  .selfcheck .sc-title{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--teal-deep); margin-bottom:10px; }
+  .selfcheck label{ display:flex; align-items:flex-start; gap:9px; padding:5px 0; font-size:14px; cursor:pointer; }
+  .selfcheck input[type="checkbox"]{ margin-top:3px; flex-shrink:0; width:15px; height:15px; accent-color:var(--teal-deep); cursor:pointer; }
+  .selfcheck label:has(input:checked){ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--grid); }
+
+  .quiz-result{ margin-top:28px; border:1.5px solid var(--grid); border-radius:14px; padding:24px 26px; background:#fff; text-align:center; }
+  .qr-score{ font-family:"Space Grotesk",sans-serif; font-size:26px; font-weight:700; margin-bottom:10px; }
+  .qr-breakdown{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:18px; line-height:1.6; text-align:left; max-width:520px; margin-left:auto; margin-right:auto; }
+  .qr-breakdown .qr-wrong-item{ color:var(--copper, #b5542a); }
+  .qr-retry{ font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-weight:600; border:1.5px solid var(--teal-deep); background:var(--teal-deep); color:#fff; border-radius:999px; padding:10px 22px; cursor:pointer; transition:opacity .15s ease; }
+  .qr-retry:hover{ opacity:0.85; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2018 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="background">Background</button>
+    <button class="tab-btn" data-tab="contiguous">Contiguous Allocation</button>
+    <button class="tab-btn" data-tab="paging">Paging</button>
+    <button class="tab-btn" data-tab="pagetable">Page-Table Structure</button>
+    <button class="tab-btn" data-tab="swapping">Swapping</button>
+    <button class="tab-btn" data-tab="examples">Intel &amp; ARM</button>
+    <button class="tab-btn" data-tab="exercises">Exercises</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/9 tab · 0%</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 8 · Main Memory</span>
+    <h1>How a program's <em>tiny private world</em> gets mapped onto one shared, physical memory</h1>
+    <p class="lede">This chapter answers the core question: your program "thinks" it owns all of memory, but in reality dozens of other processes share the same physical RAM. Chapter 8 explains the hardware and OS techniques that turn that "illusory" address into a real RAM address — through base/limit registers, contiguous allocation, and especially paging.</p>
+    <span class="vi">Chương này trả lời câu hỏi cốt lõi: chương trình của bạn "nghĩ" nó sở hữu toàn bộ bộ nhớ, nhưng thực tế hàng chục tiến trình khác đang dùng chung RAM vật lý. Chương 8 giải thích phần cứng và kỹ thuật OS biến địa chỉ "ảo tưởng" đó thành địa chỉ RAM thật — qua base/limit register, contiguous allocation, và đặc biệt là paging.</span>
+    <div class="tagrow">
+      <span class="tag user">Nền tảng: Address Binding, MMU, Base/Limit</span>
+      <span class="tag kernel">Kỹ thuật cấp phát: Contiguous, Paging, Page Table</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="background"><div class="kicker">01 · Nền tảng</div><h3>Background</h3><p>Base/limit register, address binding (compile/load/execution time), MMU, dynamic loading &amp; linking.</p></div>
+    <div class="card kernel" data-goto="contiguous"><div class="kicker">02 · Kỹ thuật cổ điển</div><h3>Contiguous Memory Allocation</h3><p>Fixed/variable partition, first-fit/best-fit/worst-fit, fragmentation, compaction.</p></div>
+    <div class="card user" data-goto="paging"><div class="kicker">03 · Kỹ thuật chính</div><h3>Paging</h3><p>Frame, page, address translation (p,d), TLB, effective access time, valid/invalid bit, shared pages.</p></div>
+    <div class="card kernel" data-goto="pagetable"><div class="kicker">04 · Mở rộng</div><h3>Structure of the Page Table</h3><p>Hierarchical, Hashed, Inverted page table — và case study Oracle SPARC Solaris.</p></div>
+    <div class="card user" data-goto="swapping"><div class="kicker">05 · Kỹ thuật phụ trợ</div><h3>Swapping</h3><p>Backing store, context switch time, swapping trên mobile, swapping with paging.</p></div>
+    <div class="card kernel" data-goto="examples"><div class="kicker">06 · Thực tế</div><h3>Intel &amp; ARM Architecture</h3><p>IA-32 segmentation+paging, x86-64 4-level paging, ARM sections &amp; 2-level TLB.</p></div>
+    <div class="card user" data-goto="exercises"><div class="kicker">07 · Luyện tập</div><h3>Exercises</h3><p>3 bài tập nguyên bản từ slide: allocation strategies, segmentation+paging, dịch địa chỉ ảo.</p></div>
+    <div class="card kernel" data-goto="quiz"><div class="kicker">08 · Tự kiểm tra</div><h3>MCQ Quiz</h3><p>Trắc nghiệm phủ toàn bộ chương, thứ tự đáp án xáo mỗi lần làm.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.8</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Memory hardware</h4><p>To provide a detailed description of various ways of organizing memory hardware.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Memory-management techniques <span style="font-weight:400;font-size:0.8em;opacity:0.7;">(slide gốc chỉ ghi "various memory-management techniques" — "including paging and segmentation" là phần thêm của trang này để rõ nghĩa hơn)</span></h4><p>To discuss various memory-management techniques.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Intel Pentium</h4><p>To provide a detailed description of the Intel Pentium, which supports both pure segmentation and segmentation with paging.</p></div></div>
+  </div>
+
+  <div class="summary-box">
+    <div class="label">Summary — Silberschatz Ch.8 (slide 71–74)</div>
+    <ul>
+      <li class="en">Memory consists of a large array of bytes, each with its own address. A pair of <b>base</b> and <b>limit registers</b> defines a logical address space.</li>
+      <li class="vi">Bộ nhớ là 1 mảng lớn các byte, mỗi byte có địa chỉ riêng. Một cặp thanh ghi <b>base</b> và <b>limit</b> định nghĩa không gian địa chỉ logic.</li>
+      <li class="en"><b>Binding</b> of symbolic addresses to physical addresses may occur at compile time, load time, or execution time. An address generated by the CPU is a <b>logical address</b>, translated by the <b>MMU</b> to a physical address.</li>
+      <li class="vi"><b>Binding</b> địa chỉ ký hiệu sang địa chỉ vật lý có thể xảy ra ở 3 thời điểm: compile time, load time, hoặc execution time. Địa chỉ CPU sinh ra là <b>địa chỉ logic</b>, được <b>MMU</b> dịch sang địa chỉ vật lý.</li>
+      <li class="en">Memory can be allocated as contiguous partitions using <b>first fit</b>, <b>best fit</b>, or <b>worst fit</b>.</li>
+      <li class="vi">Bộ nhớ có thể được cấp theo các phân vùng liên tục dùng <b>first fit</b>, <b>best fit</b>, hoặc <b>worst fit</b>.</li>
+      <li class="en">Modern systems use <b>paging</b>: physical memory divides into <b>frames</b>, logical memory into <b>pages</b> of the same size; a <b>page table</b> maps page number to frame.</li>
+      <li class="vi">Hệ thống hiện đại dùng <b>paging</b>: bộ nhớ vật lý chia thành <b>frame</b>, bộ nhớ logic chia thành <b>page</b> cùng kích thước; <b>page table</b> ánh xạ số trang sang frame.</li>
+      <li class="en">A <b>TLB</b> is a hardware cache of the page table, speeding up translation. As addresses expand beyond 32 bits, <b>hierarchical</b>, <b>hashed</b>, and <b>inverted</b> page tables solve the resulting size problem.</li>
+      <li class="vi"><b>TLB</b> là bộ nhớ đệm phần cứng của page table, giúp dịch địa chỉ nhanh hơn. Khi địa chỉ vượt quá 32-bit, <b>hierarchical</b>, <b>hashed</b>, và <b>inverted</b> page table giải quyết vấn đề kích thước bảng trang.</li>
+      <li class="en"><b>Swapping</b> moves whole processes to disk to increase the degree of multiprogramming. The <b>Intel 32-bit</b> architecture has two-level paging; <b>x86-64</b> and <b>ARMv9</b> use hierarchical paging <span style="font-weight:400;opacity:0.7;">(slide 74 — Summary — ghi "ARMv9", trong khi slide 70 mô tả chip 32-bit và outline của slide ghi "ARMv8"; slide gốc chưa nhất quán, trang này giữ nguyên "ARMv9" theo đúng Summary)</span>.</li>
+      <li class="vi"><b>Swapping</b> đưa cả tiến trình ra đĩa để tăng mức độ đa chương. Kiến trúc <b>Intel 32-bit</b> dùng paging 2 cấp; <b>x86-64</b> và <b>ARMv9</b> dùng hierarchical paging.</li>
+    </ul>
+    <div class="selfcheck">
+      <div class="sc-title">✅ Tự kiểm tra trước khi qua chương tiếp theo</div>
+      <label><input type="checkbox"><span>Giải thích được vì sao cần cặp base/limit register, và điều gì xảy ra khi địa chỉ truy cập nằm ngoài [base, base+limit).</span></label>
+      <label><input type="checkbox"><span>Phân biệt được 3 thời điểm address binding (compile/load/execution time) và binding nào mới cần hardware hỗ trợ runtime.</span></label>
+      <label><input type="checkbox"><span>So sánh được first-fit, best-fit, worst-fit về tốc độ và chất lượng cấp phát, và tính được internal/external fragmentation.</span></label>
+      <label><input type="checkbox"><span>Vẽ lại được sơ đồ Paging Hardware (p,d) → (f,d) và tính được effective access time khi biết hit ratio của TLB.</span></label>
+      <label><input type="checkbox"><span>Giải thích được vì sao cần hierarchical/hashed/inverted page table khi địa chỉ lớn hơn 32-bit.</span></label>
+      <label><input type="checkbox"><span>Nêu được sự khác nhau giữa swapping "chuẩn" và swapping with paging hiện đại.</span></label>
+    </div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: BACKGROUND -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-background" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧩</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Nền tảng</div>
+        <h2>Why a program must be in memory to run — and who protects whom</h2>
+        <span class="vi">Vì sao chương trình phải vào bộ nhớ mới chạy được — và ai bảo vệ ai</span>
+      </div>
+    </div>
+    <p class="intro">Before learning allocation techniques, we need the foundation: an address "lives" in different forms across different stages, and hardware must check every single access so processes don't step on each other.</p>
+    <span class="vi">Trước khi học kỹ thuật cấp phát, ta cần hiểu nền tảng: địa chỉ "sống" ở nhiều dạng khác nhau qua từng giai đoạn, và phần cứng phải tự tay kiểm tra từng lần truy cập để các tiến trình không giẫm chân nhau.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Bảo vệ bộ nhớ bằng base &amp; limit register</h3>
+
+    <p class="en">A <b>program</b> must be brought from disk into memory and placed within a process before it can run. Main memory and CPU <b>registers</b> are the only storage the CPU can access directly — register access takes one clock cycle, while a main-memory access can take many cycles, causing a <b>stall</b>.</p>
+    <span class="vi">Một <b>chương trình</b> phải được đưa từ đĩa vào bộ nhớ và đặt trong 1 tiến trình trước khi chạy được. Bộ nhớ chính và <b>thanh ghi (register)</b> của CPU là nơi duy nhất CPU truy cập trực tiếp được — truy cập register tốn 1 chu kỳ xung nhịp, còn truy cập bộ nhớ chính có thể tốn nhiều chu kỳ, gây ra <b>stall</b> (CPU phải đợi).</span>
+    <div class="illus"><div class="emo">📬</div><div class="cap"><b>Ví dụ đời thường</b>Register giống như tờ giấy nháp ngay trên bàn làm việc — lấy ngay lập tức. Bộ nhớ chính giống tủ hồ sơ cuối phòng — phải đứng dậy, đi tới, lục tìm rồi quay lại, tốn thời gian hơn nhiều.</div></div>
+
+    <p class="en">Since a process must never touch another process's memory, the OS needs <b>protection of memory</b>: a pair of <b>base</b> and <b>limit registers</b> define the contiguous physical address space that one process is allowed to use.</p>
+    <span class="vi">Vì 1 tiến trình không bao giờ được đụng vào bộ nhớ của tiến trình khác, OS cần <b>bảo vệ bộ nhớ</b>: 1 cặp thanh ghi <b>base</b> và <b>limit</b> định nghĩa vùng địa chỉ vật lý liên tục mà 1 tiến trình được phép dùng.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Sơ đồ bộ nhớ</span>
+      <div class="stack">
+        <div class="layer hi">1024000 — operating system</div>
+        <div class="layer plain">process (base+limit = 420940)</div>
+        <div class="layer plain">process (base = 300040)</div>
+        <div class="layer plain">process</div>
+        <div class="layer os">256000 — free / chưa cấp</div>
+      </div>
+    </div>
+
+    <p class="en">The CPU hardware must <b>check every memory access</b> generated in user mode: the address must be ≥ base and &lt; base+limit. If it falls outside that range, the CPU traps to the OS with an "illegal addressing" error — and loading the base/limit registers is a <b>privileged</b> instruction only the OS can execute.</p>
+    <span class="vi">Phần cứng CPU phải <b>kiểm tra mọi lần truy cập bộ nhớ</b> ở user mode: địa chỉ phải ≥ base và &lt; base+limit. Nếu nằm ngoài khoảng đó, CPU trap về OS báo lỗi "illegal addressing" — và việc nạp giá trị cho base/limit register là lệnh <b>đặc quyền (privileged)</b>, chỉ OS mới chạy được.</span>
+    <div class="flow-row">
+      <div class="flow-box">CPU → address</div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">≥ base ?</div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">&lt; base+limit ?</div><span class="flow-arrow">→</span>
+      <div class="flow-box hi">memory</div>
+    </div>
+    <div class="note">Sai ở 1 trong 2 phép so sánh → <b>trap to OS, illegal addressing error</b> — tiến trình bị dừng ngay, không bao giờ đọc/ghi được ra ngoài vùng của nó.</div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Address Binding: địa chỉ đổi dạng qua 3 thời điểm</h3>
+
+    <p class="en">Programs on disk, ready to execute, form an <b>input queue</b>. Without support, every program would have to be loaded at address 0000 — but having the first user process always start at physical address 0000 is deeply inconvenient once many processes share memory.</p>
+    <span class="vi">Chương trình nằm trên đĩa, sẵn sàng chạy, tạo thành 1 <b>hàng đợi input</b>. Nếu không có hỗ trợ gì, mọi chương trình đều phải nạp vào địa chỉ 0000 — nhưng luôn bắt tiến trình đầu tiên bắt đầu ở địa chỉ vật lý 0000 rất bất tiện khi nhiều tiến trình dùng chung bộ nhớ.</span>
+    <div class="illus"><div class="emo">🏠</div><div class="cap"><b>Ví dụ đời thường</b>Giống như mọi lá thư chuyển phát nhanh đều ghi cùng 1 địa chỉ nhà — rõ ràng vô lý, vì nhà mỗi người ở 1 nơi khác nhau và có thể chuyển chỗ ở.</div></div>
+
+    <p class="en"><b>Addresses</b> are represented differently at different stages of a program's life: source-code addresses are usually <b>symbolic</b> (a variable name); compiled-code addresses bind to <b>relocatable addresses</b> ("14 bytes from the start of this module"); the <b>linker</b> or <b>loader</b> finally binds these to <b>absolute addresses</b> (e.g., 74014).</p>
+    <span class="vi"><b>Địa chỉ</b> được biểu diễn khác nhau qua từng giai đoạn đời sống của chương trình: địa chỉ mã nguồn thường là <b>ký hiệu (symbolic)</b> — tên biến; địa chỉ mã đã biên dịch gắn (bind) vào <b>địa chỉ có thể dời chỗ (relocatable)</b> ("14 byte tính từ đầu module này"); <b>linker</b> hoặc <b>loader</b> cuối cùng gắn chúng vào <b>địa chỉ tuyệt đối</b> (ví dụ 74014).</span>
+    <div class="flow-row">
+      <div class="flow-box">source program <span class="mono">(symbolic)</span></div><span class="flow-arrow">compiler →</span>
+      <div class="flow-box mid">object module <span class="mono">(relocatable)</span></div><span class="flow-arrow">linker →</span>
+      <div class="flow-box hi">load module <span class="mono">(relocatable)</span></div><span class="flow-arrow">loader →</span>
+      <div class="flow-box">in-memory image <span class="mono">(absolute)</span></div>
+    </div>
+
+    <p class="en">Address binding of instructions and data to memory can happen at <b>three stages</b> — and only one of them needs hardware help at run time.</p>
+    <span class="vi">Việc gắn (binding) địa chỉ lệnh/dữ liệu vào bộ nhớ có thể xảy ra ở <b>3 giai đoạn</b> — và chỉ 1 trong 3 giai đoạn cần phần cứng hỗ trợ ngay lúc chạy.</span>
+    <div class="flow-row">
+      <div class="flow-box">compile time</div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">load time</div><span class="flow-arrow">→</span>
+      <div class="flow-box hi">execution time</div>
+    </div>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Compile time</div><p>If the final memory location is known in advance (e.g., on an Arduino), absolute code can be generated — but the whole program must be recompiled if that location ever changes.</p><p class="vi-mini">Nếu vị trí bộ nhớ cuối cùng được biết trước (vd trên Arduino), mã tuyệt đối có thể được sinh ra ngay — nhưng toàn bộ chương trình phải biên dịch lại nếu vị trí đó thay đổi.</p></div>
+      <div class="res-card"><div class="rk">Load time</div><p>The compiler generates <b>relocatable code</b> when the location isn't known at compile time — the final address is only fixed when the loader brings the program into memory.</p><p class="vi-mini">Trình biên dịch sinh ra <b>mã có thể dời chỗ (relocatable)</b> khi chưa biết vị trí lúc compile — địa chỉ cuối cùng chỉ chốt khi loader đưa chương trình vào bộ nhớ.</p></div>
+      <div class="res-card"><div class="rk">Execution time</div><p>Binding is delayed until run time, because the process may move from one memory segment to another while running — this needs hardware support such as base/limit registers.</p><p class="vi-mini">Việc gắn địa chỉ bị trì hoãn tới lúc chạy, vì tiến trình có thể bị di chuyển từ phân đoạn này sang phân đoạn khác trong lúc đang chạy — cần phần cứng hỗ trợ như base/limit register.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🔧</div><div class="cap"><b>Ví dụ đời thường</b>Compile time giống in sẵn số nhà lên bưu thiếp trước khi biết người nhận ở đâu — đổi chỗ ở là phải in lại từ đầu. Execution time giống giao hàng qua app định vị GPS theo thời gian thực — tài xế vẫn tìm ra bạn dù bạn vừa đổi chỗ đứng chờ.</div></div>
+
+    <h3 class="subhead"><span class="shnum">3</span>Logical vs. Physical Address &amp; MMU</h3>
+
+    <p class="en">The concept of a <b>logical address space</b> bound to a separate <b>physical address space</b> is central to proper memory management. A <b>logical address</b> — also called a <b>virtual address</b> — is generated by the CPU; a <b>physical address</b> is the address actually seen by memory hardware.</p>
+    <span class="vi">Khái niệm <b>không gian địa chỉ logic (logical address space)</b> gắn với 1 <b>không gian địa chỉ vật lý (physical address space)</b> riêng biệt là trung tâm của quản lý bộ nhớ đúng cách. <b>Địa chỉ logic</b> — còn gọi là <b>địa chỉ ảo (virtual address)</b> — do CPU sinh ra; <b>địa chỉ vật lý</b> là địa chỉ mà phần cứng bộ nhớ thực sự nhìn thấy.</span>
+    <div class="note teal"><b>Lưu ý quan trọng</b>Logical và physical address GIỐNG NHAU trong compile-time và load-time binding; chúng KHÁC NHAU trong execution-time binding — đây chính là trường hợp paging sẽ khai thác ở phần sau.</div>
+
+    <p class="en">The <b>Memory-Management Unit (MMU)</b> is the hardware device that maps virtual addresses to physical addresses at run time. A simple scheme generalizes the base-register idea: the base register is now called a <b>relocation register</b>, whose value is added to every address a user process generates.</p>
+    <span class="vi"><b>Memory-Management Unit (MMU)</b> là thiết bị phần cứng ánh xạ địa chỉ ảo sang địa chỉ vật lý tại thời điểm chạy. 1 sơ đồ đơn giản tổng quát hóa ý tưởng base-register: thanh ghi base giờ gọi là <b>relocation register</b>, giá trị của nó được cộng vào mọi địa chỉ mà tiến trình user sinh ra.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">MMU — ví dụ số</span>
+      <div class="flow-row">
+        <div class="flow-box">CPU<br><span class="mono">logical 346</span></div><span class="flow-arrow">→</span>
+        <div class="flow-box mid">MMU<br><span class="mono">relocation reg = 14000</span></div><span class="flow-arrow">+346 →</span>
+        <div class="flow-box hi">memory<br><span class="mono">physical 14346</span></div>
+      </div>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-soft);">346 + 14000 = 14346 — <b>user program chỉ bao giờ thấy địa chỉ logic (346)</b>, không bao giờ thấy địa chỉ vật lý thật.</p>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">4</span>Dynamic Loading &amp; Dynamic Linking</h3>
+
+    <p class="en">With <b>dynamic loading</b>, the entire program doesn't need to be in memory to execute — a <b>routine</b> is not loaded until it is actually called, giving better memory-space utilization since an unused routine is never loaded. No special OS support is required; it's implemented through program design.</p>
+    <span class="vi">Với <b>dynamic loading</b>, toàn bộ chương trình không cần nằm hết trong bộ nhớ mới chạy được — 1 <b>routine</b> chỉ được nạp khi nó thực sự được gọi tới, giúp dùng bộ nhớ hiệu quả hơn vì routine không dùng tới thì không bao giờ bị nạp. Không cần OS hỗ trợ đặc biệt; được cài đặt qua thiết kế chương trình.</span>
+    <div class="illus"><div class="emo">🧵</div><div class="cap"><b>Ví dụ đời thường</b>Giống app chỉnh sửa ảnh chỉ tải module "AI xóa phông" khi bạn thực sự bấm nút đó, thay vì tải sẵn hết mọi tính năng ngay lúc mở app — tiết kiệm RAM cho tính năng hiếm dùng.</div></div>
+
+    <p class="en">Static and dynamic linking differ in exactly <b>when and how</b> a program binds to its library code.</p>
+    <span class="vi">Static và dynamic linking khác nhau chính xác ở <b>thời điểm và cách thức</b> chương trình gắn vào mã thư viện.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Static loading</div><p>Combines system libraries and program code into one binary image at <b>load time</b> — the library code is copied in full, right into the executable.</p><p class="vi-mini">Gộp thư viện hệ thống và mã chương trình vào 1 file nhị phân ngay lúc <b>load time</b> — mã thư viện được copy nguyên vẹn vào thẳng file thực thi.</p></div>
+      <div class="res-card"><div class="rk">Dynamic loading</div><p>Postpones that loading until <b>execution time</b> — a small piece of code called a <b>stub</b> locates the memory-resident library routine, then replaces itself with the routine's real address.</p><p class="vi-mini">Trì hoãn việc nạp tới <b>execution time</b> — 1 đoạn mã nhỏ gọi là <b>stub</b> xác định vị trí routine thư viện đang nằm sẵn trong bộ nhớ, rồi tự thay chính nó bằng địa chỉ thật của routine.</p></div>
+    </div>
+
+    <p class="en">Before loading a routine, the OS first checks whether it is <b>already present</b> in the process's address space — if another part of the program already pulled it in, it's reused instead of loaded twice.</p>
+    <span class="vi">Trước khi nạp 1 routine, OS kiểm tra trước xem nó <b>đã có sẵn</b> trong không gian địa chỉ của tiến trình chưa — nếu 1 phần khác của chương trình đã kéo nó vào rồi, routine đó được dùng lại thay vì nạp 2 lần.</span>
+    <p class="en">Dynamic linking also supports <b>versioning</b>: a shared library can specify a version number, so a program always links against the exact version it was built for, even as newer versions of the library are installed on the system.</p>
+    <span class="vi">Dynamic linking còn hỗ trợ <b>versioning</b>: 1 shared library có thể ghi kèm số phiên bản, để chương trình luôn liên kết đúng phiên bản nó được build cùng, kể cả khi hệ thống đã cài phiên bản thư viện mới hơn.</span>
+
+    <div class="table-scroll">
+      <table class="cmp-table">
+        <tr><th>Static linking</th><th>Dynamic linking</th></tr>
+        <tr><td><span class="mono">call printf</span> → copy nguyên hàm printf từ libc vào ngay trong file chương trình</td><td><span class="mono">call GOT[5]</span> → tra bảng GOT, lần đầu nhảy tới <span class="mono">dlfixup</span> để tìm địa chỉ thật của printf trong libc, các lần sau dùng lại địa chỉ đã lưu</td></tr>
+      </table>
+    </div>
+    <p class="en">This is especially useful for libraries — known as <b>shared libraries</b> — since many processes can share one read-only copy of the same library code on disk, instead of each process carrying its own copy, and patching the library only requires replacing one shared file.</p>
+    <span class="vi">Cách này đặc biệt hữu ích cho thư viện — gọi là <b>shared library</b> — vì nhiều tiến trình có thể dùng chung 1 bản sao chỉ-đọc của cùng 1 thư viện trên đĩa, thay vì mỗi tiến trình tự mang 1 bản riêng, và vá lỗi thư viện chỉ cần thay 1 file dùng chung.</span>
+    <div class="illus"><div class="emo">📚</div><div class="cap"><b>Ví dụ đời thường</b>Giống thư viện công cộng chỉ có 1 bản sách "Lập trình C căn bản" cho cả thành phố mượn đọc, thay vì in riêng 1 cuốn cho mỗi độc giả — khi tái bản (vá lỗi), chỉ cần thay 1 cuốn trên kệ chung.</div></div>
+
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: CONTIGUOUS ALLOCATION -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-contiguous" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📦</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Kỹ thuật cổ điển</div>
+        <h2>Each process sits in one single contiguous block of memory</h2>
+        <span class="vi">Mỗi tiến trình nằm gọn trong 1 khối bộ nhớ liên tục</span>
+      </div>
+    </div>
+    <p class="intro">The earliest allocation approach: give each process one unbroken block of memory. Simple, but it exposes two big problems that paging will later solve thoroughly.</p>
+    <span class="vi">Cách cấp phát sơ khai nhất: cho mỗi tiến trình 1 khối bộ nhớ liền mạch, không bị chia cắt. Đơn giản, nhưng để lộ 2 vấn đề lớn mà paging ở phần sau sẽ giải quyết triệt để.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Hai phân vùng OS/user, và vì sao kernel cũng cần "dời chỗ" được</h3>
+
+    <p class="en"><b>Main memory</b> must support both the OS and user processes, and as a limited resource it must be allocated efficiently. In the earliest scheme, memory is divided into exactly <b>two partitions</b>: the resident OS, usually held in <b>high memory</b> with the interrupt vector, and user processes held in <b>low memory</b>.</p>
+    <span class="vi"><b>Bộ nhớ chính</b> phải phục vụ cả OS lẫn tiến trình người dùng, và vì là tài nguyên hữu hạn nên phải cấp phát hiệu quả. Ở sơ đồ sơ khai nhất, bộ nhớ được chia đúng <b>2 phân vùng</b>: OS thường trú, thường đặt ở <b>vùng nhớ cao</b> cùng vector ngắt, và tiến trình người dùng đặt ở <b>vùng nhớ thấp</b>.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Sơ đồ 2 phân vùng</span>
+      <div class="stack">
+        <div class="layer hi">high memory — Resident Operating System</div>
+        <div class="layer plain">low memory — User process (1 khối liên tục)</div>
+      </div>
+    </div>
+
+    <p class="en">Even the OS itself isn't always fixed in place: parts of the kernel code (such as device drivers) can be <b>transient</b> — loaded only when needed and discarded afterward — and the kernel's own size can change at run time, since the MMU can remap it dynamically just like a user process.</p>
+    <span class="vi">Ngay cả OS cũng không phải lúc nào cũng cố định: 1 số phần mã kernel (như device driver) có thể <b>transient</b> — chỉ nạp khi cần rồi bỏ đi sau đó — và kích thước kernel có thể đổi ngay lúc chạy, vì MMU có thể ánh xạ lại nó linh động y như 1 tiến trình user.</span>
+    <div class="note">Nhắc lại ý base/limit từ tab Background: <b>base register</b> chứa địa chỉ vật lý nhỏ nhất mà tiến trình được phép dùng; <b>limit register</b> chứa phạm vi của không gian địa chỉ logic, vốn luôn bắt đầu từ 0.</div>
+
+    <p class="en">Later, <b>multiple-partition allocation</b> let variable-sized partitions fit the needs of each process. A <b>hole</b> is a block of available memory; holes of various sizes scatter throughout memory, and when a process arrives it is allocated memory from a hole large enough to accommodate it.</p>
+    <span class="vi">Sau đó, <b>multiple-partition allocation</b> cho phép các phân vùng kích thước thay đổi (variable) vừa khít nhu cầu của từng tiến trình. 1 <b>hole</b> là 1 khối bộ nhớ còn trống; các hole kích thước khác nhau nằm rải rác trong bộ nhớ, và khi 1 tiến trình tới, nó được cấp bộ nhớ từ 1 hole đủ lớn để chứa nó.</span>
+    <div class="illus"><div class="emo">🧩</div><div class="cap"><b>Ví dụ đời thường</b>Giống bãi đỗ xe không kẻ ô cố định — xe đến thì tìm 1 khoảng trống đủ dài rồi đỗ vào, xe rời đi để lại 1 khoảng trống mới, các khoảng trống liền kề có thể gộp lại thành 1 khoảng lớn hơn.</div></div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Thuật toán cấp phát: First-fit, Best-fit, Worst-fit</h3>
+
+    <p class="en">Given a memory request of size <b>n</b> from a list of free holes, three classic strategies decide which hole to use.</p>
+    <span class="vi">Với 1 yêu cầu bộ nhớ kích thước <b>n</b> từ danh sách hole trống, 3 chiến lược kinh điển quyết định dùng hole nào.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">First-fit</div><p>Allocates the <i>first</i> hole in the list that is big enough, scanning from the start. Usually the fastest — it stops at the first match.</p><p class="vi-mini">Cấp phát hole <i>đầu tiên</i> đủ lớn, quét danh sách từ đầu. Thường nhanh nhất — dừng ngay khi tìm thấy 1 hole khớp.</p></div>
+      <div class="res-card"><div class="rk">Best-fit</div><p>Allocates the <i>smallest</i> hole that is still big enough — must search the entire list unless sorted by size, but leaves the smallest leftover hole.</p><p class="vi-mini">Cấp phát hole <i>nhỏ nhất</i> nhưng vẫn đủ lớn — phải quét toàn bộ danh sách trừ khi đã sort, nhưng để lại hole thừa nhỏ nhất.</p></div>
+      <div class="res-card"><div class="rk">Worst-fit</div><p>Allocates the <i>largest</i> available hole, also scanning the entire list, and leaves the largest leftover hole.</p><p class="vi-mini">Cấp phát hole <i>lớn nhất</i> hiện có, cũng phải quét toàn bộ danh sách, và để lại hole thừa lớn nhất.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🅿️</div><div class="cap"><b>Ví dụ đời thường</b>Bãi đỗ xe có 5 khoảng trống dài ngắn khác nhau: first-fit là đỗ ngay vào khoảng trống đầu tiên vừa đủ dài gặp được; best-fit là chạy hết 1 vòng tìm khoảng trống vừa khít nhất; worst-fit là cố tình chọn khoảng trống dài nhất bãi, dù xe chỉ cần 1 khoảng ngắn.</div></div>
+    <p class="en">In general, <b>first-fit and best-fit</b> strategies outperform <b>worst-fit</b> in both speed and memory utilization — this is exactly what Exercise&nbsp;1 (Exercises tab) asks you to verify with real numbers.</p>
+    <span class="vi">Nhìn chung, <b>first-fit và best-fit</b> vượt trội hơn <b>worst-fit</b> cả về tốc độ lẫn hiệu quả sử dụng bộ nhớ — đây chính là điều Exercise&nbsp;1 (ở tab Exercises) yêu cầu bạn kiểm chứng bằng số liệu thật.</span>
+
+    <h3 class="subhead"><span class="shnum">3</span>Fragmentation &amp; Compaction</h3>
+
+    <p class="en">Contiguous allocation wastes memory in two very different ways.</p>
+    <span class="vi">Contiguous allocation lãng phí bộ nhớ theo 2 cách rất khác nhau.</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">External fragmentation</div><p>Enough total free space exists to satisfy a request, but it's not contiguous — scattered in many small holes.</p><p class="vi-mini">Tổng dung lượng trống đủ để thỏa yêu cầu, nhưng không liên tục — nằm rải rác thành nhiều hole nhỏ.</p></div>
+      <div class="compare-box"><div class="ck">Internal fragmentation</div><p>Allocated memory is slightly larger than what was requested — the size difference is wasted, but it stays inside one partition.</p><p class="vi-mini">Bộ nhớ cấp phát lớn hơn 1 chút so với yêu cầu — phần chênh lệch bị lãng phí, nhưng nằm bên trong chính 1 phân vùng.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🧳</div><div class="cap"><b>Ví dụ đời thường</b>External: hành lý rải khắp 5 vali nhỏ mỗi vali còn 1 khe hở — gộp lại đủ chỗ cho 1 đôi giày, nhưng không khe nào riêng lẻ đủ rộng. Internal: nhét 1 đôi giày vào vali to hơn hẳn nhu cầu — phần trống còn lại bên trong vali đó coi như bỏ phí.</div></div>
+
+    <p class="en">A classic observation — the <b>50-percent rule</b> — shows that with first-fit, given N allocated blocks, another 0.5N blocks are lost to external fragmentation; roughly 1/3 of that lost space may be unusable.</p>
+    <span class="vi">1 quan sát kinh điển — <b>quy tắc 50 phần trăm</b> — cho thấy với first-fit, nếu có N khối đã cấp phát, thêm 0.5N khối nữa bị mất do external fragmentation; khoảng 1/3 phần mất đó có thể hoàn toàn không dùng được.</span>
+
+    <p class="en">External fragmentation can be reduced by <b>compaction</b>: shuffling memory contents to place all free memory together in one large block. Compaction is only possible if relocation is dynamic and done at execution time — and it's complicated by any pending I/O, which is typically solved by latching the job in memory during I/O or doing I/O only into OS buffers.</p>
+    <span class="vi">External fragmentation có thể giảm bằng <b>compaction</b>: dồn lại nội dung bộ nhớ để gom toàn bộ phần trống thành 1 khối lớn duy nhất. Compaction chỉ khả thi nếu relocation là động và thực hiện ở execution time — và bị phức tạp hóa bởi I/O đang chờ, thường giải quyết bằng cách giữ (latch) job trong bộ nhớ khi đang I/O, hoặc chỉ I/O vào OS buffer.</span>
+    <div class="illus"><div class="emo">🗜️</div><div class="cap"><b>Ví dụ đời thường</b>Giống dồn ghế trống trong rạp chiếu phim về 1 phía sau mỗi suất chiếu, để nhóm khách đông tiếp theo có đủ ghế liền kề ngồi cùng nhau — thay vì để trống rải rác từng ghế lẻ không ai ngồi vừa.</div></div>
+    <div class="note">Backing store (đĩa dùng cho swapping, học ở tab Swapping) cũng gặp đúng vấn đề fragmentation y hệt như bộ nhớ chính.</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: PAGING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-paging" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🗂️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Kỹ thuật chính</div>
+        <h2>Splitting memory into equal-sized chunks — external fragmentation disappears</h2>
+        <span class="vi">Chia bộ nhớ thành từng mảnh bằng nhau — hết sạch external fragmentation</span>
+      </div>
+    </div>
+    <p class="intro">Paging is the turning point: instead of forcing each process to sit contiguously, we let it scatter anywhere in memory — as long as the OS keeps a map (the page table) recording where every piece landed.</p>
+    <span class="vi">Paging là bước ngoặt: thay vì bắt mỗi tiến trình nằm liên tục, ta cho phép nó nằm rải rác khắp bộ nhớ — miễn là OS giữ 1 bản đồ (page table) ghi nhớ từng mảnh nằm ở đâu.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Ý tưởng: Frame, Page, và phép dịch địa chỉ (p, d)</h3>
+
+    <p class="en">With paging, the <b>physical address space</b> of a process can be <b>noncontiguous</b>; a process is allocated physical memory whenever it's available, avoiding external fragmentation entirely and avoiding the problem of varying-sized memory chunks.</p>
+    <span class="vi">Với paging, <b>không gian địa chỉ vật lý</b> của 1 tiến trình có thể <b>không liên tục</b>; tiến trình được cấp bộ nhớ vật lý bất cứ khi nào có sẵn, tránh hoàn toàn external fragmentation và tránh vấn đề các khối bộ nhớ kích thước thay đổi.</span>
+
+    <p class="en">Physical memory is divided into fixed-sized blocks called <b>frames</b> (size is a power of 2, typically 512 bytes to 16 MB); logical memory is divided into blocks of the same size called <b>pages</b>. To run a process of size N pages, the OS just needs to find N free frames anywhere and load the process in.</p>
+    <span class="vi">Bộ nhớ vật lý được chia thành các khối kích thước cố định gọi là <b>frame</b> (kích thước là lũy thừa của 2, thường từ 512 byte tới 16 MB); bộ nhớ logic được chia thành các khối cùng kích thước gọi là <b>page</b>. Để chạy 1 tiến trình kích thước N trang, OS chỉ cần tìm N frame trống bất kỳ ở đâu rồi nạp tiến trình vào.</span>
+    <div class="illus"><div class="emo">🧱</div><div class="cap"><b>Ví dụ đời thường</b>Giống như chuyển nhà bằng cách đóng đồ vào các thùng carton cùng kích cỡ (page), rồi xếp từng thùng vào bất kỳ ô trống nào trong kho (frame) — không cần cả căn nhà phải nằm liền 1 chỗ trong kho.</div></div>
+
+    <p class="en">The OS keeps a <b>frame table</b> tracking which frames are free and which are allocated — loading a process simply flips a run of entries from free to allocated.</p>
+    <span class="vi">OS giữ 1 <b>frame table</b> theo dõi frame nào trống, frame nào đã cấp — nạp 1 tiến trình chỉ đơn giản là lật 1 dãy mục từ trống sang đã cấp.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Free-frame list — trước / sau khi cấp phát</span>
+      <div class="compare-row">
+        <div class="compare-box"><div class="ck">Trước</div><p>free-frame list: 14 → 13 → 18 → 20 → 15 → …</p></div>
+        <div class="compare-box"><div class="ck">Sau khi cấp cho process (4 trang)</div><p>frame 14,13,18,20 gán cho process; free-frame list còn lại bắt đầu từ 15 → …</p></div>
+      </div>
+    </div>
+
+    <p class="en">A logical address generated by the CPU splits into a <b>page number (p)</b> — used as an index into the page table, which holds the base address of each page in physical memory — and a <b>page offset (d)</b>, combined with that base address to form the actual physical address.</p>
+    <span class="vi">1 địa chỉ logic do CPU sinh ra tách thành <b>số trang (page number, p)</b> — dùng làm chỉ số vào page table, nơi chứa địa chỉ cơ sở của từng trang trong bộ nhớ vật lý — và <b>độ lệch trang (page offset, d)</b>, kết hợp với địa chỉ cơ sở đó để tạo ra địa chỉ vật lý thật sự.</span>
+    <div class="bitfield">
+      <div class="bf seg" style="flex:1;"><div class="bn">p</div><div class="bl">page number — m−n bit</div></div>
+      <div class="bf off" style="flex:1;"><div class="bn">d</div><div class="bl">page offset — n bit</div></div>
+    </div>
+
+    <p class="en">The <b>paging hardware</b> uses p to index the page table and read out a frame number f, then combines f with the unchanged offset d to produce the physical address — the CPU hardware does this translation automatically on every memory access.</p>
+    <span class="vi"><b>Phần cứng paging</b> dùng p để tra vào page table và đọc ra số frame f, rồi kết hợp f với offset d (không đổi) để tạo ra địa chỉ vật lý — phần cứng CPU tự động làm phép dịch này trên mọi lần truy cập bộ nhớ.</span>
+    <div class="flow-row">
+      <div class="flow-box">CPU<br><span class="mono">(p, d)</span></div><span class="flow-arrow">p tra →</span>
+      <div class="flow-box mid">page table<br><span class="mono">p → f</span></div><span class="flow-arrow">(f, d) →</span>
+      <div class="flow-box hi">physical memory</div>
+    </div>
+
+    <p class="en">A worked example: page size 4 bytes, logical memory 16 bytes (4 pages), physical memory 32 bytes (8 frames). Page table {0→5, 1→6, 2→1, 3→2} means logical page 0 (bytes 0–3, holding "abcd") physically lives in frame 5 (physical bytes 20–23).</p>
+    <span class="vi">Ví dụ số cụ thể: page size 4 byte, bộ nhớ logic 16 byte (4 trang), bộ nhớ vật lý 32 byte (8 frame). Page table {0→5, 1→6, 2→1, 3→2} nghĩa là trang logic 0 (byte 0–3, chứa "abcd") thực tế nằm ở frame 5 (byte vật lý 20–23).</span>
+    <div class="table-scroll">
+      <table class="cmp-table">
+        <tr><th>Page #</th><th>Frame #</th><th>Logical bytes</th><th>Physical bytes</th></tr>
+        <tr><td>0</td><td>5</td><td>0–3 ("abcd")</td><td>20–23</td></tr>
+        <tr><td>1</td><td>6</td><td>4–7 ("efgh")</td><td>24–27</td></tr>
+        <tr><td>2</td><td>1</td><td>8–11 ("ijkl")</td><td>4–7</td></tr>
+        <tr><td>3</td><td>2</td><td>12–15 ("mnop")</td><td>8–11</td></tr>
+      </table>
+    </div>
+
+    <p class="en">Paging still has <b>internal fragmentation</b>: a process whose size isn't an exact multiple of the page size wastes part of its last page. With a 2,048-byte page size and a 72,766-byte process (35 pages + 1,086 bytes), the last page wastes 2,048 − 1,086 = 962 bytes.</p>
+    <span class="vi">Paging vẫn có <b>internal fragmentation</b>: 1 tiến trình có kích thước không chia hết cho page size sẽ lãng phí 1 phần trang cuối. Với page size 2.048 byte và tiến trình 72.766 byte (35 trang + 1.086 byte), trang cuối lãng phí 2.048 − 1.086 = 962 byte.</span>
+
+    <p class="en">In the <b>worst case</b>, a process's last page is only 1 byte full — wasting almost an entire frame (frame size − 1 byte). On average, fragmentation is about half a frame size per process, so small frames reduce waste but increase the memory cost of the page table itself — which is exactly why <b>page sizes have grown over time</b> as memory capacity grew (256 B – 8 KB historically, now commonly 4 KB – 1 GB; Solaris, for instance, supports 8 KB and 4 MB pages).</p>
+    <span class="vi"><b>Trường hợp xấu nhất</b>, trang cuối của 1 tiến trình chỉ đầy đúng 1 byte — lãng phí gần trọn 1 frame (frame size − 1 byte). Trung bình, mỗi tiến trình lãng phí khoảng nửa kích thước 1 frame, nên frame nhỏ giảm lãng phí nhưng tăng chi phí bộ nhớ cho chính page table — đây chính là lý do <b>kích thước page đã tăng dần theo thời gian</b> khi dung lượng bộ nhớ tăng (trước đây 256 B – 8 KB, nay phổ biến 4 KB – 1 GB; ví dụ Solaris hỗ trợ page 8 KB và 4 MB).</span>
+
+    <h3 class="subhead"><span class="shnum">2</span>Page Table trong bộ nhớ: PTBR/PTLR, TLB, Effective Access Time</h3>
+
+    <p class="en">The <b>page table</b> itself is kept in main memory — two registers locate it.</p>
+    <span class="vi">Bản thân <b>page table</b> được giữ trong bộ nhớ chính — 2 thanh ghi dùng để định vị nó.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">PTBR</div><p>Page-Table <b>Base</b> Register — points to where the page table starts in main memory.</p><p class="vi-mini">Page-Table Base Register — trỏ tới vị trí page table bắt đầu trong bộ nhớ chính.</p></div>
+      <div class="res-card"><div class="rk">PTLR</div><p>Page-Table <b>Length</b> Register — indicates how large the page table is.</p><p class="vi-mini">Page-Table Length Register — cho biết page table lớn bao nhiêu.</p></div>
+    </div>
+    <p class="en">In this naive scheme, every data or instruction access needs <b>two memory accesses</b>: one for the page table, one for the actual data.</p>
+    <span class="vi">Ở sơ đồ ngây thơ này, mỗi lần truy cập dữ liệu hoặc lệnh cần <b>2 lần truy cập bộ nhớ</b>: 1 lần cho page table, 1 lần cho dữ liệu thật.</span>
+    <div class="flow-row">
+      <div class="flow-box">CPU (p,d)</div><span class="flow-arrow">access 1 →</span>
+      <div class="flow-box mid">page table (RAM)</div><span class="flow-arrow">access 2 →</span>
+      <div class="flow-box hi">data thật (RAM)</div>
+    </div>
+
+    <p class="en">This two-memory-access problem is solved by a special, fast-lookup hardware cache called the <b>Translation Look-aside Buffer (TLB)</b> — also called associative memory — which stores a small number of recent page-number → frame-number mappings (typically 64 to 1,024 entries) for near-instant lookup.</p>
+    <span class="vi">Vấn đề 2 lần truy cập này được giải quyết bằng 1 bộ nhớ đệm phần cứng tra cứu nhanh gọi là <b>Translation Look-aside Buffer (TLB)</b> — còn gọi là associative memory — lưu 1 số lượng nhỏ các ánh xạ số trang → số frame gần đây (thường 64 đến 1.024 mục) để tra gần như tức thời.</span>
+    <div class="flow-row">
+      <div class="flow-box">CPU<br><span class="mono">(p, d)</span></div><span class="flow-arrow">p →</span>
+      <div class="flow-box mid">TLB hit?</div><span class="flow-arrow">hit →</span>
+      <div class="flow-box hi">physical memory</div>
+    </div>
+    <div class="note teal"><b>TLB miss</b>Nếu p không có trong TLB → phải tra tiếp vào page table trong bộ nhớ, rồi nạp kết quả vào TLB để lần sau tra nhanh hơn — một số entry có thể được "wired down" để luôn thường trú trong TLB.</div>
+
+    <p class="en">Since the TLB has limited space, a new entry must sometimes evict an old one — this is decided by a <b>TLB replacement policy</b> (such as LRU, or round-robin), the same idea used later for page replacement.</p>
+    <span class="vi">Vì TLB có dung lượng giới hạn, 1 mục mới đôi khi phải đá 1 mục cũ ra — việc này do <b>TLB replacement policy</b> quyết định (như LRU, hoặc round-robin), cùng ý tưởng sẽ gặp lại sau này ở page replacement.</span>
+
+    <p class="en">Without extra help, the TLB would need to be <b>flushed</b> (entirely cleared) on every context switch — since a leftover entry might map the same page number to the <i>wrong</i> process's frame. Modern TLBs avoid this with an <b>Address-Space Identifier (ASID)</b>, which tags each entry with the owning process so entries from different processes can coexist and don't need flushing.</p>
+    <span class="vi">Nếu không có hỗ trợ thêm, TLB phải bị <b>flush</b> (xóa sạch) ở mỗi lần context switch — vì 1 mục còn sót lại có thể ánh xạ cùng 1 số trang sang frame của tiến trình <i>khác</i>, sai hoàn toàn. TLB hiện đại tránh điều này bằng <b>Address-Space Identifier (ASID)</b>, gắn nhãn mỗi mục với tiến trình sở hữu nó, để các mục của nhiều tiến trình khác nhau cùng tồn tại mà không cần flush.</span>
+    <div class="illus"><div class="emo">🏷️</div><div class="cap"><b>Ví dụ đời thường</b>Giống phòng gửi đồ chung cho nhiều khách — không có ASID giống việc đổi khách là phải đổ hết tủ ra lau lại từ đầu; có ASID (tag tên khách trên mỗi món đồ) thì đồ của khách A và khách B ở chung tủ vẫn không lẫn vào nhau, không cần dọn sạch mỗi lần đổi khách.</div></div>
+
+    <p class="en">The <b>hit ratio</b> is the percentage of times a page number is found in the TLB. Given a memory access time of 10 ns, a TLB hit costs 10 ns (direct), a TLB miss costs 20 ns (page table, then memory) — so the <b>Effective Access Time (EAT)</b> blends both cases.</p>
+    <span class="vi"><b>Hit ratio</b> là tỉ lệ phần trăm số lần số trang được tìm thấy trong TLB. Với thời gian truy cập bộ nhớ 10 ns, 1 lần TLB hit tốn 10 ns (trực tiếp), 1 lần TLB miss tốn 20 ns (page table, rồi bộ nhớ) — nên <b>Effective Access Time (EAT)</b> trộn cả 2 trường hợp lại.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Ví dụ tính EAT</span>
+      <p style="margin:0 0 8px;"><span class="mono">EAT = hit_ratio × 10 + (1 − hit_ratio) × 20</span></p>
+      <table class="cmp-table" style="margin:0;">
+        <tr><th>Hit ratio</th><th>EAT</th><th>Suy ra</th></tr>
+        <tr><td>80%</td><td>0.80×10 + 0.20×20 = <b>12 ns</b></td><td>chậm hơn 20% so với lý tưởng</td></tr>
+        <tr><td>99%</td><td>0.99×10 + 0.01×20 = <b>10.1 ns</b></td><td>chỉ chậm hơn 1%</td></tr>
+      </table>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">3</span>Bảo vệ bộ nhớ trong paging: valid/invalid bit</h3>
+
+    <p class="en">Memory protection in paging is implemented by associating a <b>protection bit</b> with each frame (read-only, read-write, or execute-only), plus a <b>valid–invalid bit</b> attached to every page-table entry.</p>
+    <span class="vi">Bảo vệ bộ nhớ trong paging được hiện thực bằng cách gắn 1 <b>protection bit</b> cho mỗi frame (read-only, read-write, hoặc execute-only), cộng thêm 1 <b>bit valid–invalid</b> gắn vào mỗi mục trong page table.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Valid</div><p>The associated page is in the process's logical address space — it's a legal page, access proceeds normally.</p><p class="vi-mini">Trang tương ứng nằm trong không gian địa chỉ logic của tiến trình — là trang hợp lệ, truy cập diễn ra bình thường.</p></div>
+      <div class="res-card"><div class="rk">Invalid</div><p>The page is not in the process's logical address space. Any access to it results in a <b>trap</b> to the kernel.</p><p class="vi-mini">Trang không nằm trong không gian địa chỉ logic của tiến trình. Mọi truy cập vào nó dẫn tới 1 <b>trap</b> về kernel.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🚫</div><div class="cap"><b>Ví dụ đời thường</b>Giống như mỗi phòng trong khách sạn có thẻ "đang có khách / phòng trống" — nhân viên dọn phòng chỉ được vào những phòng có thẻ hợp lệ của họ, cố vào phòng khác sẽ bị báo động ngay.</div></div>
+
+    <p class="en">A worked example: a <b>14-bit</b> logical address space (0 to 16,383) with 2 KB pages, but a process that only actually uses addresses 0 through 10,468. Pages 0–5 cover that used range and are marked <b>valid</b>; pages 6 and 7 cover addresses the process never uses and are marked <b>invalid</b>.</p>
+    <span class="vi">Ví dụ cụ thể: không gian địa chỉ logic <b>14-bit</b> (0 đến 16.383) với page 2 KB, nhưng 1 tiến trình thực tế chỉ dùng tới địa chỉ 0 đến 10.468. Trang 0–5 phủ đúng vùng đang dùng đó nên được đánh dấu <b>valid</b>; trang 6 và 7 phủ vùng địa chỉ tiến trình không bao giờ dùng tới, nên đánh dấu <b>invalid</b>.</span>
+    <div class="table-scroll">
+      <table class="cmp-table">
+        <tr><th>Page #</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+        <tr><td>Valid/Invalid</td><td>v</td><td>v</td><td>v</td><td>v</td><td>v</td><td>v</td><td>i</td><td>i</td></tr>
+      </table>
+    </div>
+    <div class="note">Cách khác để kiểm tra, không cần bit valid/invalid riêng cho từng trang chưa dùng: dùng <b>PTLR (Page-Table Length Register)</b> — chỉ cần so page number với PTLR, p ≥ PTLR là bị trap ngay, không cần quét bit của từng trang phía sau.</div>
+
+    <h3 class="subhead"><span class="shnum">4</span>Shared Pages — dùng chung 1 bản sao vật lý</h3>
+
+    <p class="en">Pages can be either shared or private, and a process's page table simply points each page number — shared or private — at whichever physical frame holds it.</p>
+    <span class="vi">1 trang có thể là shared hoặc private, và page table của mỗi tiến trình chỉ việc trỏ từng số trang — dù shared hay private — về đúng frame vật lý đang chứa nó.</span>
+
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Shared code</div><p>One copy of read-only (<b>reentrant</b>) code — editors, compilers, window systems — shared among many processes, similar to threads sharing one process space.</p><p class="vi-mini">1 bản sao mã chỉ-đọc (<b>reentrant</b>) — trình soạn thảo, trình biên dịch, window system — dùng chung bởi nhiều tiến trình, giống cách nhiều luồng dùng chung 1 không gian tiến trình.</p></div>
+      <div class="res-card"><div class="rk">Private code &amp; data</div><p>A separate copy for each process — these pages can appear anywhere in that process's own logical address space.</p><p class="vi-mini">1 bản sao riêng cho mỗi tiến trình — các trang này có thể nằm bất cứ đâu trong không gian địa chỉ logic riêng của tiến trình đó.</p></div>
+    </div>
+    <div class="labeled-box">
+      <span class="lb-tag">3 tiến trình, 1 bản libc vật lý</span>
+      <div class="flow-row">
+        <div class="flow-box">P1 page table → libc1..4</div>
+        <div class="flow-box hi">frame 1-4<br><span class="mono">libc1..libc4</span></div>
+        <div class="flow-box">P2 page table → libc1..4</div>
+      </div>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-soft);">Mỗi tiến trình có page table riêng, nhưng các mục trỏ tới libc đều cùng trỏ về đúng 4 frame vật lý đó — tiết kiệm RAM đáng kể khi hàng chục tiến trình cùng dùng chung thư viện chuẩn.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: STRUCTURE OF PAGE TABLE -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-pagetable" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🏗️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · Mở rộng</div>
+        <h2>When the page table itself grows so large it must be paged too</h2>
+        <span class="vi">Khi page table tự nó lớn tới mức phải... phân trang luôn page table</span>
+      </div>
+    </div>
+    <p class="intro">With 32-bit addresses and beyond, a single "flat" page table can weigh several MB per process. The three techniques below — hierarchical, hashed, inverted — are three different ways of solving that size problem.</p>
+    <span class="vi">Với địa chỉ 32-bit trở lên, 1 page table "phẳng" có thể nặng tới hàng MB cho mỗi tiến trình. Ba kỹ thuật dưới đây — hierarchical, hashed, inverted — là 3 cách khác nhau để giải quyết vấn đề kích thước đó.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Vấn đề: page table 1 cấp quá lớn</h3>
+
+    <p class="en">Memory structures for paging can get huge with straightforward methods. Consider a <b>32-bit logical address space</b> with a 4 KB (2¹²) page size: the page table would need 2³² / 2¹² = 1 million entries; if each entry is 4 bytes, that's <b>4 MB of physical address space</b> per process just for the page table alone — far too much to allocate contiguously in main memory.</p>
+    <span class="vi">Cấu trúc bộ nhớ cho paging có thể trở nên khổng lồ nếu dùng cách đơn giản nhất. Xét <b>không gian địa chỉ logic 32-bit</b> với page size 4 KB (2¹²): page table cần 2³² / 2¹² = 1 triệu mục; nếu mỗi mục 4 byte, đó là <b>4 MB không gian địa chỉ vật lý</b> cho mỗi tiến trình chỉ để chứa page table — quá nhiều để cấp liên tục trong bộ nhớ chính.</span>
+    <div class="note"><b>Giải pháp chung</b>Chia nhỏ page table thành nhiều đơn vị nhỏ hơn — 3 hướng chính dưới đây.</div>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Hierarchical</div><p>Pages the page table itself, in 2+ levels.</p><p class="vi-mini">Phân trang luôn cho chính page table, qua 2 cấp trở lên.</p></div>
+      <div class="res-card"><div class="rk">Hashed</div><p>Hashes the virtual page number into a chained table.</p><p class="vi-mini">Băm số trang ảo vào 1 bảng dạng chuỗi liên kết.</p></div>
+      <div class="res-card"><div class="rk">Inverted</div><p>One system-wide table, indexed by physical frame instead of logical page.</p><p class="vi-mini">1 bảng duy nhất cho cả hệ thống, đánh chỉ số theo frame vật lý thay vì trang logic.</p></div>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Hierarchical Paging: 2 cấp, 3 cấp, và giới hạn ở 64-bit</h3>
+
+    <p class="en">Hierarchical paging breaks up the logical address space into multiple page tables — a simple technique is a <b>two-level page table</b>, where we page the page table itself. A 32-bit address with 4 KB page size splits into a 10-bit outer index p1, a 10-bit inner index p2, and a 12-bit offset d.</p>
+    <span class="vi">Hierarchical paging chia nhỏ không gian địa chỉ logic thành nhiều page table — 1 kỹ thuật đơn giản là <b>page table 2 cấp</b>, nơi ta phân trang cho chính page table. 1 địa chỉ 32-bit với page size 4 KB tách thành chỉ số ngoài p1 10-bit, chỉ số trong p2 10-bit, và offset d 12-bit.</span>
+    <div class="bitfield">
+      <div class="bf seg"><div class="bn">p₁</div><div class="bl">10 bit — outer</div></div>
+      <div class="bf pg"><div class="bn">p₂</div><div class="bl">10 bit — inner</div></div>
+      <div class="bf off"><div class="bn">d</div><div class="bl">12 bit — offset (page = 4 KB = 2¹²)</div></div>
+    </div>
+    <div class="note">Slide gốc ghi chưa nhất quán giữa "1K page size" và sơ đồ 10|10|12 — 1K (2¹⁰) đáng lẽ phải cho offset 10-bit. Trang này dùng đúng ví dụ chuẩn 4 KB (2¹²) để khớp với sơ đồ 10|10|12.</div>
+    <div class="flow-row">
+      <div class="flow-box">p₁</div><span class="flow-arrow">tra →</span>
+      <div class="flow-box mid">outer page table</div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">page của page table</div><span class="flow-arrow">p₂ tra →</span>
+      <div class="flow-box hi">frame thật</div>
+    </div>
+    <p class="en">This is known as a <b>forward-mapped page table</b>: p1 indexes the outer page table, p2 is the displacement within that page of the inner page table. But even two-level paging isn't enough for 64-bit addresses — with a 4 KB page, the page table alone would need 2⁵² entries.</p>
+    <span class="vi">Cách này gọi là <b>forward-mapped page table</b>: p1 là chỉ số vào outer page table, p2 là độ lệch bên trong trang đó của inner page table. Nhưng kể cả paging 2 cấp cũng không đủ cho địa chỉ 64-bit — với page 4 KB, riêng page table đã cần 2⁵² mục.</span>
+    <p class="en">With just two levels, the outer table itself still has <b>2⁴² entries (2⁴⁴ bytes)</b> — still far too large. Adding a <b>third level</b> shrinks that outer-outer table down to 2³⁴ bytes, at the cost of up to 3–4 memory accesses just to reach one physical location.</p>
+    <span class="vi">Với chỉ 2 cấp, bản thân outer table vẫn có <b>2⁴² mục (2⁴⁴ byte)</b> — vẫn còn quá lớn. Thêm <b>cấp thứ 3</b> mới thu nhỏ outer-outer table đó xuống còn 2³⁴ byte, với cái giá là tới 3-4 lần truy cập bộ nhớ chỉ để tới được 1 vị trí vật lý.</span>
+    <div class="flow-row">
+      <div class="flow-box">outer-outer<br><span class="mono">p1 — 2³⁴ byte</span></div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">outer<br><span class="mono">p2 (2 cấp = 2⁴² mục)</span></div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">inner<br><span class="mono">p3</span></div><span class="flow-arrow">→</span>
+      <div class="flow-box hi">frame thật</div>
+    </div>
+    <div class="illus"><div class="emo">🪆</div><div class="cap"><b>Ví dụ đời thường</b>Giống búp bê Matryoshka — mở hộp ngoài cùng ra mới thấy hộp kế tiếp, cứ thế mở dần vào trong mới chạm tới món đồ thật bên trong cùng. Mỗi lớp hộp là 1 lần "truy cập bộ nhớ" tốn thời gian.</div></div>
+
+    <h3 class="subhead"><span class="shnum">3</span>Hashed Page Table &amp; Clustered Page Table</h3>
+
+    <p class="en">Common in address spaces larger than 32 bits, a <b>hashed page table</b> hashes the virtual page number into a table whose entries form a chain of elements hashing to the same location; each element stores the virtual page number, the mapped frame value, and a pointer to the next element in the chain — the chain is searched for a matching virtual page number.</p>
+    <span class="vi">Thường dùng cho không gian địa chỉ lớn hơn 32-bit, <b>hashed page table</b> băm (hash) số trang ảo vào 1 bảng mà mỗi mục là 1 chuỗi các phần tử cùng băm về 1 vị trí; mỗi phần tử lưu số trang ảo, giá trị frame tương ứng, và con trỏ tới phần tử kế trong chuỗi — chuỗi này được duyệt tìm số trang ảo khớp.</span>
+    <div class="flow-row">
+      <div class="flow-box">(p, d)</div><span class="flow-arrow">hash(p) →</span>
+      <div class="flow-box mid">hash table<br><span class="mono">chuỗi (q,s)→(p,r)→…</span></div><span class="flow-arrow">khớp →</span>
+      <div class="flow-box hi">(r, d)</div>
+    </div>
+    <div class="illus"><div class="emo">📇</div><div class="cap"><b>Ví dụ đời thường</b>Giống tủ hồ sơ theo bảng chữ cái: nhiều tên cùng rơi vào 1 ngăn chữ "N" (đụng hash), nhân viên phải lục lần lượt từng hồ sơ trong ngăn đó cho tới khi khớp đúng tên cần tìm.</div></div>
+    <p class="en">A variation for 64-bit addresses is the <b>clustered page table</b>, similar to hashed but each entry refers to several pages (such as 16) rather than one — especially useful for <b>sparse</b> address spaces, where memory references are non-contiguous and scattered.</p>
+    <span class="vi">1 biến thể cho địa chỉ 64-bit là <b>clustered page table</b>, tương tự hashed nhưng mỗi mục tham chiếu nhiều trang (ví dụ 16) thay vì 1 — đặc biệt hữu ích cho không gian địa chỉ <b>sparse</b> (thưa), nơi các tham chiếu bộ nhớ không liên tục và rải rác.</span>
+
+    <h3 class="subhead"><span class="shnum">4</span>Inverted Page Table &amp; case study Oracle SPARC Solaris</h3>
+
+    <p class="en">Rather than each process having a page table that tracks all possible logical pages, an <b>inverted page table</b> tracks <i>all physical pages</i> instead — one entry for each real frame of memory. Each entry stores the virtual address of the page stored in that frame, plus information about the process that owns it.</p>
+    <span class="vi">Thay vì mỗi tiến trình có 1 page table theo dõi mọi trang logic có thể có, <b>inverted page table</b> theo dõi <i>toàn bộ trang vật lý</i> thay vào đó — 1 mục cho mỗi frame thật của bộ nhớ. Mỗi mục lưu địa chỉ ảo của trang đang nằm trong frame đó, kèm thông tin về tiến trình sở hữu nó.</span>
+    <div class="note teal"><b>Đánh đổi</b>Giảm bộ nhớ cần để lưu page table (chỉ 1 bảng cho cả hệ thống, không phải 1 bảng/tiến trình), nhưng tăng thời gian tìm kiếm khi có tham chiếu trang — thường giải quyết bằng cách dùng hash table để giới hạn tìm kiếm chỉ còn 1 hoặc vài mục, và TLB vẫn tăng tốc được truy cập.</div>
+
+    <p class="en">Inverted page tables also complicate <b>shared memory</b>: since each physical frame has only <i>one</i> entry (one virtual-to-physical mapping), a page shared by several processes with different virtual addresses can't be represented directly — a second lookup structure is needed to map several virtual addresses onto the one physical page.</p>
+    <span class="vi">Inverted page table cũng khiến <b>shared memory</b> phức tạp hơn: vì mỗi frame vật lý chỉ có <i>đúng 1</i> mục (1 ánh xạ ảo→vật lý), 1 trang được nhiều tiến trình dùng chung với các địa chỉ ảo khác nhau không thể biểu diễn trực tiếp — cần thêm 1 cấu trúc tra cứu phụ để ánh xạ nhiều địa chỉ ảo về cùng 1 trang vật lý đó.</span>
+
+    <p class="en"><b>Oracle SPARC Solaris</b> is a modern 64-bit example with tightly integrated hardware, aiming for efficiency and low overhead. It uses <b>two hash tables</b> — one for the kernel, one for all user processes — where each entry represents a contiguous area of mapped virtual memory rather than a single page, which is more efficient than a separate hash-table entry for every page.</p>
+    <span class="vi"><b>Oracle SPARC Solaris</b> là 1 ví dụ 64-bit hiện đại với phần cứng tích hợp chặt chẽ, hướng tới hiệu quả và chi phí thấp. Nó dùng <b>2 hash table</b> — 1 cho kernel, 1 cho mọi tiến trình user — mỗi mục đại diện cho 1 vùng liên tục của bộ nhớ ảo đã ánh xạ thay vì chỉ 1 trang đơn lẻ, hiệu quả hơn so với 1 mục hash riêng cho từng trang.</span>
+    <p class="en">The TLB holds <b>Translation Table Entries (TTEs)</b> for fast lookups; a cache of TTEs lives in a <b>Translation Storage Buffer (TSB)</b>.</p>
+    <span class="vi">TLB giữ các <b>Translation Table Entries (TTEs)</b> để tra cứu nhanh; 1 bộ đệm các TTE sống trong <b>Translation Storage Buffer (TSB)</b>.</span>
+    <p class="en">On a TLB miss, hardware walks the in-memory TSB; if that also misses, the kernel is interrupted to search the hash table and build a fresh TTE.</p>
+    <span class="vi">Khi TLB miss, phần cứng duyệt TSB trong bộ nhớ; nếu TSB cũng miss, kernel bị ngắt để tìm trong hash table và tạo 1 TTE mới.</span>
+    <div class="flow-row">
+      <div class="flow-box hi">TLB miss</div><span class="flow-arrow">→</span>
+      <div class="flow-box mid">TSB (RAM)</div><span class="flow-arrow">miss →</span>
+      <div class="flow-box mid">kernel bị ngắt</div><span class="flow-arrow">→</span>
+      <div class="flow-box">tra hash table, tạo TTE mới</div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: SWAPPING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-swapping" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🔄</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · Kỹ thuật phụ trợ</div>
+        <h2>When RAM doesn't have room for every process at once</h2>
+        <span class="vi">Khi RAM không đủ chỗ cho mọi tiến trình cùng lúc</span>
+      </div>
+    </div>
+    <p class="intro">Swapping solves a different problem than paging: not "where does this chunk of memory sit", but "which process gets to be in RAM right now".</p>
+    <span class="vi">Swapping giải quyết 1 vấn đề khác hẳn paging: không phải "mảnh bộ nhớ nằm đâu", mà là "tiến trình nào được ở trong RAM ngay lúc này".</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Khái niệm Swap out / Swap in &amp; Backing Store</h3>
+
+    <p class="en">A process can be <b>swapped</b> temporarily out of memory to a backing store, then brought back in for continued execution — this lets the total physical memory space of all processes exceed the actual physical memory available. The <b>backing store</b> is a fast disk large enough to hold copies of all memory images for all users, with direct access to those images.</p>
+    <span class="vi">1 tiến trình có thể bị <b>swap</b> tạm thời ra khỏi bộ nhớ vào backing store, rồi được đưa trở lại để tiếp tục chạy — điều này cho phép tổng dung lượng bộ nhớ vật lý của mọi tiến trình vượt quá dung lượng bộ nhớ vật lý thật sự có. <b>Backing store</b> là 1 ổ đĩa nhanh đủ lớn để chứa bản sao bộ nhớ của mọi người dùng, có khả năng truy cập trực tiếp các bản sao đó.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Swap out / Swap in</span>
+      <div class="flow-row">
+        <div class="flow-box hi">main memory<br><span class="mono">OS + user space</span></div><span class="flow-arrow">① swap out →</span>
+        <div class="flow-box mid">backing store<br><span class="mono">process P1, P2…</span></div><span class="flow-arrow">← ② swap in</span>
+        <div class="flow-box hi">main memory</div>
+      </div>
+    </div>
+    <div class="illus"><div class="emo">🏋️</div><div class="cap"><b>Ví dụ đời thường</b>Giống phòng gym chỉ có 20 tủ khóa — khách tập xong gửi đồ vào kho lớn phía sau (backing store) để nhường tủ cho khách mới, rồi lấy lại đúng món đồ cũ khi quay lại tập tiếp.</div></div>
+
+    <p class="en"><b>Roll out, roll in</b> is a swapping variant used for priority-based scheduling: a lower-priority process is swapped out so a higher-priority process can be loaded and executed.</p>
+    <span class="vi"><b>Roll out, roll in</b> là 1 biến thể của swapping dùng cho lập lịch theo độ ưu tiên: 1 tiến trình ưu tiên thấp bị swap ra để 1 tiến trình ưu tiên cao hơn được nạp vào và chạy.</span>
+    <div class="illus"><div class="emo">🎭</div><div class="cap"><b>Ví dụ đời thường</b>Giống sân khấu nhà hát chỉ chứa được 1 nhóm diễn viên tại 1 thời điểm — nhóm chưa tới lượt diễn ("priority thấp") lui vào cánh gà ("backing store") nhường chỗ, rồi được gọi ra lại đúng lúc tới lượt.</div></div>
+
+    <p class="en">The major part of swap time is <b>transfer time</b>, directly proportional to the amount of memory swapped — the system maintains a <b>ready queue</b> of ready-to-run processes whose memory images currently sit on disk.</p>
+    <span class="vi">Phần lớn thời gian swap là <b>transfer time</b>, tỉ lệ thuận trực tiếp với lượng bộ nhớ được swap — hệ thống duy trì 1 <b>ready queue</b> các tiến trình sẵn sàng chạy mà bản sao bộ nhớ đang nằm trên đĩa.</span>
+
+    <p class="en">Does a swapped-out process have to come back to the exact same physical location? It depends on the <b>address-binding method</b>: compile-time or load-time binding needs it back at the same place, but execution-time binding (with base/limit or paging) lets it land anywhere free.</p>
+    <span class="vi">Tiến trình bị swap ra có phải quay về đúng vị trí vật lý cũ không? Tùy vào <b>phương pháp address binding</b>: binding ở compile-time hoặc load-time bắt buộc phải về đúng chỗ cũ, nhưng binding ở execution-time (với base/limit hoặc paging) thì có thể nạp vào bất kỳ chỗ trống nào.</span>
+
+    <h3 class="subhead"><span class="shnum">2</span>Context Switch Time &amp; ràng buộc I/O</h3>
+
+    <p class="en">If the next process to run on the CPU is not currently in memory, the OS must swap out one process and swap in the target — making context-switch time very high. For a 100 MB process swapping to disk at 50 MB/sec: swap-out takes 2,000 ms, plus swap-in of an equally sized process, for a total swap component of 4,000 ms (4 seconds).</p>
+    <span class="vi">Nếu tiến trình kế tiếp cần chạy trên CPU hiện không nằm trong bộ nhớ, OS phải swap ra 1 tiến trình rồi swap vào tiến trình đích — khiến thời gian context-switch rất cao. Với tiến trình 100 MB swap vào đĩa tốc độ 50 MB/giây: swap-out tốn 2.000 ms, cộng thêm swap-in 1 tiến trình cùng kích cỡ, tổng thành phần swap là 4.000 ms (4 giây).</span>
+    <div class="note"><b>Giảm chi phí swap</b>Có thể giảm nếu biết chính xác lượng bộ nhớ đang thực sự dùng, qua các system call như <span class="mono">request_memory()</span> và <span class="mono">release_memory()</span> — chỉ swap đúng phần cần thiết thay vì toàn bộ process image.</div>
+
+    <p class="en">Other constraints apply too: <b>pending I/O</b> means you can't swap out a process while I/O is happening to/from its memory, since that I/O would land in the wrong process's space once the frame is reused. Always transferring I/O into kernel space first, then to the device — known as <b>double buffering</b> — solves this but adds overhead.</p>
+    <span class="vi">Còn những ràng buộc khác: <b>pending I/O</b> nghĩa là không thể swap ra 1 tiến trình đang có I/O xảy ra tới/từ bộ nhớ của nó, vì I/O đó sẽ ghi nhầm vào không gian của tiến trình khác khi frame bị dùng lại. Luôn chuyển I/O vào kernel space trước, rồi mới ra thiết bị — gọi là <b>double buffering</b> — giải quyết được vấn đề này nhưng thêm chi phí.</span>
+
+    <h3 class="subhead"><span class="shnum">3</span>Swapping trên Mobile &amp; Swapping with Paging hiện đại</h3>
+
+    <p class="en">Standard swapping of whole processes is not typical in modern desktop OSes — a modified version is common instead, swapping only when free memory is extremely low.</p>
+    <span class="vi">Swapping chuẩn (toàn bộ tiến trình) không thường dùng trong hệ điều hành desktop hiện đại — thay vào đó, 1 phiên bản chỉnh sửa khá phổ biến: chỉ swap khi bộ nhớ trống cực thấp.</span>
+
+    <p class="en"><b>Swapping on mobile systems</b> isn't typically supported at all: flash memory has a small amount of space, a limited number of write cycles, and poor throughput between flash and the CPU.</p>
+    <span class="vi"><b>Swapping trên hệ di động</b> thường không được hỗ trợ: bộ nhớ flash có dung lượng nhỏ, số lần ghi giới hạn, và băng thông kém giữa flash và CPU.</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">iOS</div><p>Requires apps to voluntarily give back allocated memory; read-only data is dropped and reloaded from flash when needed; unable to comply → the app gets killed.</p><p class="vi-mini">Yêu cầu app tự nguyện trả bớt bộ nhớ đã cấp; dữ liệu read-only bị bỏ và nạp lại từ flash khi cần; không trả được → bị kill.</p></div>
+      <div class="compare-box"><div class="ck">Android</div><p>Kills the app when free memory is low, but first writes its state out to flash so it can restart quickly.</p><p class="vi-mini">Kill app khi bộ nhớ trống thấp, nhưng ghi trạng thái app ra flash trước để khởi động lại nhanh.</p></div>
+    </div>
+    <div class="illus"><div class="emo">📴</div><div class="cap"><b>Ví dụ đời thường</b>Đóng app nấu ăn trên điện thoại rồi mở lại sau 1 giờ — iOS/Android không "swap" app đó ra thẻ nhớ như máy tính; thay vào đó app bị tắt hẳn (kill), và khi mở lại gần như phải tải lại từ đầu, chỉ nhanh hơn nhờ trạng thái đã lưu sẵn.</div></div>
+
+    <p class="en">Instead, both mobile OSes support <b>paging</b> as discussed earlier. And on desktop systems, <b>swapping with paging</b> operates at page granularity rather than whole-process granularity: individual pages of process A can be paged out to the backing store while individual pages of process B are paged in, using the very same frame slots.</p>
+    <span class="vi">Thay vào đó, cả 2 hệ điều hành di động đều hỗ trợ <b>paging</b> như đã học ở trên. Còn trên hệ desktop, <b>swapping with paging</b> hoạt động ở mức từng trang chứ không phải cả tiến trình: từng trang riêng lẻ của tiến trình A có thể bị page-out ra backing store trong khi từng trang riêng lẻ của tiến trình B được page-in vào, dùng đúng những ô frame đó.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Swapping with Paging</span>
+      <div class="flow-row">
+        <div class="flow-box">process A<br><span class="mono">trang b,c,e</span></div><span class="flow-arrow">page out →</span>
+        <div class="flow-box mid">backing store</div><span class="flow-arrow">page in →</span>
+        <div class="flow-box">process B<br><span class="mono">trang f,h,j</span></div>
+      </div>
+      <p style="margin:0;font-size:13.5px;color:var(--ink-soft);">Chỉ các trang cụ thể cần dùng mới di chuyển — tiết kiệm transfer time hơn hẳn so với swap nguyên cả tiến trình.</p>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: EXAMPLES (INTEL & ARM) -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-examples" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🖥️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Thực tế</div>
+        <h2>What the paging theory looks like on real-world chips</h2>
+        <span class="vi">Lý thuyết paging trông ra sao trên chip thật ngoài đời</span>
+      </div>
+    </div>
+    <p class="intro">Intel and ARM are the two dominant chip architectures — each implements paging slightly differently to balance speed, address capacity, and backward compatibility.</p>
+    <span class="vi">Intel và ARM là 2 kiến trúc chip thống trị thị trường — mỗi hãng hiện thực hóa paging theo cách hơi khác nhau để cân bằng giữa tốc độ, dung lượng địa chỉ, và tương thích ngược.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Intel IA-32: segmentation + paging, LDT/GDT, PAE</h3>
+
+    <p class="en">Pentium-class CPUs use the 32-bit <b>IA-32 architecture</b> and support both pure segmentation and segmentation with paging. Each segment can be up to 4 GB, with up to 16K segments per process, split into two partitions.</p>
+    <span class="vi">CPU dòng Pentium dùng kiến trúc 32-bit <b>IA-32</b> và hỗ trợ cả pure segmentation lẫn segmentation kết hợp paging. Mỗi segment có thể tới 4 GB, tối đa 16K segment mỗi tiến trình, chia thành 2 phân vùng.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">LDT</div><p><b>Local Descriptor Table</b> — up to 8K segments, private to one process.</p><p class="vi-mini">Tối đa 8K segment, riêng của 1 tiến trình.</p></div>
+      <div class="res-card"><div class="rk">GDT</div><p><b>Global Descriptor Table</b> — up to 8K segments, shared across all processes.</p><p class="vi-mini">Tối đa 8K segment, dùng chung cho mọi tiến trình.</p></div>
+    </div>
+
+    <p class="en">The CPU generates a logical address; a <b>selector</b> is given to the segmentation unit, producing a <b>linear address</b>. That linear address is then given to the paging unit, which produces the final physical address in main memory — the paging unit effectively forms the MMU, and page sizes can be 4 KB or 4 MB.</p>
+    <span class="vi">CPU sinh ra địa chỉ logic; 1 <b>selector</b> được đưa cho đơn vị segmentation, tạo ra <b>địa chỉ linear</b>. Địa chỉ linear đó sau đó được đưa cho đơn vị paging, tạo ra địa chỉ vật lý cuối cùng trong bộ nhớ chính — đơn vị paging chính là MMU, và kích thước trang có thể là 4 KB hoặc 4 MB.</span>
+    <div class="flow-row">
+      <div class="flow-box">CPU<br>logical address</div><span class="flow-arrow">selector →</span>
+      <div class="flow-box mid">segmentation unit</div><span class="flow-arrow">linear address →</span>
+      <div class="flow-box mid">paging unit</div><span class="flow-arrow">→</span>
+      <div class="flow-box hi">physical memory</div>
+    </div>
+
+    <p class="en">32-bit address limits led Intel to create <b>Page Address Extension (PAE)</b>, letting 32-bit apps access more than 4 GB of memory by moving paging to a 3-level scheme.</p>
+    <span class="vi">Giới hạn địa chỉ 32-bit khiến Intel tạo ra <b>Page Address Extension (PAE)</b>, cho phép app 32-bit truy cập hơn 4 GB bộ nhớ bằng cách chuyển paging sang sơ đồ 3 cấp.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">PAE — 3 cấp</span>
+      <div class="flow-row">
+        <div class="flow-box">2 bit đầu</div><span class="flow-arrow">→</span>
+        <div class="flow-box mid">page directory pointer table</div><span class="flow-arrow">entry 64-bit →</span>
+        <div class="flow-box hi">36-bit address space<br><span class="mono">= 64 GB vật lý</span></div>
+      </div>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Intel x86-64: hiện tại, paging 4 cấp</h3>
+
+    <p class="en"><b>Intel x86-64</b> is the current-generation Intel architecture. 64 bits is ginormous (over 16 exabytes), so in practice only 48-bit addressing is implemented, using page sizes of 4 KB, 2 MB, or 1 GB across <b>four levels of paging hierarchy</b>. PAE can also be used so virtual addresses are 48 bits while physical addresses reach 52 bits.</p>
+    <span class="vi"><b>Intel x86-64</b> là kiến trúc Intel thế hệ hiện tại. 64-bit là con số khổng lồ (hơn 16 exabyte), nên thực tế chỉ hiện thực địa chỉ 48-bit, dùng page size 4 KB, 2 MB, hoặc 1 GB qua <b>4 cấp phân cấp paging</b>. PAE cũng có thể dùng để địa chỉ ảo là 48-bit trong khi địa chỉ vật lý đạt tới 52-bit.</span>
+    <div class="bitfield">
+      <div class="bf seg" style="flex:1.1;"><div class="bn">PML4</div><div class="bl">page map level 4</div></div>
+      <div class="bf pg" style="flex:1;"><div class="bn">PDPT</div><div class="bl">page directory ptr</div></div>
+      <div class="bf pg" style="flex:1;"><div class="bn">PD</div><div class="bl">page directory</div></div>
+      <div class="bf off" style="flex:1;"><div class="bn">PT</div><div class="bl">page table</div></div>
+      <div class="bf off" style="flex:0.9;"><div class="bn">off</div><div class="bl">offset</div></div>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">3</span>ARM Architecture: chip di động, section &amp; 2 cấp TLB</h3>
+
+    <p class="en"><b>ARM</b> is the dominant mobile platform chip, powering Apple iOS and Google Android devices — a modern, energy-efficient 32-bit CPU. It supports 4 KB and 16 KB pages, plus 1 MB and 16 MB pages called <b>sections</b>: one-level paging for sections, two-level paging for the smaller pages.</p>
+    <span class="vi"><b>ARM</b> là chip nền tảng di động thống trị, cung cấp năng lượng cho thiết bị Apple iOS và Google Android — 1 CPU 32-bit hiện đại, tiết kiệm năng lượng. Nó hỗ trợ trang 4 KB và 16 KB, cộng thêm trang 1 MB và 16 MB gọi là <b>section</b>: paging 1 cấp cho section, paging 2 cấp cho trang nhỏ hơn.</span>
+
+    <p class="en">ARM also uses <b>two levels of TLBs</b>: the outer level has two micro-TLBs (one for data, one for instructions), and the inner level is a single main TLB. The inner TLB is checked first; on a miss the outer micro-TLBs are checked; on another miss, the CPU performs a full page-table walk.</p>
+    <span class="vi">ARM còn dùng <b>2 cấp TLB</b>: cấp ngoài có 2 micro-TLB (1 cho dữ liệu, 1 cho lệnh), cấp trong là 1 TLB chính duy nhất. TLB trong được kiểm tra trước; nếu miss thì kiểm tra micro-TLB ngoài; nếu lại miss, CPU thực hiện duyệt toàn bộ page table.</span>
+    <div class="illus"><div class="emo">📱</div><div class="cap"><b>Ví dụ đời thường</b>Giống hệ thống 2 lớp bảo vệ ở chung cư — bảo vệ tầng (TLB trong) kiểm tra trước, không nhận ra thì hỏi bảo vệ cổng chính (micro-TLB ngoài), vẫn không có thì mới gọi lên văn phòng quản lý tra hồ sơ đầy đủ (page-table walk).</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: EXERCISES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-exercises" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">✏️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Luyện tập</div>
+        <h2>3 exercises straight from the original slides</h2>
+        <span class="vi">3 bài tập nguyên bản từ slide gốc</span>
+      </div>
+    </div>
+    <p class="intro">Click "Xem lời giải" to open the detailed answer for each — try it yourself before peeking.</p>
+    <span class="vi">Bấm vào "Xem lời giải" để mở đáp án chi tiết từng bài — nên tự làm trước khi xem.</span>
+
+    <div class="exercise">
+      <h4>Exercise 1 — First-fit vs. Best-fit vs. Worst-fit</h4>
+      <p class="en">Given five memory partitions of 100 KB, 500 KB, 200 KB, 300 KB, and 600 KB (in order), how would each of the first-fit, best-fit, worst-fit algorithms place processes of 212 KB, 417 KB, 112 KB, and 426 KB (in order)? Which algorithm makes the most efficient use of memory?</p>
+      <span class="vi">Cho 5 phân vùng bộ nhớ 100 KB, 500 KB, 200 KB, 300 KB, 600 KB (theo thứ tự), mỗi thuật toán first-fit, best-fit, worst-fit sẽ cấp phát các tiến trình 212 KB, 417 KB, 112 KB, 426 KB (theo thứ tự) như thế nào? Thuật toán nào dùng bộ nhớ hiệu quả nhất?</span>
+      <details>
+        <summary>Xem lời giải</summary>
+        <div class="table-scroll ans-table">
+          <table class="cmp-table">
+            <tr><th>Thuật toán</th><th>212 KB</th><th>417 KB</th><th>112 KB</th><th>426 KB</th></tr>
+            <tr><td>First-fit</td><td>hole 500 (còn 288)</td><td>hole 600 (còn 183)</td><td>hole 288 (còn 176)</td><td><b>không chỗ nào vừa</b></td></tr>
+            <tr><td>Best-fit</td><td>hole 300 (còn 88)</td><td>hole 500 (còn 83)</td><td>hole 200 (còn 88)</td><td>hole 600 (còn 174)</td></tr>
+            <tr><td>Worst-fit</td><td>hole 600 (còn 388)</td><td>hole 500 (còn 83)</td><td>hole 388 (còn 276)</td><td><b>không chỗ nào vừa</b> (276 &lt; 426)</td></tr>
+          </table>
+        </div>
+        <p class="ans-note"><b>Best-fit</b> là thuật toán duy nhất đặt được cả 4 tiến trình — nên trong trường hợp này, best-fit dùng bộ nhớ hiệu quả nhất. First-fit và worst-fit đều "kẹt" ở tiến trình 426 KB cuối cùng vì không còn hole nào đủ lớn.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 2 — Segmentation + Paging</h4>
+      <p class="en">A task is divided into four equal-sized segments; the system builds an eight-entry page-descriptor table for each segment. Page size is 2 KB. (1) What is the maximum size of each segment? (2) What is the maximum logical address space for the task? (3) An element at physical location 00021ABC is accessed — what is the format of the logical address the task generates, and the maximum physical address space for the system?</p>
+      <span class="vi">1 task chia thành 4 segment bằng nhau; hệ thống xây 1 page-descriptor table 8 mục cho mỗi segment. Page size 2 KB. (1) Kích thước tối đa mỗi segment là bao nhiêu? (2) Không gian địa chỉ logic tối đa của task là bao nhiêu? (3) 1 phần tử ở vị trí vật lý 00021ABC được truy cập — định dạng địa chỉ logic mà task sinh ra là gì, và không gian địa chỉ vật lý tối đa của hệ thống là bao nhiêu?</span>
+      <details>
+        <summary>Xem lời giải</summary>
+        <p class="ans-note"><b>(1)</b> Mỗi segment có 8 trang, mỗi trang 2 KB → kích thước tối đa 1 segment = 8 × 2 KB = <b>16 KB</b>.</p>
+        <p class="ans-note"><b>(2)</b> 4 segment × 16 KB = <b>64 KB</b> không gian địa chỉ logic tối đa.</p>
+        <div class="bitfield" style="margin-top:10px;">
+          <div class="bf seg"><div class="bn">2 bit</div><div class="bl">segment # (4 segment)</div></div>
+          <div class="bf pg"><div class="bn">3 bit</div><div class="bl">page # (8 trang/segment)</div></div>
+          <div class="bf off"><div class="bn">11 bit</div><div class="bl">offset (2KB = 2¹¹)</div></div>
+        </div>
+        <p class="ans-note"><b>(3)</b> Định dạng địa chỉ logic: 2 bit segment + 3 bit page + 11 bit offset = 16 bit (khớp với 64 KB ở câu 2) — với phần tử cụ thể này, offset = 11 bit thấp của 00021ABC = 0x21ABC mod 2048 = <b>0x2BC</b>; segment/page cụ thể còn phụ thuộc bảng ánh xạ logic→vật lý nên chỉ nêu được đúng định dạng 2|3|11. Địa chỉ vật lý 00021ABC có <b>8 chữ số hex = 32 bit</b> → không gian địa chỉ vật lý tối đa của hệ thống = 2³² byte = <b>4 GB</b>.</p>
+      </details>
+    </div>
+
+    <div class="exercise">
+      <h4>Exercise 3 — Dịch địa chỉ ảo sang vật lý (segmentation with paging)</h4>
+      <p class="en">A 32-bit virtual address splits into a 4-bit segment number, 12-bit page number, 16-bit offset. Using the segment table and page tables A, B below, find the physical address for each virtual address (or "bad virtual address" if invalid): 00020000, 20011002, 10001111.</p>
+      <span class="vi">Địa chỉ ảo 32-bit tách thành 4-bit số segment, 12-bit số trang, 16-bit offset. Dùng segment table và page table A, B dưới đây, tìm địa chỉ vật lý cho mỗi địa chỉ ảo (hoặc "bad virtual address" nếu không hợp lệ): 00020000, 20011002, 10001111.</span>
+      <div class="table-scroll" style="margin-top:12px;">
+        <table class="cmp-table">
+          <tr><th>Segment table</th><th></th><th>Page table A</th><th></th><th>Page table B</th></tr>
+          <tr><td>0 → Page table A</td><td></td><td>0 → CAFE</td><td></td><td>0 → F000</td></tr>
+          <tr><td>1 → Page table B</td><td></td><td>1 → DEAD</td><td></td><td>1 → D8BF</td></tr>
+          <tr><td>x → (rest invalid)</td><td></td><td>2 → BEEF</td><td></td><td>X → (rest invalid)</td></tr>
+          <tr><td></td><td></td><td>3 → BA11</td><td></td><td></td></tr>
+          <tr><td></td><td></td><td>X → (rest invalid)</td><td></td><td></td></tr>
+        </table>
+      </div>
+      <details>
+        <summary>Xem lời giải</summary>
+        <div class="table-scroll ans-table">
+          <table class="cmp-table">
+            <tr><th>Địa chỉ ảo</th><th>Segment / Page / Offset (hex)</th><th>Kết quả</th></tr>
+            <tr><td>00020000</td><td>seg 0 / page 2 / offset 0000</td><td>Seg0→Page table A, page2→BEEF → <b>BEEF0000</b></td></tr>
+            <tr><td>20011002</td><td>seg 2 / …</td><td>Segment 2 không hợp lệ → <b>bad virtual address</b></td></tr>
+            <tr><td>10001111</td><td>seg 1 / page 0 / offset 1111</td><td>Seg1→Page table B, page0→F000 → <b>F0001111</b></td></tr>
+          </table>
+        </div>
+        <p class="ans-note">4 bit đầu = số segment (1 hex digit), 12 bit kế = số trang (3 hex digit), 16 bit cuối = offset (4 hex digit). Frame number (vd BEEF, F000) ghép trực tiếp với offset để tạo thành địa chỉ vật lý 32-bit cuối cùng.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 8</h2>
+    <p class="intro">23 câu (18 khái niệm + 5 tính toán), đủ chủ đề trong chương — từ base/limit register tới ARM TLB. Thứ tự đáp án được xáo mỗi lần làm. Bấm vào đáp án để xem đúng/sai và giải thích ngay.</p>
+    <div class="quiz-score" id="quizScore">0 / 23 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+    <div class="quiz-result" id="quizResult" hidden>
+      <div class="qr-score" id="qrScoreText"></div>
+      <div class="qr-breakdown" id="qrBreakdown"></div>
+      <button type="button" class="qr-retry" id="quizRetryBtn">🔄 Làm lại (xáo câu hỏi mới)</button>
+    </div>
+  </section>
+
+  <footer>CO2018 · Operating System Concepts, 10th ed. (Silberschatz, Galvin, Gagne) — Chapter 8 lecture notes</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','background','contiguous','paging','pagetable','swapping','examples','exercises','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const PROGRESS_KEY = 'os-ch8-visited';
+  let visitedSet = new Set();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    if (Array.isArray(saved)) visitedSet = new Set(saved.filter(t => panelIds.includes(t)));
+  } catch(e) {}
+
+  function updateProgress(){
+    const total = panelIds.length;
+    const done = visitedSet.size;
+    const pct = Math.round((done / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = done + '/' + total + ' tab · ' + pct + '%';
+  }
+
+  function markVisited(name){
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+    if (!visitedSet.has(name)){
+      visitedSet.add(name);
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(visitedSet))); } catch(e) {}
+    }
+    updateProgress();
+  }
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    markVisited(name);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+  visitedSet.forEach(name => {
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+  });
+  updateProgress();
+  markVisited('overview');
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch8-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "base register": ["Holds the smallest legal physical memory address a process may access.", "Giữ địa chỉ vật lý hợp lệ nhỏ nhất mà 1 tiến trình được phép truy cập."],
+      "limit register": ["Holds the size of the range of addresses a process may access, relative to base.", "Giữ kích thước phạm vi địa chỉ 1 tiến trình được phép truy cập, tính từ base."],
+      "relocation register": ["Generalized base register whose value is added to every address a user process generates.", "Thanh ghi base tổng quát hóa, giá trị được cộng vào mọi địa chỉ do tiến trình user sinh ra."],
+      "logical address": ["An address generated by the CPU; also called a virtual address.", "Địa chỉ do CPU sinh ra; còn gọi là địa chỉ ảo (virtual address)."],
+      "physical address": ["The address actually seen by the memory unit / loaded into the memory-address register.", "Địa chỉ mà bộ nhớ thực sự nhìn thấy / được nạp vào thanh ghi địa chỉ bộ nhớ."],
+      "mmu": ["Memory-Management Unit — hardware device mapping virtual to physical address at run time.", "Memory-Management Unit — thiết bị phần cứng ánh xạ địa chỉ ảo sang vật lý tại thời điểm chạy."],
+      "dynamic loading": ["A routine is not loaded into memory until it is actually called.", "1 routine không được nạp vào bộ nhớ cho tới khi thực sự được gọi tới."],
+      "dynamic linking": ["Linking of library routines postponed until execution time, via a stub.", "Liên kết routine thư viện bị trì hoãn tới lúc chạy, thông qua 1 stub."],
+      "stub": ["Small piece of code locating the memory-resident library routine; replaces itself with its address.", "1 đoạn mã nhỏ xác định vị trí routine thư viện đang nằm sẵn trong bộ nhớ; tự thay bằng địa chỉ của routine đó."],
+      "hole": ["A block of available (free) memory, scattered among allocated partitions.", "1 khối bộ nhớ còn trống, nằm rải rác giữa các phân vùng đã cấp."],
+      "first-fit": ["Allocates the first hole in the list that is big enough for the request.", "Cấp phát hole đầu tiên trong danh sách đủ lớn cho yêu cầu."],
+      "best-fit": ["Allocates the smallest hole that is still big enough; must search the whole list.", "Cấp phát hole nhỏ nhất nhưng vẫn đủ lớn; phải quét toàn bộ danh sách."],
+      "worst-fit": ["Allocates the largest available hole.", "Cấp phát hole lớn nhất hiện có."],
+      "external fragmentation": ["Enough total free memory exists but it's not contiguous.", "Tổng bộ nhớ trống đủ nhưng không liên tục."],
+      "internal fragmentation": ["Allocated memory is slightly larger than requested, wasting space inside a partition.", "Bộ nhớ cấp phát lớn hơn yêu cầu 1 chút, lãng phí bên trong 1 phân vùng."],
+      "compaction": ["Shuffling memory contents to merge free space into one large block.", "Dồn nội dung bộ nhớ để gộp phần trống thành 1 khối lớn."],
+      "frame": ["A fixed-size block of physical memory in a paging scheme.", "1 khối kích thước cố định của bộ nhớ vật lý trong sơ đồ paging."],
+      "page": ["A fixed-size block of logical memory, same size as a frame.", "1 khối kích thước cố định của bộ nhớ logic, cùng kích thước với frame."],
+      "page table": ["Per-process structure mapping page numbers to frame numbers.", "Cấu trúc riêng mỗi tiến trình, ánh xạ số trang sang số frame."],
+      "ptbr": ["Page-Table Base Register — points to the page table in memory.", "Page-Table Base Register — trỏ tới page table trong bộ nhớ."],
+      "ptlr": ["Page-Table Length Register — indicates the size of the page table.", "Page-Table Length Register — cho biết kích thước của page table."],
+      "tlb": ["Translation Look-aside Buffer — fast hardware cache of page-table entries.", "Translation Look-aside Buffer — bộ nhớ đệm phần cứng nhanh của các mục page table."],
+      "hit ratio": ["Percentage of times a page number is found in the TLB.", "Tỉ lệ phần trăm số lần số trang được tìm thấy trong TLB."],
+      "effective access time": ["Weighted-average memory access time accounting for TLB hits and misses.", "Thời gian truy cập bộ nhớ trung bình có trọng số, tính cả TLB hit và miss."],
+      "valid-invalid bit": ["Per page-table-entry bit marking whether a page is in the process's legal address space.", "Bit gắn mỗi mục page table, đánh dấu trang đó có nằm trong không gian địa chỉ hợp lệ của tiến trình hay không."],
+      "shared pages": ["One physical copy of read-only code shared among many processes' page tables.", "1 bản vật lý duy nhất của mã chỉ-đọc, dùng chung bởi page table của nhiều tiến trình."],
+      "hierarchical paging": ["Breaking a large page table into multiple levels, paging the page table itself.", "Chia 1 page table lớn thành nhiều cấp, phân trang cho chính page table."],
+      "hashed page table": ["Hashes the virtual page number into a table of chained entries.", "Băm số trang ảo vào 1 bảng gồm các mục nối chuỗi."],
+      "clustered page table": ["Variant of hashed page tables where each entry covers several pages, not just one.", "Biến thể của hashed page table, mỗi mục bao phủ nhiều trang thay vì chỉ 1."],
+      "inverted page table": ["One system-wide table with one entry per physical frame, instead of one table per process.", "1 bảng duy nhất cho toàn hệ thống, 1 mục cho mỗi frame vật lý, thay vì 1 bảng mỗi tiến trình."],
+      "swapping": ["Temporarily moving a process out of memory to a backing store and back.", "Di chuyển tạm thời 1 tiến trình ra khỏi bộ nhớ vào backing store rồi trở lại."],
+      "backing store": ["Fast disk large enough to hold memory images for all users.", "Ổ đĩa nhanh đủ lớn để chứa bản sao bộ nhớ của mọi người dùng."],
+      "roll out, roll in": ["Swapping variant for priority scheduling: lower-priority process swapped out for a higher one.", "Biến thể swapping cho lập lịch ưu tiên: tiến trình ưu tiên thấp bị swap ra nhường chỗ cho tiến trình ưu tiên cao."],
+      "double buffering": ["Always transferring I/O into kernel space first, then the device, to allow safe swapping.", "Luôn chuyển I/O vào kernel space trước rồi mới ra thiết bị, để swapping an toàn."],
+      "pae": ["Page Address Extension — lets 32-bit Intel CPUs address more than 4GB via 3-level paging.", "Page Address Extension — cho phép CPU Intel 32-bit truy cập hơn 4GB qua paging 3 cấp."],
+      "ldt": ["Local Descriptor Table — holds segments private to one process in IA-32.", "Local Descriptor Table — giữ các segment riêng của 1 tiến trình trong IA-32."],
+      "gdt": ["Global Descriptor Table — holds segments shared among all processes in IA-32.", "Global Descriptor Table — giữ các segment dùng chung giữa mọi tiến trình trong IA-32."],
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    const Glookup = {};
+    Object.keys(G).forEach(k => { Glookup[k.toLowerCase()] = k; });
+    function resolveKey(text){
+      if (G[text]) return text;
+      const lk = Glookup[text.toLowerCase()];
+      return lk || null;
+    }
+
+    document.querySelectorAll('p.en b, .note b, .illus b, .hook b, .mono').forEach(el => {
+      const text = el.textContent.trim();
+      const key = resolveKey(text);
+      if (!key) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = key;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+
+  {q:"Vì sao phần cứng CPU phải kiểm tra MỌI lần truy cập bộ nhớ ở user mode với base/limit register?",
+   opts:["Để đảm bảo địa chỉ truy cập nằm trong [base, base+limit), ngăn tiến trình đụng vào vùng nhớ của tiến trình khác hoặc của OS", "Chỉ để đo tốc độ truy cập bộ nhớ trung bình của hệ thống trong suốt quá trình chạy nhằm mục đích thống kê", "Vì đây là bước bắt buộc duy nhất để chuyển chương trình từ disk vào input queue trước khi thực thi", "Để tự động nén (compaction) bộ nhớ lại thành khối liên tục mỗi khi có 1 lệnh truy cập được gửi đi"], correct:0,
+   exp:"Mục đích duy nhất là bảo vệ bộ nhớ: địa chỉ phải ≥ base và < base+limit, sai 1 trong 2 → trap 'illegal addressing error' về OS."},
+  {q:"Trong 3 thời điểm address binding, binding nào BẮT BUỘC cần hardware hỗ trợ (như base/limit register) ở runtime?",
+   opts:["Compile time, vì đây là lúc duy nhất trình biên dịch có thể biết trước địa chỉ tuyệt đối của chương trình", "Load time, vì loader luôn cần phần cứng đặc biệt để tính toán lại từng địa chỉ relocatable trong file nhị phân", "Execution time, vì tiến trình có thể bị di chuyển giữa các phân đoạn bộ nhớ ngay trong lúc đang chạy", "Không thời điểm nào cần hardware hỗ trợ, toàn bộ việc binding được trình biên dịch xử lý xong từ đầu"], correct:2,
+   exp:"Chỉ execution-time binding mới cần hardware hỗ trợ (vd base/limit register, MMU) vì địa chỉ logic/vật lý có thể khác nhau và thay đổi trong lúc tiến trình đang chạy."},
+  {q:"Khác biệt cốt lõi giữa dynamic loading và dynamic linking là gì?",
+   opts:["Dynamic loading trì hoãn việc NẠP 1 routine tới khi nó được gọi; dynamic linking trì hoãn việc LIÊN KẾT thư viện tới lúc chạy, dùng chung 1 bản vật lý", "Cả 2 hoàn toàn giống nhau, chỉ khác tên gọi theo quy ước lịch sử để lại của từng hệ điều hành khác nhau mà thôi", "Dynamic loading chỉ áp dụng được cho dữ liệu, còn dynamic linking chỉ áp dụng được cho mã lệnh thực thi của chương trình", "Dynamic linking luôn cần OS hỗ trợ đặc biệt, còn dynamic loading hoàn toàn không cần OS hỗ trợ gì cả trong mọi trường hợp"], correct:0,
+   exp:"Dynamic loading: 1 routine chỉ nạp khi được gọi tới (tiết kiệm bộ nhớ, không cần OS hỗ trợ đặc biệt). Dynamic linking: thư viện dùng chung (shared library) chỉ liên kết thật sự tới lúc chạy, qua stub, nhiều tiến trình dùng chung 1 bản vật lý trên đĩa."},
+  {q:"Theo kết quả Exercise 1 (5 hole 100/500/200/300/600 KB, 4 tiến trình 212/417/112/426 KB), thuật toán nào đặt được CẢ 4 tiến trình?",
+   opts:["First-fit, vì nó luôn tìm hole đầu tiên đủ lớn nên không bao giờ bị kẹt ở bất kỳ trường hợp nào", "Best-fit, vì nó chọn hole nhỏ nhất vừa đủ nên để lại nhiều hole nhỏ hơn, vừa đủ cho tiến trình 426 KB cuối cùng", "Worst-fit, vì nó luôn chọn hole lớn nhất nên chắc chắn luôn còn dư chỗ cho tiến trình tiếp theo", "Không thuật toán nào trong 3 thuật toán đặt được cả 4 tiến trình với bộ số liệu này"], correct:1,
+   exp:"Chỉ best-fit đặt được cả 4: 212→300(dư 88), 417→500(dư 83), 112→200(dư 88), 426→600(dư 174). First-fit và worst-fit đều kẹt ở tiến trình 426 KB cuối vì không hole nào còn đủ lớn."},
+  {q:"External fragmentation và internal fragmentation khác nhau ở điểm nào?",
+   opts:["External: tổng bộ nhớ trống đủ nhưng rải rác không liên tục; Internal: bộ nhớ cấp dư nằm bên trong chính phân vùng đã cấp", "External chỉ xảy ra với paging, còn internal chỉ xảy ra với contiguous allocation mà thôi, không có ngoại lệ", "Cả 2 đều chỉ xảy ra khi process size lớn hơn kích thước RAM vật lý hiện có của toàn bộ hệ thống", "External là lỗi phần mềm, internal là lỗi phần cứng, 2 loại lỗi hoàn toàn không liên quan gì tới quản lý bộ nhớ"], correct:0,
+   exp:"External fragmentation: đủ tổng dung lượng trống nhưng rải rác, không gom lại dùng được. Internal fragmentation: 1 phân vùng/trang được cấp lớn hơn yêu cầu 1 chút, phần dư lãng phí nằm NGAY BÊN TRONG phân vùng đó."},
+  {q:"Paging giải quyết được loại fragmentation nào, và vẫn còn loại nào?",
+   opts:["Giải quyết cả external lẫn internal fragmentation, paging hoàn toàn không còn lãng phí bộ nhớ nào nữa", "Giải quyết được external fragmentation (nhờ phân mảnh thành frame rời rạc); vẫn còn internal fragmentation ở trang cuối", "Không giải quyết được loại fragmentation nào cả, paging chỉ đổi tên gọi khác cho cùng 1 vấn đề cũ", "Giải quyết internal fragmentation nhưng lại TẠO RA thêm external fragmentation mới nghiêm trọng hơn trước"], correct:1,
+   exp:"Vì các frame/page có cùng kích thước cố định và có thể nằm rải rác khắp bộ nhớ vật lý, external fragmentation biến mất — nhưng trang cuối của 1 tiến trình thường không đầy, nên vẫn còn internal fragmentation."},
+  {q:"Trong địa chỉ logic (p, d) của paging, p và d dùng để làm gì?",
+   opts:["p là page offset dùng để định vị byte trong trang; d là page number dùng để tra page table tìm frame", "p là page number dùng để tra page table ra số frame f; d là page offset, giữ nguyên khi ghép với f để ra địa chỉ vật lý", "Cả p và d đều là 2 bản sao của cùng 1 giá trị, dùng để kiểm tra lỗi (checksum) khi dịch địa chỉ", "p và d chỉ có ý nghĩa trong hashed page table, hoàn toàn không tồn tại trong page table thường"], correct:1,
+   exp:"p (page number) là chỉ số tra vào page table để lấy ra f (frame number); d (page offset) không đổi, được ghép trực tiếp với f để tạo địa chỉ vật lý (f, d)."},
+  {q:"TLB (Translation Look-aside Buffer) giải quyết vấn đề gì của page table nằm trong bộ nhớ chính?",
+   opts:["Vấn đề page table chiếm quá nhiều dung lượng đĩa cứng khi hệ thống có hàng trăm tiến trình chạy đồng thời", "Vấn đề phải tốn 2 lần truy cập bộ nhớ cho mỗi lần truy cập dữ liệu/lệnh (1 lần cho page table, 1 lần cho dữ liệu thật)", "Vấn đề external fragmentation xảy ra ngay bên trong chính page table khi nó được cấp phát bộ nhớ", "Vấn đề page table bị mất dữ liệu khi hệ thống mất điện đột ngột trong lúc đang ghi vào bộ nhớ"], correct:1,
+   exp:"Không có TLB, mỗi truy cập dữ liệu/lệnh cần 2 lần truy cập bộ nhớ: 1 lần tra page table, 1 lần đọc dữ liệu thật. TLB là cache phần cứng nhanh giúp bỏ qua lần tra page table khi đã có sẵn (TLB hit)."},
+  {q:"Với hit ratio TLB 80% và thời gian truy cập bộ nhớ 10ns (TLB hit = 10ns, TLB miss = 20ns), Effective Access Time (EAT) là bao nhiêu?",
+   opts:["10 ns, bằng đúng với thời gian truy cập bộ nhớ cơ bản không tính tới ảnh hưởng của hit ratio", "20 ns, bằng đúng với trường hợp TLB miss xấu nhất có thể xảy ra trong toàn bộ hệ thống", "12 ns, tính theo công thức EAT = 0.80×10 + 0.20×20", "8 ns, vì hit ratio 80% nghĩa là thời gian truy cập giảm đi đúng 80% so với bình thường"], correct:2,
+   exp:"EAT = hit_ratio × thời_gian_hit + (1−hit_ratio) × thời_gian_miss = 0.80×10 + 0.20×20 = 8+4 = 12 ns."},
+  {q:"Bit valid-invalid trong page table dùng để làm gì?",
+   opts:["Đánh dấu trang đó có nằm trong không gian địa chỉ logic hợp lệ của tiến trình hay không; truy cập trang invalid gây trap", "Đánh dấu trang đó đang nằm trong RAM (valid) hay đã bị swap ra đĩa (invalid), không liên quan gì tới quyền truy cập", "Chỉ dùng để debug cho lập trình viên hệ điều hành, không có tác dụng gì trong lúc hệ thống thực sự chạy", "Đánh dấu trang đó thuộc về OS (valid) hay thuộc về user process (invalid) để phân chia quyền ưu tiên CPU"], correct:0,
+   exp:"'valid' = trang nằm trong không gian địa chỉ logic hợp lệ của tiến trình; 'invalid' = trang không thuộc không gian đó. Truy cập 1 trang invalid → trap về kernel ngay lập tức."},
+  {q:"Vì sao cần hierarchical / hashed / inverted page table thay vì 1 page table phẳng (flat) duy nhất?",
+   opts:["Vì page table phẳng chạy chậm hơn đáng kể so với 3 loại kia trên mọi loại CPU hiện đại ngày nay", "Vì với địa chỉ 32-bit trở lên, 1 page table phẳng có thể nặng tới hàng MB mỗi tiến trình, không thể cấp liên tục trong bộ nhớ", "Vì page table phẳng không hỗ trợ được shared pages giữa nhiều tiến trình khác nhau trong cùng hệ thống", "Vì page table phẳng chỉ hoạt động được với page size cố định đúng 4KB, không linh hoạt với size khác"], correct:1,
+   exp:"Với địa chỉ 32-bit, page 4KB, page table phẳng cần ~1 triệu mục (~4MB/tiến trình) — quá lớn để cấp liên tục. 3 kỹ thuật kia chia nhỏ/băm/đảo ngược cấu trúc để giải quyết đúng vấn đề kích thước này."},
+  {q:"Inverted page table khác page table thông thường (per-process) ở điểm cốt lõi nào?",
+   opts:["Nó theo dõi TOÀN BỘ trang vật lý (1 mục/frame) cho CẢ hệ thống, thay vì theo dõi mọi trang logic của RIÊNG từng tiến trình", "Nó chỉ dùng được cho hệ thống có duy nhất 1 tiến trình chạy tại 1 thời điểm, không hỗ trợ đa nhiệm", "Nó lưu trữ page table trực tiếp trong TLB thay vì trong bộ nhớ chính như page table thông thường", "Nó không cần offset d trong địa chỉ logic, chỉ cần mỗi số trang p là đủ để dịch địa chỉ"], correct:0,
+   exp:"Page table thường: mỗi tiến trình có 1 bảng theo dõi mọi trang LOGIC có thể có (dù dùng hay không). Inverted page table: chỉ 1 bảng DUY NHẤT cho cả hệ thống, 1 mục cho mỗi frame VẬT LÝ thật sự tồn tại — giảm bộ nhớ nhưng tăng thời gian tìm kiếm."},
+  {q:"Oracle SPARC Solaris dùng cơ chế gì để tăng tốc tra cứu page table, thay vì tra tuần tự từng mục?",
+   opts:["Hai hash table (1 cho kernel, 1 cho user process), mỗi mục đại diện 1 vùng liên tục của bộ nhớ ảo đã ánh xạ", "Chỉ dùng duy nhất 1 page table phẳng cho toàn hệ thống, không có cơ chế tăng tốc nào thêm", "Dùng hoàn toàn thuật toán tìm kiếm nhị phân (binary search) trên page table được sắp xếp sẵn theo địa chỉ", "Lưu toàn bộ page table vĩnh viễn trong TLB, không bao giờ cần truy cập bộ nhớ chính để tra cứu"], correct:0,
+   exp:"Solaris dùng 2 hash table (kernel + user processes), mỗi mục đại diện 1 vùng liên tục của bộ nhớ ảo đã ánh xạ (hiệu quả hơn 1 mục/trang); TLB giữ TTE, có TSB làm cache trung gian trước khi phải ngắt kernel tra hash table."},
+  {q:"Vì sao 'roll out, roll in' khác với swapping thông thường?",
+   opts:["Roll out/roll in dùng riêng cho lập lịch theo độ ưu tiên: tiến trình ưu tiên thấp bị swap ra nhường chỗ cho tiến trình ưu tiên cao hơn", "Roll out/roll in chỉ áp dụng được cho hệ thống không có ổ đĩa backing store vật lý nào cả", "Roll out/roll in nhanh hơn swapping thông thường gấp đôi vì không cần transfer time qua lại giữa RAM và đĩa", "Không có khác biệt nào thực sự, đây chỉ là 2 tên gọi khác nhau cho cùng 1 cơ chế swapping duy nhất"], correct:0,
+   exp:"Roll out/roll in là 1 biến thể CÓ MỤC ĐÍCH cụ thể: gắn với lập lịch theo độ ưu tiên — khi 1 tiến trình ưu tiên cao cần chạy mà bộ nhớ đã đầy, 1 tiến trình ưu tiên thấp hơn bị 'roll out' (swap ra) để nhường chỗ."},
+  {q:"Vì sao swapping (chuẩn) hầu như không dùng trên hệ điều hành di động như iOS/Android?",
+   opts:["Vì bộ nhớ flash trên thiết bị di động có dung lượng nhỏ, số lần ghi giới hạn, và băng thông kém giữa flash và CPU", "Vì CPU di động không đủ mạnh để xử lý thuật toán swapping phức tạp như trên desktop", "Vì hệ điều hành di động không hỗ trợ khái niệm tiến trình (process) như hệ điều hành desktop truyền thống", "Vì màn hình thiết bị di động quá nhỏ nên không thể hiển thị tiến trình bị swap ra cho người dùng thấy"], correct:0,
+   exp:"Flash memory trên di động có dung lượng nhỏ, số chu kỳ ghi giới hạn (hao mòn nhanh), và throughput kém hơn RAM-to-disk trên desktop — nên thay vào đó, iOS yêu cầu app tự trả bộ nhớ, Android kill app khi cần, và cả 2 đều dùng paging."},
+  {q:"Trên kiến trúc Intel IA-32, địa chỉ logic được dịch qua thứ tự nào?",
+   opts:["CPU sinh logical address → segmentation unit (dùng selector) ra linear address → paging unit ra physical address", "CPU sinh physical address trực tiếp, không qua bất kỳ đơn vị trung gian segmentation hay paging unit nào cả", "Paging unit chạy trước để ra linear address, rồi mới tới segmentation unit ra physical address cuối cùng", "Chỉ cần segmentation unit là đủ, IA-32 không hề có khái niệm paging unit nào trong kiến trúc của nó"], correct:0,
+   exp:"IA-32: CPU sinh logical address → selector đưa cho segmentation unit, ra linear address → linear address đưa cho paging unit, ra physical address cuối cùng trong bộ nhớ chính."},
+  {q:"Page Address Extension (PAE) trên Intel 32-bit giải quyết vấn đề gì?",
+   opts:["Cho phép ứng dụng 32-bit truy cập được hơn 4GB bộ nhớ, bằng cách chuyển paging sang sơ đồ 3 cấp với entry 64-bit", "Cho phép CPU 32-bit chạy được ứng dụng biên dịch cho kiến trúc 64-bit mà không cần giả lập gì thêm", "Loại bỏ hoàn toàn nhu cầu dùng page table, thay thế bằng cơ chế segmentation thuần túy duy nhất", "Giảm kích thước page xuống còn 512 byte để tiết kiệm bộ nhớ cho mọi ứng dụng chạy trên hệ thống"], correct:0,
+   exp:"Giới hạn 32-bit chỉ địa chỉ hóa được 4GB; PAE thêm 1 cấp (page directory pointer table) và mở rộng entry lên 64-bit, cho không gian địa chỉ 36-bit — tức 64GB bộ nhớ vật lý — dù ứng dụng vẫn là 32-bit."},
+  {q:"ARM dùng cơ chế 2 cấp TLB như thế nào khi dịch 1 địa chỉ?",
+   opts:["Kiểm tra TLB chính (inner) trước; nếu miss mới kiểm tra 2 micro-TLB (outer, data+instruction); nếu vẫn miss mới duyệt toàn bộ page table", "Luôn duyệt toàn bộ page table trước tiên, TLB chỉ được dùng như bước xác nhận lại kết quả sau cùng", "Chỉ dùng đúng 1 TLB duy nhất, 'hai cấp' chỉ là cách gọi marketing chứ không có khác biệt kỹ thuật thật sự", "Micro-TLB luôn được kiểm tra trước TLB chính, vì micro-TLB nằm gần CPU hơn nên luôn nhanh hơn"], correct:0,
+   exp:"ARM kiểm tra TLB chính (inner, duy nhất) trước; nếu miss mới kiểm tra 2 micro-TLB (outer — 1 cho data, 1 cho instruction); nếu cả 2 đều miss, CPU mới thực hiện 1 lần duyệt toàn bộ page table (page-table walk) tốn chi phí nhất."},
+
+  {q:"Tính toán: page size 2.048 byte, tiến trình 72.766 byte (= 35 trang đầy + 1.086 byte ở trang cuối). Trang cuối lãng phí (internal fragmentation) bao nhiêu byte?",
+   opts:["962 byte (= 2.048 − 1.086)", "1.086 byte, đúng bằng phần tiến trình đang dùng ở trang cuối", "2.048 byte, vì cả trang cuối coi như lãng phí hoàn toàn", "0 byte, vì paging không có internal fragmentation"], correct:0,
+   exp:"Trang cuối chỉ dùng hết 1.086 byte trong 1 trang 2.048 byte, nên phần còn lại bị lãng phí = 2.048 − 1.086 = 962 byte — đây là internal fragmentation của riêng tiến trình này."},
+  {q:"Tính toán: hit ratio TLB = 99%, TLB hit tốn 10ns, TLB miss tốn 20ns (page table + bộ nhớ). Effective Access Time (EAT) là bao nhiêu?",
+   opts:["10.1 ns (= 0.99×10 + 0.01×20)", "9.9 ns, vì hit ratio cao nên EAT phải thấp hơn cả thời gian hit", "15 ns, lấy trung bình cộng đơn giản giữa 10ns và 20ns", "19.8 ns, gần sát với thời gian miss vì vẫn còn 1% xảy ra miss"], correct:0,
+   exp:"EAT = hit_ratio × 10 + (1−hit_ratio) × 20 = 0.99×10 + 0.01×20 = 9.9 + 0.2 = 10.1 ns — chỉ chậm hơn trường hợp lý tưởng (10ns) đúng 0.1ns nhờ hit ratio rất cao."},
+  {q:"Tính toán: tiến trình 100 MB, tốc độ swap vào/ra đĩa là 50 MB/giây. Tổng thời gian cho 1 lần swap-out rồi swap-in 1 tiến trình cùng kích cỡ là bao nhiêu?",
+   opts:["4.000 ms (2.000 ms swap-out + 2.000 ms swap-in)", "2.000 ms, vì chỉ cần tính swap-out, swap-in luôn tức thời", "100 ms, vì 100 MB ÷ 50 MB/s được tính theo giây rồi quy đổi sai đơn vị", "8.000 ms, vì phải nhân đôi do swap cả vào lẫn ra 2 lần"], correct:0,
+   exp:"Swap-out 100MB ở tốc độ 50MB/s = 2.000 ms. Swap-in 1 tiến trình cùng kích cỡ cũng tốn thêm 2.000 ms. Tổng = 2.000 + 2.000 = 4.000 ms (4 giây)."},
+  {q:"Tính toán: địa chỉ logic 32-bit, page size 4 KB (2¹²). Page offset và page number lần lượt có bao nhiêu bit?",
+   opts:["Offset 12-bit, page number 20-bit (32 − 12 = 20)", "Offset 20-bit, page number 12-bit — ngược lại với đáp án kia", "Offset 10-bit, page number 22-bit, vì 4KB tính nhầm thành 2¹⁰", "Offset 16-bit, page number 16-bit, chia đôi đều 32-bit"], correct:0,
+   exp:"Page size 4 KB = 2¹² byte → offset cần đúng 12 bit để đánh địa chỉ hết 1 trang. Phần còn lại của địa chỉ 32-bit dùng cho page number: 32 − 12 = 20 bit."},
+  {q:"Tính toán: page size 4 byte, page table {0→5, 1→6, 2→1, 3→2}. Địa chỉ logic 9 dịch sang địa chỉ vật lý nào?",
+   opts:["5 (page 2, offset 1 → frame 1 → 1×4+1 = 5)", "9, vì giữ nguyên địa chỉ logic không đổi", "13, vì cộng thẳng địa chỉ logic với frame 1 nhân đôi", "1, vì chỉ lấy đúng số frame mà bỏ qua offset"], correct:0,
+   exp:"Địa chỉ logic 9 = page 9÷4 = 2 (dư 1), nên p=2, d=1. Tra page table: page 2 → frame 1. Địa chỉ vật lý = frame×page_size + offset = 1×4 + 1 = 5."}
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  const quizResultEl = document.getElementById('quizResult');
+  const qrScoreText = document.getElementById('qrScoreText');
+  const qrBreakdown = document.getElementById('qrBreakdown');
+  const quizRetryBtn = document.getElementById('quizRetryBtn');
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let correctCount = 0;
+  let answeredCount = 0;
+  const wrongLog = [];
+
+  function renderQuiz(){
+    quizRoot.innerHTML = '';
+    quizResultEl.hidden = true;
+    correctCount = 0;
+    answeredCount = 0;
+    wrongLog.length = 0;
+    quizScoreEl.textContent = '0 / ' + QUIZ.length + ' đã trả lời đúng';
+    quizScoreEl.hidden = false;
+
+    QUIZ.forEach((item, i) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'q';
+      qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+
+      const order = shuffle(item.opts.map((_, oi) => oi));
+      const shuffledCorrectPos = order.indexOf(item.correct);
+
+      const optsWrap = document.createElement('div');
+      order.forEach((originalIndex, displayPos) => {
+        const b = document.createElement('button');
+        b.className = 'opt';
+        b.type = 'button';
+        b.textContent = item.opts[originalIndex];
+        b.addEventListener('click', () => {
+          if (b.disabled) return;
+          const allOpts = optsWrap.querySelectorAll('.opt');
+          allOpts.forEach(o => o.disabled = true);
+          if (displayPos === shuffledCorrectPos){
+            b.classList.add('correct');
+            correctCount++;
+          } else {
+            b.classList.add('wrong');
+            allOpts[shuffledCorrectPos].classList.add('correct');
+            wrongLog.push(i + 1);
+          }
+          answeredCount++;
+          quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+          const ex = qDiv.querySelector('.explain');
+          ex.classList.add('show');
+
+          if (answeredCount === QUIZ.length){
+            showResults();
+          }
+        });
+        optsWrap.appendChild(b);
+      });
+      qDiv.appendChild(optsWrap);
+      const explain = document.createElement('div');
+      explain.className = 'explain';
+      explain.textContent = item.exp;
+      qDiv.appendChild(explain);
+      quizRoot.appendChild(qDiv);
+    });
+  }
+
+  function showResults(){
+    const pct = Math.round((correctCount / QUIZ.length) * 100);
+    let verdict = 'Cần ôn lại thêm 💪';
+    if (pct >= 90) verdict = 'Xuất sắc! 🎉';
+    else if (pct >= 70) verdict = 'Khá tốt 👍';
+    else if (pct >= 50) verdict = 'Tạm ổn, nên xem lại vài phần 🙂';
+    qrScoreText.textContent = 'Kết quả: ' + correctCount + ' / ' + QUIZ.length + ' (' + pct + '%) — ' + verdict;
+    if (wrongLog.length){
+      qrBreakdown.innerHTML = 'Các câu đã trả lời sai: <span class="qr-wrong-item">Câu ' + wrongLog.join(', Câu ') + '</span> — kéo lên xem lại phần giải thích của từng câu.';
+    } else {
+      qrBreakdown.textContent = 'Không sai câu nào — làm lại nếu muốn thử bộ thứ tự đáp án khác!';
+    }
+    quizResultEl.hidden = false;
+    quizResultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  quizRetryBtn.addEventListener('click', renderQuiz);
+
+  renderQuiz();
+</script>
+</body>
+</html>

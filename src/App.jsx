@@ -174,7 +174,7 @@ const subjects = [
   { id: "ch5", title: "Chapter 5 - CPU Scheduling", file: "/lectures/os-ch5-lecture.html" },
   { id: "ch6", title: "Chapter 6 - Synchronization Tools", file: "/lectures/os-ch6-lecture.html" },
   { id: "ch7", title: "Chapter 7 - Synchronization 2", file: "/lectures/os-ch7-lecture.html" },
-  { id: "ch8", title: "Chapter 8 - Main Memory", file: null },
+  { id: "ch8", title: "Chapter 8 - Main Memory", file: "/lectures/os-ch8-lecture.html" },
   { id: "ch9", title: "Chapter 9 - Virtual Memory", file: null },
   { id: "ch10A", title: "Chapter 10A - File System Interface", file: null },
   { id: "ch10B", title: "Chapter 10B - File System Implementation", file: null },
@@ -571,7 +571,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 25/10/2026 • 10:48:20 (Final Exam Chap03 - Chap07 added)
+            Last Updated: 28/10/2026 • 15:59:13 (Lecture Note Chapter 8 added)
           </p>
         </div>
 
@@ -618,7 +618,7 @@ export default function App() {
           {/* GHI CHÚ BONG BÓNG */}
           {screen === "subject" && activeSubject === "Hệ điều hành" && (
             <BubbleNote inline id="vm-video-2" icon="🎥" title="Ghi chú nhỏ">
-              Mình thật sự mong rằng một ngày nào đó, khi cả hai đã bỏ qua hết mọi thứ và khúc mắc trong lòng, mình mong rằng mình và cậu sẽ trở thành những người bạn tốt, những người tri kỉ của nhau. Vì chúng ta là song tử bảo bình mà ^^
+              Mình luôn muốn nói với cậu rằng cậu rất giỏi, và mình rất tự hào về cậu. Thế nên cậu cố gắng lên nhé, mình tin rằng cậu sẽ vượt qua hết thui.
             </BubbleNote>
           )}
         </div>
