@@ -204,8 +204,10 @@ const subjects = [
       {
         id: "lab-3",
         title: "Lab 3 - Thầy Nguyễn Phương Duy",
-        questionsCount: 5,
-        comingSoon: true,
+        type: "pdf",
+        documents: [
+          { title: "Lab 3 - Synchronization", file: "/pdfs/lecture/Lab_3_Synchronization.pdf" },
+        ],
       },
 
       {
@@ -571,7 +573,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 2/11/2026 • 16:51:22 (Lecture Note Chapter 9 added)
+            Last Updated: 3/11/2026 • 18:08:44 (Lab 3 - Synchronization added)
           </p>
         </div>
 
