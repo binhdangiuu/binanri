@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CO2018 · Chapter 9 — Virtual Memory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFEDF5; --paper-deep:#FFF6FB; --ink:#4A2E40; --ink-soft:#8A5F78;
+    --copper:#E8407F; --copper-deep:#C22A63; --copper-tint:#FF6FA51f;
+    --teal:#4FA4DD; --teal-deep:#1E5F99; --teal-tint:#7FC4F026;
+    --grid:#FFD3E8; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
+      var(--paper);
+    color:var(--ink); font-family:"Newsreader", serif; font-size:17px; line-height:1.6;
+  }
+  h1,h2,h3,.display{ font-family:"Space Grotesk", sans-serif; letter-spacing:-0.01em; }
+  .mono{ font-family:"IBM Plex Mono", monospace; letter-spacing:0.02em; }
+  .page{ max-width:980px; margin:0 auto; padding:0 24px 80px; }
+
+  .tabbar-wrap{ background:var(--ink); border-radius:16px; box-shadow:0 10px 26px -14px rgba(22,50,79,0.55); padding:12px 14px 11px; margin:20px 0 0; position:sticky; top:10px; z-index:50; }
+  .tabbar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .tabbar .brand{ font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; color:#ffffffaa; letter-spacing:0.08em; text-transform:uppercase; margin-right:10px; white-space:nowrap; }
+  .tab-btn{ position:relative; font-family:"IBM Plex Mono", monospace; font-size:12.5px; font-weight:500; background:none; border:1px solid transparent; color:#ffffffcc; padding:7px 14px 7px 12px; border-radius:999px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .tab-btn:hover{ color:#fff; border-color:#ffffff44; }
+  .tab-btn:focus-visible{ outline:2px solid var(--copper); outline-offset:2px; }
+  .tab-btn.active{ background:var(--copper-deep); color:#fff; border-color:var(--copper-deep); }
+  .tab-btn.visited:not(.active){ box-shadow: inset 0 -2px 0 0 #ffffff55; }
+
+  .progress-row{ display:flex; align-items:center; gap:11px; margin-top:10px; }
+  .progress-track{ flex:1; height:7px; border-radius:999px; background:#ffffff1f; overflow:hidden; }
+  .progress-fill{ height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--copper) 0%, #FFCF80 50%, var(--teal) 100%); transition:width .4s ease; }
+  .progress-label{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:#ffffffb0; white-space:nowrap; min-width:96px; text-align:right; }
+
+  .hero{ padding:44px 0 32px; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--copper-deep); background:var(--copper-tint); border:1px solid var(--copper); border-radius:999px; padding:5px 12px; margin-bottom:22px; }
+  .hero h1{ font-size:42px; font-weight:700; margin:0 0 18px; line-height:1.1; max-width:20ch; }
+  .hero h1 em{ font-style:normal; color:var(--copper-deep); }
+  .hero p.lede{ font-size:19px; color:var(--ink-soft); max-width:58ch; margin:0 0 28px; }
+  .tagrow{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+  .tag{ font-family:"IBM Plex Mono", monospace; font-size:12px; padding:6px 11px; border-radius:8px; border:1px solid; white-space:nowrap; }
+  .tag.user{ color:var(--copper-deep); border-color:var(--copper); background:var(--copper-tint); }
+  .tag.kernel{ color:var(--teal-deep); border-color:var(--teal); background:var(--teal-tint); }
+
+  .grid-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin-top:36px; }
+  .card{ background:var(--paper-deep); border:1px solid var(--grid); border-radius:var(--radius); padding:20px 20px 22px; border-left:3px solid var(--ink-soft); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease; }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 20px -12px rgba(22,50,79,0.35); }
+  .card.user{ border-left-color:var(--copper); } .card.kernel{ border-left-color:var(--teal); }
+  .card .kicker{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-soft); margin-bottom:8px; }
+  .card h3{ font-size:18px; margin:0 0 8px; }
+  .card p{ font-size:14px; color:var(--ink-soft); margin:0; font-family:"Newsreader",serif; }
+
+  .outline{ margin-top:44px; border-top:1px solid var(--grid); padding-top:28px; }
+  .outline .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:16px; }
+  .outline-item{ display:flex; gap:18px; padding:16px 0; border-top:1px solid var(--grid); }
+  .outline-item:first-of-type{ border-top:none; }
+  .outline-item .idx{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); width:64px; flex-shrink:0; padding-top:2px; }
+  .outline-item h4{ margin:0 0 4px; font-family:"Space Grotesk",sans-serif; font-size:16px; }
+  .outline-item p{ margin:0; color:var(--ink-soft); font-size:14.5px; }
+
+  .tab-panel{ padding:48px 0; }
+  .tab-panel[hidden]{ display:none; }
+  .panel-eyebrow{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:10px; }
+  .tab-panel h2{ font-size:30px; margin:0 0 18px; }
+  .tab-panel > p.intro{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:10px; }
+  .subhead{ font-size:21px; margin:40px 0 4px; padding-top:28px; border-top:2px solid var(--grid); display:flex; align-items:center; gap:10px; }
+  .subhead .shnum{ font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:700; color:#fff; background:var(--ink); border-radius:7px; padding:3px 8px; flex-shrink:0; }
+  section.hero + .subhead, .panel-head + p.intro + .subhead, .tab-panel > p.intro + .subhead{ border-top:none; padding-top:0; margin-top:28px; }
+
+  p.en{ margin:20px 0 8px; font-family:"Newsreader",serif; font-size:16.5px; color:var(--ink); }
+
+  .vi{ display:block; margin:0 0 14px; background:var(--teal-tint); border-left:3px solid var(--teal); padding:9px 14px 9px 12px; border-radius:0 10px 10px 0; font-family:"IBM Plex Mono",monospace; font-size:13px; line-height:1.55; color:var(--teal-deep); font-style:normal; }
+  .vi::before{ content:"VN"; display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:1px 6px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+
+  .note{ background:var(--copper-tint); border:1px solid var(--copper); border-radius:10px; padding:14px 18px; font-family:"IBM Plex Mono",monospace; font-size:13.5px; color:var(--copper-deep); margin:16px 0 24px; }
+  .note b{ text-transform:uppercase; letter-spacing:0.06em; font-size:12.5px; display:block; margin-bottom:4px; }
+  .note.teal{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); }
+
+  .hook{ background:var(--paper-deep); border:1px dashed var(--ink-soft); border-radius:12px; padding:18px 20px; margin:16px 0 24px; font-size:15.5px; }
+  .codeblock{ background:var(--ink); color:#E3EEF7; border-radius:12px; padding:16px 20px; margin:12px 0 24px; overflow-x:auto; }
+  .codeblock .clabel{ display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#FFCF80; margin-bottom:8px; }
+  .codeblock pre{ margin:0; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.65; white-space:pre; }
+  .hook b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:15px; margin-bottom:6px; }
+  .hook .vi{ margin-top:10px; margin-bottom:0; }
+
+  .illus{ display:flex; align-items:center; gap:14px; border:1px solid var(--grid); border-radius:12px; padding:14px 18px; background:var(--paper-deep); margin:4px 0 24px; max-width:560px; }
+  .illus .emo{ font-size:28px; line-height:1; flex-shrink:0; }
+  .illus .cap{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); }
+  .illus .cap b{ display:block; font-family:"Space Grotesk",sans-serif; font-size:14.5px; color:var(--ink); margin-bottom:2px; font-weight:600; }
+
+  .stack{ display:flex; flex-direction:column; gap:6px; max-width:460px; margin:4px 0 24px; }
+  .stack .layer{ padding:12px 16px; border-radius:8px; font-family:"IBM Plex Mono",monospace; font-size:13px; border:1px solid var(--grid); display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .stack .arrow{ text-align:center; color:var(--ink-soft); font-size:13px; }
+  .layer.plain{ background:var(--paper-deep); }
+  .layer.os{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .layer.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .layer small{ color:var(--ink-soft); font-weight:400; }
+
+  .compare-row{ display:flex; gap:10px; margin:4px 0 24px; flex-wrap:wrap; }
+  .compare-box{ flex:1; min-width:180px; border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .compare-box .ck{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .compare-box p{ margin:0; font-size:14px; }
+  .compare-box ul{ margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-soft); }
+
+  .res-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; margin:4px 0 24px; }
+  .res-card{ border:1px solid var(--grid); border-radius:10px; padding:14px 16px; background:var(--paper-deep); }
+  .res-card .rk{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--copper-deep); margin-bottom:6px; }
+  .res-card p{ margin:0; font-size:13.5px; color:var(--ink-soft); font-family:"Newsreader",serif; }
+  .res-card .vi-mini, .compare-box .vi-mini{ display:block; margin-top:7px; padding-top:7px; border-top:1px dashed var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; line-height:1.5; color:var(--teal-deep); }
+  .res-card .vi-mini::before, .compare-box .vi-mini::before{ content:"VN"; display:inline-block; font-size:8.5px; font-weight:700; letter-spacing:0.05em; background:var(--teal); color:#fff; padding:0 5px; border-radius:4px; margin-right:6px; vertical-align:middle; }
+
+  .flow-row{ display:flex; align-items:center; gap:8px; margin:4px 0 24px; max-width:620px; flex-wrap:wrap; }
+  .flow-box{ flex:1; min-width:96px; border:1px solid var(--grid); border-radius:10px; padding:12px 8px; background:var(--paper-deep); font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:center; }
+  .flow-box.mid{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal-deep); font-weight:600; }
+  .flow-box.hi{ background:var(--copper-tint); border-color:var(--copper); color:var(--copper-deep); font-weight:600; }
+  .flow-arrow{ color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; font-size:13px; flex-shrink:0; }
+
+  .labeled-box{ border:2px solid var(--ink-soft); border-radius:12px; padding:22px 16px 16px; position:relative; margin:16px 0 24px; max-width:600px; }
+  .labeled-box .lb-tag{ position:absolute; top:-11px; left:16px; background:var(--paper); padding:0 8px; font-family:"IBM Plex Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:600; }
+
+  .bitfield{ display:flex; max-width:560px; margin:4px 0 24px; border-radius:10px; overflow:hidden; border:1px solid var(--ink-soft); }
+  .bitfield .bf{ flex:none; padding:12px 10px; text-align:center; font-family:"IBM Plex Mono",monospace; border-right:1px solid var(--ink-soft); }
+  .bitfield .bf:last-child{ border-right:none; }
+  .bitfield .bf .bn{ font-weight:700; font-size:14px; }
+  .bitfield .bf .bl{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
+  .bitfield .bf.seg{ background:var(--copper-tint); }
+  .bitfield .bf.pg{ background:var(--teal-tint); }
+  .bitfield .bf.off{ background:var(--paper-deep); }
+
+  table.cmp-table{ width:100%; max-width:620px; border-collapse:collapse; margin:4px 0 24px; font-family:"IBM Plex Mono",monospace; font-size:12px; }
+  table.cmp-table th{ text-align:left; padding:8px 10px; background:var(--ink); color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; }
+  table.cmp-table td{ padding:8px 10px; border-bottom:1px solid var(--grid); }
+  table.cmp-table tr:nth-child(even) td{ background:var(--paper-deep); }
+  .table-scroll{ overflow-x:auto; margin:4px 0 24px; }
+  .table-scroll table.cmp-table{ margin:0; min-width:420px; }
+
+  .exercise{ background:var(--paper-deep); border:1px solid var(--grid); border-left:4px solid var(--copper); border-radius:12px; padding:20px 22px; margin:22px 0; }
+  .exercise h4{ margin:0 0 10px; font-size:16.5px; color:var(--copper-deep); }
+  .exercise table.cmp-table{ margin:10px 0 14px; font-size:13px; }
+  .exercise details{ margin-top:12px; border-top:1px dashed var(--grid); padding-top:10px; }
+  .exercise summary{ cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--teal-deep); font-weight:600; }
+  .exercise summary:hover{ color:var(--copper-deep); }
+  .exercise .ans-table{ margin-top:10px; }
+  .exercise .ans-note{ font-size:13px; color:var(--ink-soft); margin-top:8px; }
+
+  .panel-head{ display:flex; align-items:flex-start; gap:16px; }
+  .panel-icon{ flex-shrink:0; width:52px; height:52px; border-radius:14px; background:var(--copper-tint); border:1px solid var(--copper); display:flex; align-items:center; justify-content:center; font-size:26px; margin-top:2px; }
+  .panel-head-text{ flex:1; min-width:0; }
+
+  .hint-icon{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #ffffff30; color:#ffffffaa; font-family:"IBM Plex Mono",monospace; font-size:12px; cursor:help; flex-shrink:0; }
+  .hint-icon:hover{ border-color:#ffffff66; color:#fff; }
+
+  .vi-toggle{ margin-left:auto; display:flex; align-items:center; gap:9px; background:none; border:1px solid #ffffff30; color:#ffffffe0; border-radius:999px; padding:6px 13px 6px 7px; cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500; white-space:nowrap; transition:border-color .15s ease; }
+  .vi-toggle:hover{ border-color:#ffffff66; }
+  .vi-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+  .vi-switch{ width:30px; height:16px; border-radius:999px; background:#ffffff30; position:relative; flex-shrink:0; transition:background .18s ease; }
+  .vi-switch .knob{ position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left .18s ease; }
+  body.vi-hidden .vi-switch{ background:#ffffff20; }
+  body.vi-hidden .vi-switch .knob{ left:2px; }
+  body:not(.vi-hidden) .vi-switch{ background:var(--teal); }
+  body:not(.vi-hidden) .vi-switch .knob{ left:16px; }
+
+  body.vi-hidden .vi,
+  body.vi-hidden .vi-inline,
+  body.vi-hidden .vi-mini,
+  body.vi-hidden .note{ display:none; }
+
+  .term{ cursor:help; border-bottom:2px dotted var(--copper); border-radius:2px; transition:background .1s ease; }
+  .term:hover, .term:focus-visible{ background:var(--copper-tint); outline:none; }
+  .term:focus-visible{ box-shadow:0 0 0 2px var(--copper); }
+
+  .glossary-tip{ position:fixed; z-index:9999; max-width:280px; background:var(--ink); color:#fff; font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.55; padding:11px 13px; border-radius:10px; box-shadow:0 14px 30px -12px rgba(0,0,0,0.5); opacity:0; transform:translateY(4px); pointer-events:none; transition:opacity .12s ease, transform .12s ease; }
+  .glossary-tip.show{ opacity:1; transform:translateY(0); }
+  .glossary-tip .gt-term{ display:block; font-family:"Space Grotesk",sans-serif; font-weight:700; font-size:13px; color:#fff; margin-bottom:5px; }
+  .glossary-tip .gt-en{ display:block; color:#ffffffe6; }
+  .glossary-tip .gt-vi{ display:block; color:#FFDBA6; margin-top:7px; padding-top:7px; border-top:1px solid #ffffff26; }
+
+  .recap{ margin-top:44px; border:2px solid var(--ink); border-radius:14px; padding:20px 22px; background:var(--paper-deep); }
+  .recap .rtitle{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px; }
+  .recap .rchips{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .recap .rchip{ font-family:"IBM Plex Mono",monospace; font-size:12px; padding:5px 10px; border-radius:6px; background:var(--paper); border:1px solid var(--grid); }
+  .recap .rline{ margin:0; font-style:italic; color:var(--ink-soft); font-size:14.5px; }
+
+  .quiz-score{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:24px; }
+  .q{ border:1px solid var(--grid); border-radius:var(--radius); padding:20px 22px; margin-bottom:16px; background:var(--paper-deep); }
+  .q .qnum{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ink-soft); margin-bottom:6px; }
+  .q h4{ margin:0 0 14px; font-size:17px; font-family:"Newsreader",serif; font-weight:600; }
+  .opt{ display:block; width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; border:1px solid var(--grid); border-radius:8px; background:var(--paper); cursor:pointer; font-family:"Newsreader",serif; font-size:15px; color:var(--ink); transition:all .12s ease; }
+  .opt:hover{ border-color:var(--ink-soft); }
+  .opt:focus-visible{ outline:2px solid var(--copper); outline-offset:1px; }
+  .opt.correct{ border-color:var(--teal); background:var(--teal-tint); color:var(--teal-deep); font-weight:600; }
+  .opt.wrong{ border-color:var(--copper); background:var(--copper-tint); color:var(--copper-deep); }
+  .opt[disabled]{ cursor:default; }
+  .explain{ display:none; margin-top:10px; font-size:13.5px; color:var(--ink-soft); font-family:"IBM Plex Mono",monospace; }
+  .explain.show{ display:block; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--grid); font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-soft); }
+
+  @media (max-width:640px){
+    .hero h1{ font-size:30px; }
+    .tabbar{ flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .tabbar-wrap{ position:static; }
+    .tabbar .brand{ display:none; }
+    .tab-btn{ font-size:12px; padding:6px 12px 6px 10px; }
+    .flow-row{ flex-direction:column; }
+    .flow-arrow{ transform:rotate(90deg); }
+  }
+  @media (prefers-reduced-motion: reduce){ .card{ transition:none; } }
+
+  @media print{
+    body{ background:#fff !important; }
+    .tabbar-wrap{ position:static; background:#fff; box-shadow:none; border:1px solid #ccc; }
+    .tab-btn{ color:var(--ink); border-color:#ccc; }
+    .tab-btn.active{ background:var(--paper-deep); color:var(--ink); }
+    .vi-toggle, .hint-icon, .progress-row{ display:none; }
+    .tab-panel[hidden]{ display:block !important; page-break-before:always; }
+    .card{ box-shadow:none; }
+    .glossary-tip{ display:none !important; }
+    a[href]::after{ content:""; }
+  }
+
+  .summary-box{ margin-top:36px; border:1.5px solid var(--grid); border-radius:14px; padding:24px 26px; background:#fff; }
+  .summary-box .label{ font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-soft); margin-bottom:14px; }
+  .summary-box ul{ margin:0 0 18px; padding-left:20px; }
+  .summary-box li{ margin:6px 0; font-size:14.5px; line-height:1.55; }
+  .selfcheck{ margin-top:18px; border-top:1px dashed var(--grid); padding-top:18px; }
+  .selfcheck .sc-title{ font-family:"IBM Plex Mono",monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:var(--teal-deep); margin-bottom:10px; }
+  .selfcheck label{ display:flex; align-items:flex-start; gap:9px; padding:5px 0; font-size:14px; cursor:pointer; }
+  .selfcheck input[type="checkbox"]{ margin-top:3px; flex-shrink:0; width:15px; height:15px; accent-color:var(--teal-deep); cursor:pointer; }
+  .selfcheck label:has(input:checked){ color:var(--ink-soft); text-decoration:line-through; text-decoration-color:var(--grid); }
+
+  .quiz-result{ margin-top:28px; border:1.5px solid var(--grid); border-radius:14px; padding:24px 26px; background:#fff; text-align:center; }
+  .qr-score{ font-family:"Space Grotesk",sans-serif; font-size:26px; font-weight:700; margin-bottom:10px; }
+  .qr-breakdown{ font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--ink-soft); margin-bottom:18px; line-height:1.6; text-align:left; max-width:520px; margin-left:auto; margin-right:auto; }
+  .qr-breakdown .qr-wrong-item{ color:var(--copper, #b5542a); }
+  .qr-retry{ font-family:"IBM Plex Mono",monospace; font-size:13.5px; font-weight:600; border:1.5px solid var(--teal-deep); background:var(--teal-deep); color:#fff; border-radius:999px; padding:10px 22px; cursor:pointer; transition:opacity .15s ease; }
+  .qr-retry:hover{ opacity:0.85; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabbar-wrap">
+  <nav class="tabbar" id="tabbar">
+    <span class="brand">CO2018 · OS</span>
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="background">Background</button>
+    <button class="tab-btn" data-tab="demand">Demand Paging</button>
+    <button class="tab-btn" data-tab="cow">Copy-on-Write</button>
+    <button class="tab-btn" data-tab="replacement">Page Replacement</button>
+    <button class="tab-btn" data-tab="allocation">Allocation &amp; Thrashing</button>
+    <button class="tab-btn" data-tab="kernel">Kernel Memory</button>
+    <button class="tab-btn" data-tab="examples">Windows</button>
+    <button class="tab-btn" data-tab="exercises">Exercises</button>
+    <button class="tab-btn" data-tab="quiz">MCQ Quiz</button>
+    <span class="hint-icon" tabindex="0" title="Từ có gạch chấm bên dưới là thuật ngữ quan trọng — di chuột (hoặc chạm) vào để xem giải thích nhanh, không cần lướt tìm.">?</span>
+    <button class="vi-toggle" id="viToggle" type="button" aria-pressed="true" title="Ẩn/hiện phần dịch tiếng Việt — luyện đọc tiếng Anh trước, cần thì bật lại">
+      <span class="vi-switch"><span class="knob"></span></span>
+      <span class="vt-label">Tiếng Việt: Bật</span>
+    </button>
+  </nav>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-label" id="progressLabel">0/10 tab · 0%</span>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-overview">
+  <section class="hero">
+    <span class="eyebrow">Chapter 9 · Virtual Memory</span>
+    <h1>How an OS runs programs <em>bigger than RAM itself</em> — a page at a time</h1>
+    <p class="lede">Chapter 8 assumed a whole process had to sit in memory before it could run. Chapter 9 breaks that assumption: with virtual memory, only the pages actually being used are ever brought into RAM. This chapter covers demand paging, copy-on-write, page-replacement algorithms, frame allocation, thrashing, kernel memory allocation, and how Windows manages it all in practice.</p>
+    <span class="vi">Chương 8 giả định cả tiến trình phải nằm trọn trong bộ nhớ mới chạy được. Chương 9 phá vỡ giả định đó: với virtual memory, chỉ những trang thực sự đang dùng mới được nạp vào RAM. Chương này gồm demand paging, copy-on-write, các thuật toán page-replacement, cấp phát frame, thrashing, cấp phát kernel memory, và cách Windows quản lý tất cả trong thực tế.</span>
+    <div class="tagrow">
+      <span class="tag user">Nền tảng: Virtual Address Space, Demand Paging, Page Fault</span>
+      <span class="tag kernel">Kỹ thuật: COW, FIFO/OPT/LRU, Working-Set, Buddy/Slab</span>
+    </div>
+  </section>
+
+  <div class="grid-cards">
+    <div class="card user" data-goto="background"><div class="kicker">01 · Nền tảng</div><h3>Background</h3><p>Virtual address space, sparse address space, shared library qua virtual memory.</p></div>
+    <div class="card kernel" data-goto="demand"><div class="kicker">02 · Kỹ thuật chính</div><h3>Demand Paging</h3><p>Valid-invalid bit, page fault, các bước xử lý, EAT, tối ưu demand paging.</p></div>
+    <div class="card user" data-goto="cow"><div class="kicker">03 · Tối ưu fork()</div><h3>Copy-on-Write</h3><p>Chia sẻ trang giữa parent/child, chỉ copy khi có ghi, vfork().</p></div>
+    <div class="card kernel" data-goto="replacement"><div class="kicker">04 · Khi hết frame</div><h3>Page Replacement</h3><p>FIFO, Belady's Anomaly, Optimal, LRU, Second-Chance/Clock, Counting.</p></div>
+    <div class="card user" data-goto="allocation"><div class="kicker">05 · Cấp phát &amp; sự cố</div><h3>Allocation &amp; Thrashing</h3><p>Fixed/proportional/global/local allocation, NUMA, working-set model, PFF.</p></div>
+    <div class="card kernel" data-goto="kernel"><div class="kicker">06 · Bộ nhớ kernel</div><h3>Kernel Memory &amp; Khác</h3><p>Buddy system, Slab allocator, page size, TLB reach, memory compression.</p></div>
+    <div class="card user" data-goto="examples"><div class="kicker">07 · Thực tế</div><h3>Windows</h3><p>Demand paging + clustering, working set minimum/maximum, trimming.</p></div>
+    <div class="card kernel" data-goto="exercises"><div class="kicker">08 · Luyện tập</div><h3>Exercises</h3><p>Bài tập page-replacement nguyên bản từ slide, so sánh FIFO/LRU/OPT/Clock.</p></div>
+  </div>
+
+  <div class="outline">
+    <div class="label">Objectives — Silberschatz Ch.9</div>
+    <div class="outline-item"><div class="idx">L.O. 1</div><div><h4>Virtual memory</h4><p>Define virtual memory and describe its benefits.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 2</div><div><h4>Demand paging</h4><p>Illustrate how pages are loaded into memory using demand paging.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 3</div><div><h4>Page-replacement algorithms</h4><p>Apply the FIFO, optimal, and LRU page-replacement algorithms.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 4</div><div><h4>Working set &amp; locality</h4><p>Describe the working set of a process, and explain how it is related to program locality.</p></div></div>
+    <div class="outline-item"><div class="idx">L.O. 5</div><div><h4>Windows 10</h4><p>Describe how Windows 10 manages virtual memory.</p></div></div>
+  </div>
+
+  <div class="summary-box">
+    <div class="label">Summary — Silberschatz Ch.9 (slide 86–89)</div>
+    <ul>
+      <li class="en"><b>Virtual memory</b> abstracts physical memory into an extremely large uniform array of storage.</li>
+      <li class="vi"><b>Virtual memory</b> trừu tượng hóa bộ nhớ vật lý thành 1 mảng lưu trữ đồng nhất cực lớn.</li>
+      <li class="en">Benefits: (1) a program can be larger than physical memory, (2) a program does not need to be entirely in memory, (3) processes can share memory, and (4) processes can be created more efficiently.</li>
+      <li class="vi">Lợi ích: (1) chương trình có thể lớn hơn bộ nhớ vật lý, (2) không cần nạp trọn vẹn vào bộ nhớ, (3) tiến trình có thể dùng chung bộ nhớ, (4) tạo tiến trình hiệu quả hơn.</li>
+      <li class="en"><b>Demand paging</b> is a technique whereby pages are loaded only when they are demanded during execution. A <b>page fault</b> occurs when a page not currently in memory is accessed.</li>
+      <li class="vi"><b>Demand paging</b> là kỹ thuật chỉ nạp trang khi nó thực sự được yêu cầu trong lúc chạy. <b>Page fault</b> xảy ra khi truy cập 1 trang hiện không có trong bộ nhớ.</li>
+      <li class="en"><b>Copy-on-write</b> allows a child process to share the same address space as its parent; a copy is made only when either writes (modifies) a page.</li>
+      <li class="vi"><b>Copy-on-write</b> cho phép tiến trình con dùng chung không gian địa chỉ với cha; chỉ copy khi 1 trong 2 bên ghi (sửa) trang đó.</li>
+      <li class="en">When memory runs low, a <b>page-replacement algorithm</b> selects an existing page to replace: FIFO, optimal, LRU — pure LRU is impractical, so most systems use <b>LRU-approximation</b> algorithms.</li>
+      <li class="vi">Khi bộ nhớ cạn, 1 <b>thuật toán page-replacement</b> chọn ra 1 trang hiện có để thay thế: FIFO, optimal, LRU — LRU thuần không khả thi, nên hầu hết hệ thống dùng thuật toán <b>xấp xỉ LRU</b>.</li>
+      <li class="en"><b>Global</b> replacement selects from any process's frames; <b>local</b> replacement selects only from the faulting process's own frames.</li>
+      <li class="vi"><b>Global</b> replacement chọn frame từ bất kỳ tiến trình nào; <b>local</b> replacement chỉ chọn trong các frame của chính tiến trình bị fault.</li>
+      <li class="en"><b>Thrashing</b> occurs when a system spends more time paging than executing. A <b>locality</b> is a set of pages actively used together; <b>a working set</b> is based on locality.</li>
+      <li class="vi"><b>Thrashing</b> xảy ra khi hệ thống tốn thời gian paging nhiều hơn thời gian chạy thật. 1 <b>locality</b> là tập trang đang dùng cùng nhau; <b>working set</b> dựa trên locality.</li>
+      <li class="en"><b>Kernel memory</b> is allocated differently, in contiguous chunks of varying sizes, via the <b>buddy system</b> or <b>slab allocation</b>.</li>
+      <li class="vi"><b>Kernel memory</b> được cấp phát khác, theo khối liên tục kích thước thay đổi, qua <b>buddy system</b> hoặc <b>slab allocation</b>.</li>
+      <li class="en">Linux, Windows, and Solaris manage virtual memory similarly, using demand paging and copy-on-write; each also uses a variation of LRU approximation known as the <b>clock algorithm</b>.</li>
+      <li class="vi">Linux, Windows, Solaris quản lý virtual memory tương tự nhau, dùng demand paging và copy-on-write; mỗi hệ đều dùng 1 biến thể xấp xỉ LRU gọi là <b>clock algorithm</b>.</li>
+    </ul>
+    <div class="selfcheck">
+      <div class="sc-title">✅ Tự kiểm tra trước khi qua chương tiếp theo</div>
+      <label><input type="checkbox"><span>Giải thích được vì sao virtual memory tách rời logical memory khỏi physical memory, và lợi ích cụ thể là gì.</span></label>
+      <label><input type="checkbox"><span>Vẽ lại được các bước xử lý page fault, từ trap tới restart instruction.</span></label>
+      <label><input type="checkbox"><span>Chạy tay được FIFO, Optimal, LRU trên 1 reference string và đếm đúng số page fault, nhận biết Belady's Anomaly.</span></label>
+      <label><input type="checkbox"><span>Giải thích được thrashing là gì, vì sao nó xảy ra, và working-set model giải quyết nó ra sao.</span></label>
+      <label><input type="checkbox"><span>Phân biệt được buddy system và slab allocator trong việc cấp phát bộ nhớ kernel.</span></label>
+    </div>
+  </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: BACKGROUND -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-background" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧠</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">01 · Nền tảng</div>
+        <h2>Why bring in only part of the program, and what that buys you</h2>
+        <span class="vi">Vì sao chỉ nạp 1 phần chương trình vào bộ nhớ, và điều đó mang lại lợi ích gì</span>
+      </div>
+    </div>
+    <p class="intro">Chapter 8 treated a process as an all-or-nothing block that had to sit fully in RAM. Virtual memory questions that assumption: most of a program's code is rarely touched, so why load it all?</p>
+    <span class="vi">Chương 8 coi 1 tiến trình như 1 khối tất-cả-hoặc-không-gì phải nằm trọn trong RAM. Virtual memory đặt lại câu hỏi đó: phần lớn mã của chương trình hiếm khi được dùng tới, vậy sao phải nạp hết?</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Quan sát: chương trình hiếm khi dùng hết chính nó</h3>
+
+    <p class="en"><b>Code</b> needs to be in memory to be executed, but the <b>entire program</b> is rarely used all at once — error-handling code, unusual routines, and large data structures that only apply in rare cases often sit untouched for an entire run.</p>
+    <span class="vi"><b>Code</b> cần nằm trong bộ nhớ mới thực thi được, nhưng toàn bộ <b>chương trình</b> hiếm khi được dùng hết cùng lúc — mã xử lý lỗi, các routine hiếm gặp, cấu trúc dữ liệu lớn chỉ áp dụng cho trường hợp hiếm thường nằm im suốt cả lần chạy.</span>
+    <div class="illus"><div class="emo">📘</div><div class="cap"><b>Ví dụ đời thường</b>Giống như 1 cuốn giáo trình 800 trang — bạn chỉ thực sự mở và đọc chương đang thi, các chương còn lại vẫn nằm yên trên kệ sách cho tới khi cần.</div></div>
+
+    <p class="en"><b>Motivation</b>: consider the ability to execute a <b>partially-loaded program</b>. The program is no longer constrained by the limits of physical memory — each program takes less memory while running, so more programs run at the same time.</p>
+    <span class="vi"><b>Động lực</b>: hãy xem xét khả năng chạy 1 chương trình chỉ được nạp 1 phần. Chương trình không còn bị giới hạn bởi dung lượng bộ nhớ vật lý — mỗi chương trình tốn ít bộ nhớ hơn khi chạy, nên nhiều chương trình chạy cùng lúc hơn.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">CPU Utilization ↑</div><p>Tăng số tiến trình chạy đồng thời → CPU ít rảnh rỗi hơn, throughput tăng theo.</p><span class="vi-mini">Không tăng response time hay turnaround time của từng tiến trình riêng lẻ.</span></div>
+      <div class="res-card"><div class="rk">Less I/O ↓</div><p>Ít I/O hơn để nạp hoặc swap chương trình vào bộ nhớ → mỗi chương trình user chạy nhanh hơn.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🎬</div><div class="cap"><b>Ví dụ đời thường</b>Giống Netflix/YouTube: bạn không tải hết cả bộ phim 2 tiếng về máy rồi mới xem — chỉ tải (buffer) đúng đoạn sắp xem, nhờ vậy mở phim gần như ngay lập tức và máy đỡ tốn dung lượng.</div></div>
+
+    <p class="en"><b>Virtual memory</b> is the separation of user logical memory from physical memory. Only part of the program needs to be in memory for execution; the logical address space can be much larger than the physical address space.</p>
+    <span class="vi"><b>Virtual memory</b> là sự tách rời giữa bộ nhớ logic của user và bộ nhớ vật lý. Chỉ cần 1 phần chương trình nằm trong bộ nhớ để chạy; không gian địa chỉ logic có thể lớn hơn nhiều so với không gian địa chỉ vật lý.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Chia sẻ dễ hơn</div><p>Cho phép các address space được chia sẻ bởi nhiều tiến trình.</p></div>
+      <div class="res-card"><div class="rk">Tạo tiến trình hiệu quả</div><p>Cho phép tạo tiến trình hiệu quả hơn (nhờ chia sẻ trang, xem tab Copy-on-Write).</p></div>
+      <div class="res-card"><div class="rk">Nhiều chương trình hơn</div><p>Nhiều chương trình chạy đồng thời hơn trong cùng dung lượng RAM vật lý.</p></div>
+      <div class="res-card"><div class="rk">Ít I/O hơn</div><p>Giảm I/O cần thiết để nạp hoặc swap tiến trình.</p></div>
+    </div>
+    <p class="en">Virtual memory can be implemented via <b>demand paging</b> or <b>demand segmentation</b> — this chapter focuses on demand paging, the technique almost every modern OS uses.</p>
+    <span class="vi">Virtual memory có thể cài đặt qua <b>demand paging</b> hoặc <b>demand segmentation</b> — chương này tập trung vào demand paging, kỹ thuật hầu hết OS hiện đại dùng.</span>
+
+    <h3 class="subhead"><span class="shnum">2</span>Virtual Address Space: khoảng trống chờ sẵn để lớn lên</h3>
+
+    <p class="en">The <b>virtual address space</b> is the logical (virtual) view of how a process is stored in memory — it usually starts at address 0 with contiguous addresses until the end of the space, while physical memory is organized in <b>page frames</b>.</p>
+    <span class="vi"><b>Virtual address space</b> là góc nhìn logic (ảo) của cách 1 tiến trình được lưu trong bộ nhớ — thường bắt đầu tại địa chỉ 0 với các địa chỉ liên tục tới hết không gian, trong khi bộ nhớ vật lý được tổ chức thành <b>page frame</b>.</span>
+    <div class="flow-row">
+      <div class="flow-box">virtual memory <span class="mono">(page 0..v)</span></div><span class="flow-arrow">memory map →</span>
+      <div class="flow-box mid">physical memory <span class="mono">(frames)</span></div><span class="flow-arrow">↔</span>
+      <div class="flow-box hi">backing store</div>
+    </div>
+    <p class="en">The <b>MMU</b> must map logical to physical addresses — the same role it played in Chapter 8's paging hardware, now extended so a page can also point to disk instead of RAM.</p>
+    <span class="vi"><b>MMU</b> phải ánh xạ địa chỉ logic sang vật lý — đúng vai trò nó đã làm ở phần cứng paging Chương 8, nay mở rộng thêm để 1 trang có thể trỏ ra đĩa thay vì RAM.</span>
+
+    <p class="en">Usually the logical address space is designed so the <b>stack</b> starts at the max logical address and grows "down", while the <b>heap</b> grows "up" — maximizing address-space use. The unused space between the two is a <b>hole</b>: no physical memory is needed until heap or stack actually grows into it.</p>
+    <span class="vi">Thường không gian địa chỉ logic được thiết kế sao cho <b>stack</b> bắt đầu tại địa chỉ logic lớn nhất và "lớn xuống", còn <b>heap</b> "lớn lên" — tối đa hóa việc dùng không gian địa chỉ. Khoảng trống chưa dùng giữa 2 bên là 1 <b>hole</b>: không cần bộ nhớ vật lý nào cho tới khi heap hoặc stack thực sự lớn tới đó.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Virtual Address Space (Max → 0)</span>
+      <div class="stack">
+        <div class="layer hi">stack ↓ (lớn xuống)</div>
+        <div class="layer plain">hole — chưa cấp phát vật lý</div>
+        <div class="layer os">heap ↑ (lớn lên)</div>
+        <div class="layer plain">data</div>
+        <div class="layer plain">code</div>
+      </div>
+    </div>
+    <div class="illus"><div class="emo">🧳</div><div class="cap"><b>Ví dụ đời thường</b>Giống như đặt trước 1 vali du lịch cỡ lớn nhưng chỉ xếp đồ dần khi cần — khoảng trống còn lại trong vali không tốn thêm "chi phí" gì cho tới khi bạn thực sự nhét thêm đồ vào.</div></div>
+    <p class="en">This enables <b>sparse address spaces</b> with holes left for growth, dynamically linked libraries, etc. <b>System libraries</b> can be shared via mapping into the virtual address space, and <b>shared memory</b> is implemented by mapping pages read-write into virtual address space.</p>
+    <span class="vi">Điều này tạo ra các <b>không gian địa chỉ thưa (sparse)</b> với các hole chừa sẵn để lớn lên, cho thư viện liên kết động, v.v. <b>Thư viện hệ thống</b> có thể dùng chung qua việc ánh xạ vào virtual address space, và <b>shared memory</b> được cài đặt bằng cách ánh xạ các trang đọc-ghi vào virtual address space.</span>
+    <p class="en">Pages can also be shared during <b>fork()</b>, speeding up process creation — this is exactly the mechanism Copy-on-Write builds on (see the next tab).</p>
+    <span class="vi">Các trang cũng có thể được chia sẻ trong lúc <b>fork()</b>, giúp tạo tiến trình nhanh hơn — đây chính là cơ chế mà Copy-on-Write xây dựng dựa trên (xem tab tiếp theo).</span>
+
+    <h3 class="subhead"><span class="shnum">3</span>Shared Library dùng chung qua Virtual Memory</h3>
+    <p class="en">A <b>shared library</b>'s pages are mapped into the virtual address space of several processes at once — the library's code exists as <b>one physical copy</b> in RAM, while each process's virtual address space simply points to it.</p>
+    <span class="vi"><b>Shared library</b> có các trang được ánh xạ vào virtual address space của nhiều tiến trình cùng lúc — mã của thư viện chỉ tồn tại dưới dạng <b>1 bản vật lý duy nhất</b> trong RAM, trong khi virtual address space của mỗi tiến trình chỉ trỏ tới nó.</span>
+    <div class="illus"><div class="emo">📚</div><div class="cap"><b>Ví dụ đời thường</b>Giống thư viện trường: 1 cuốn sách giáo khoa duy nhất trên kệ tham khảo được nhiều sinh viên "trỏ tới" đọc chung, thay vì mỗi người phải photocopy 1 bản riêng về nhà.</div></div>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Process 1</div><p>stack / heap / <b>shared library</b> / data / code — virtual address space riêng, nhưng phần shared library trỏ chung 1 vùng vật lý.</p></div>
+      <div class="compare-box"><div class="ck">Process 2</div><p>stack / heap / <b>shared library</b> / data / code — cấu trúc y hệt, cùng trỏ tới đúng 1 bản vật lý của shared library đó.</p></div>
+    </div>
+    <div class="note">Nhờ dùng chung 1 bản vật lý cho mã thư viện (vd: libc), hệ thống tiết kiệm RAM đáng kể khi có hàng trăm tiến trình cùng dùng 1 thư viện phổ biến — đồng thời tăng tốc tạo tiến trình mới.</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: DEMAND PAGING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-demand" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">📥</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">02 · Kỹ thuật chính</div>
+        <h2>Bring a page into memory only the moment it's actually needed</h2>
+        <span class="vi">Chỉ nạp 1 trang vào bộ nhớ đúng vào lúc nó thực sự cần tới</span>
+      </div>
+    </div>
+    <p class="intro">Instead of loading an entire process at launch, a lazy swapper brings in pages one at a time, on demand — this single idea is the engine behind virtual memory.</p>
+    <span class="vi">Thay vì nạp cả tiến trình lúc khởi động, 1 "lazy swapper" nạp từng trang một, theo yêu cầu — ý tưởng duy nhất này chính là động cơ của virtual memory.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Lazy swapper và khái niệm cơ bản</h3>
+    <p class="en">Could bring the entire process into memory at load time — or bring a page into memory <b>only when it is needed</b>: less I/O, less memory, faster response, more users.</p>
+    <span class="vi">Có thể nạp cả tiến trình vào bộ nhớ ngay lúc load — hoặc chỉ nạp 1 trang <b>đúng khi nó cần tới</b>: ít I/O hơn, tốn ít bộ nhớ hơn, phản hồi nhanh hơn, phục vụ được nhiều người dùng hơn.</span>
+    <div class="illus"><div class="emo">🎵</div><div class="cap"><b>Ví dụ đời thường</b>Giống Spotify: thay vì tải cả album về máy trước khi nghe, app chỉ tải bài hát bạn đang bấm phát — bài khác trong album vẫn nằm trên server tới khi bạn thực sự chọn nghe.</div></div>
+
+    <p class="en">A <b>lazy swapper</b> never swaps a page into memory unless that page will be needed — a swapper that deals with individual pages (instead of whole processes) is called a <b>pager</b>. With swapping, the pager <b>guesses</b> which pages will be used before swapping a process out again, and brings in only those pages.</p>
+    <span class="vi"><b>Lazy swapper</b> không bao giờ swap 1 trang vào bộ nhớ trừ khi trang đó sẽ được dùng tới — 1 swapper xử lý từng trang (thay vì cả tiến trình) được gọi là <b>pager</b>. Với swapping, pager <b>đoán</b> những trang nào sẽ được dùng trước khi swap tiến trình ra lần nữa, và chỉ nạp đúng những trang đó.</span>
+    <p class="en">Demand paging is <b>similar to a paging system with swapping</b> — the difference is in granularity: swapping a whole process vs. swapping individual pages.</p>
+    <span class="vi">Demand paging <b>giống hệ thống paging kèm swapping</b> — khác biệt ở mức độ chi tiết: swap cả tiến trình so với swap từng trang riêng lẻ.</span>
+
+    <p class="en">New hardware functionality is needed in the <b>MMU</b> to implement demand paging. If the pages needed are already <b>memory resident</b>, there's no difference from non-demand paging. If pages needed are <b>not</b> memory resident, the OS must detect and load the page from storage — all without changing program behavior or requiring the programmer to change code.</p>
+    <span class="vi">Cần chức năng phần cứng mới trong <b>MMU</b> để cài đặt demand paging. Nếu trang cần dùng đã nằm sẵn trong bộ nhớ (<b>memory resident</b>), không có gì khác với paging không-demand. Nếu trang cần dùng <b>chưa</b> nằm trong bộ nhớ, OS phải phát hiện và nạp trang đó từ bộ lưu trữ — tất cả mà không làm thay đổi hành vi chương trình hay buộc lập trình viên sửa code.</span>
+
+    <h3 class="subhead"><span class="shnum">2</span>Valid-Invalid Bit: cờ đánh dấu trang đã ở trong RAM hay chưa</h3>
+    <p class="en">With each page-table entry, a <b>valid–invalid bit</b> is associated: <b>v</b> ⇒ the page is in-memory (memory resident); <b>i</b> ⇒ the page is not-in-memory. Initially the valid-invalid bit is set to <b>i</b> on all entries.</p>
+    <span class="vi">Mỗi mục page table có kèm 1 <b>bit valid–invalid</b>: <b>v</b> ⇒ trang đang nằm trong bộ nhớ (memory resident); <b>i</b> ⇒ trang không nằm trong bộ nhớ. Ban đầu bit valid-invalid được đặt là <b>i</b> ở mọi mục.</span>
+    <div class="illus"><div class="emo">🎟️</div><div class="cap"><b>Ví dụ đời thường</b>Giống vé xem phim "còn hiệu lực" hay "đã hết hạn" — soát vé (MMU) chỉ cần nhìn tem vé (bit v/i) là biết ngay có cho qua hay phải xử lý thêm, không cần tra cứu thủ công.</div></div>
+    <p class="en">During <b>MMU</b> address translation, if the valid-invalid bit in a page-table entry is <b>i</b>, the result is a <b>page fault</b>. If the page is needed and the reference turns out to be invalid, the process aborts; if valid but simply not-in-memory, the OS brings the page to memory.</p>
+    <span class="vi">Trong lúc <b>MMU</b> dịch địa chỉ, nếu bit valid-invalid của 1 mục page table là <b>i</b>, kết quả là 1 <b>page fault</b>. Nếu trang được cần và tham chiếu đó thực sự không hợp lệ, tiến trình bị abort; nếu hợp lệ nhưng chỉ đơn giản chưa nằm trong bộ nhớ, OS sẽ nạp trang đó vào.</span>
+    <div class="flow-row">
+      <div class="flow-box">page cần dùng</div><span class="flow-arrow">tra page table →</span>
+      <div class="flow-box mid">bit = v ?</div><span class="flow-arrow">không →</span>
+      <div class="flow-box hi">page fault</div>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">3</span>6 bước xử lý Page Fault</h3>
+    <p class="en">If there is a reference to a missed page, the first reference traps to the OS — a <b>page fault</b>. The OS looks at another table to decide: invalid reference → abort; or just not-in-memory → continue the sequence below.</p>
+    <span class="vi">Nếu có 1 tham chiếu tới trang bị thiếu, lần tham chiếu đầu tiên sẽ trap về OS — gọi là <b>page fault</b>. OS nhìn vào 1 bảng khác để quyết định: tham chiếu không hợp lệ → abort; hoặc chỉ là chưa-nằm-trong-bộ-nhớ → tiếp tục chuỗi bước dưới đây.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">1 · Trap</div><p>Tham chiếu tới trang bị thiếu → trap về OS, báo page fault.</p></div>
+      <div class="res-card"><div class="rk">2 · Kiểm tra</div><p>OS tra bảng khác: invalid reference → abort; not-in-memory → tiếp tục.</p></div>
+      <div class="res-card"><div class="rk">3 · Tìm frame trống</div><p>Tìm 1 <b>free frame</b> trong bộ nhớ vật lý.</p></div>
+      <div class="res-card"><div class="rk">4 · Đọc đĩa</div><p>Swap trang cần vào frame đó qua 1 thao tác đĩa đã lên lịch (scheduled disk operation).</p></div>
+      <div class="res-card"><div class="rk">5 · Cập nhật bảng</div><p>Reset page table để đánh dấu trang đó nay đã nằm trong bộ nhớ: đặt bit valid-invalid = v.</p></div>
+      <div class="res-card"><div class="rk">6 · Restart</div><p>Khởi động lại đúng chỉ lệnh đã gây ra page fault.</p></div>
+    </div>
+    <div class="illus"><div class="emo">📦</div><div class="cap"><b>Ví dụ đời thường</b>Giống đặt hàng online "giao trong ngày": bạn bấm mua (trap) → shop kiểm tra đơn hợp lệ (check) → tìm kho còn hàng (free frame) → ship hàng từ kho về nhà bạn (đọc đĩa) → cập nhật trạng thái "đã nhận" (reset bảng) → bạn tiếp tục dùng món hàng như đã lên kế hoạch (restart).</div></div>
+    <div class="note teal">3 chức năng phần cứng bắt buộc để cài demand paging được (slide 15): <b>(1)</b> page table có hỗ trợ <b>valid-invalid bit</b> (đánh dấu trang nào đang ở RAM); <b>(2)</b> <b>secondary memory</b> — 1 thiết bị swap (swap device) với 1 vùng swap space riêng để chứa các trang chưa nằm trong RAM; <b>(3)</b> <b>instruction restart</b> — CPU phải khởi động lại được đúng chỉ lệnh đã gây page fault sau khi trang đã nạp xong.</div>
+
+    <h3 class="subhead"><span class="shnum">4</span>12 bước Stages in Demand Paging — trường hợp xấu nhất</h3>
+    <p class="en">The "6 steps" above is a simplified view. In the <b>worst case</b> (no shortcuts, full disk wait), handling one page fault actually takes <b>12 fine-grained stages</b>, which can be grouped into 4 phases: trap &amp; detect, read from disk, I/O interrupt, resume process.</p>
+    <span class="vi">"6 bước" ở trên là bản đơn giản hóa. Trong <b>trường hợp xấu nhất</b> (không có đường tắt, phải đợi đĩa đầy đủ), xử lý 1 page fault thực ra gồm <b>12 giai đoạn chi tiết</b>, có thể gom thành 4 nhóm: trap &amp; phát hiện, đọc từ đĩa, ngắt I/O, tiếp tục tiến trình.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">A · Trap &amp; phát hiện (1–4)</div><p>1) Trap về OS. 2) Lưu lại thanh ghi &amp; trạng thái tiến trình. 3) Xác định ngắt này là page fault. 4) Kiểm tra tham chiếu hợp lệ &amp; xác định vị trí trang đó trên đĩa.</p></div>
+      <div class="res-card"><div class="rk">B · Đọc từ đĩa (5)</div><p>5) Phát lệnh đọc từ đĩa vào 1 frame trống — gồm 3 bước con: (5a) chờ trong hàng đợi của thiết bị tới lượt phục vụ, (5b) chờ thời gian seek/latency của đĩa, (5c) bắt đầu truyền dữ liệu trang vào frame.</p></div>
+      <div class="res-card"><div class="rk">C · Ngắt I/O (6–9)</div><p>6) Trong lúc chờ, CPU được cấp cho tiến trình khác. 7) Nhận ngắt từ subsystem đĩa (I/O xong). 8) Lưu thanh ghi &amp; trạng thái của tiến trình khác đó. 9) Xác định ngắt này đến từ đĩa.</p></div>
+      <div class="res-card"><div class="rk">D · Tiếp tục tiến trình (10–12)</div><p>10) Sửa page table (và các bảng khác) để đánh dấu trang nay đã ở trong bộ nhớ. 11) Chờ CPU được cấp lại cho tiến trình ban đầu. 12) Khôi phục thanh ghi, trạng thái, page table mới, rồi tiếp tục đúng chỉ lệnh đã bị ngắt.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🏥</div><div class="cap"><b>Ví dụ đời thường</b>Giống 1 ca cấp cứu phải chuyển viện: tiếp nhận &amp; xác định tình trạng (A) → xe cứu thương di chuyển, có thể phải xếp hàng chờ tới lượt và chờ tới nơi (B) → trong lúc đó bệnh viện vẫn tiếp bệnh nhân khác (C) → bệnh nhân nhập viện xong, hồ sơ cập nhật, điều trị tiếp tục đúng từ chỗ dang dở (D). Đây chính là lý do page fault "đắt" — bước B một mình đã chiếm phần lớn thời gian vì phải đợi đĩa cơ học.</div></div>
+
+    <h3 class="subhead"><span class="shnum">5</span>Aspects, Instruction Restart &amp; Free-Frame List</h3>
+    <p class="en">In the extreme case, a process can start with <b>no pages in memory</b> at all — the OS sets the instruction pointer to the first instruction, which is non-memory-resident, causing a page fault. If every process starts this way, it's called <b>pure demand paging</b>.</p>
+    <span class="vi">Trong trường hợp cực đoan, 1 tiến trình có thể khởi động mà <b>không có trang nào trong bộ nhớ</b> — OS đặt instruction pointer vào chỉ lệnh đầu tiên, vốn không nằm trong bộ nhớ, gây ra page fault. Nếu mọi tiến trình đều khởi động kiểu này, gọi là <b>pure demand paging</b>.</span>
+    <p class="en">Actually, a given instruction could access <b>multiple pages</b> → multiple page faults — e.g., the fetch and decode of an instruction that adds 2 numbers from memory and stores the result back. The pain is decreased because of <b>locality of reference</b> (covered again in the Allocation &amp; Thrashing tab).</p>
+    <span class="vi">Thực tế, 1 chỉ lệnh có thể truy cập <b>nhiều trang</b> cùng lúc → nhiều page fault — vd: fetch và decode của 1 chỉ lệnh cộng 2 số từ bộ nhớ và lưu kết quả lại. Mức độ "đau" này giảm bớt nhờ <b>locality of reference</b> (sẽ nói lại ở tab Allocation &amp; Thrashing).</span>
+
+    <p class="en"><b>Instruction restart</b>: consider an instruction that could access several different locations — e.g., a <b>block move</b> or <b>auto increment/decrement</b> location. Restarting the whole operation is tricky when source and destination overlap.</p>
+    <span class="vi"><b>Instruction restart</b>: xét 1 chỉ lệnh có thể truy cập nhiều vị trí khác nhau — vd <b>block move</b> hoặc vị trí <b>auto increment/decrement</b>. Khởi động lại toàn bộ phép toán khá rắc rối khi vùng nguồn và vùng đích chồng lấn lên nhau.</span>
+
+    <p class="en">Most operating systems maintain a <b>free-frame list</b> — a pool of free frames for satisfying page-fault requests. The content of frames is typically zeroed-out before allocation, a technique called <b>zero-fill-on-demand</b>. When a system starts up, all available memory is placed on the free-frame list.</p>
+    <span class="vi">Hầu hết hệ điều hành duy trì 1 <b>free-frame list</b> — 1 nhóm frame trống để phục vụ các yêu cầu page fault. Nội dung của frame thường được xóa về 0 trước khi cấp phát, kỹ thuật này gọi là <b>zero-fill-on-demand</b>. Khi hệ thống khởi động, toàn bộ bộ nhớ khả dụng được đưa vào free-frame list.</span>
+    <div class="note">Vì sao phải zero-out 1 frame trước khi cấp? — Lý do <b>bảo mật</b>: frame đó trước đây có thể từng chứa dữ liệu của 1 tiến trình khác (đã kết thúc). Nếu không xóa về 0, tiến trình mới được cấp frame này có thể "đọc trộm" được dữ liệu cũ còn sót lại — 1 lỗ hổng rò rỉ thông tin giữa các tiến trình.</div>
+
+    <h3 class="subhead"><span class="shnum">6</span>Performance of Demand Paging: Effective Access Time</h3>
+    <p class="en">Three major activities in a page-fault service: (1) service the interrupt — careful coding means just a few hundred instructions; (2) read the page — lots of time; (3) restart the process — again just a small amount of time.</p>
+    <span class="vi">3 hoạt động chính khi phục vụ 1 page fault: (1) xử lý interrupt — code cẩn thận thì chỉ tốn vài trăm chỉ lệnh; (2) đọc trang — tốn nhiều thời gian nhất; (3) khởi động lại tiến trình — lại chỉ tốn 1 lượng thời gian nhỏ.</span>
+    <p class="en">Let the page-fault rate be <b>p</b>, 0 ≤ p ≤ 1: if p = 0, no page faults; if p = 1, every reference is a fault. <b>Effective Access Time (EAT)</b> = (1 − p) × memory access + p × (page fault overhead + swap page out + swap page in).</p>
+    <span class="vi">Gọi tỉ lệ page fault là <b>p</b>, 0 ≤ p ≤ 1: nếu p = 0, không có page fault nào; nếu p = 1, mọi tham chiếu đều fault. <b>Effective Access Time (EAT)</b> = (1 − p) × thời gian truy cập bộ nhớ + p × (chi phí page fault + swap ra + swap vào).</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Ví dụ số — slide 21</span>
+      <p style="margin:0 0 8px;font-size:14.5px;">Memory access = 200ns, average page-fault service time = 8ms. EAT = (1−p)×200 + p×8,000,000 = 200 + p×7,999,800.</p>
+      <p style="margin:0 0 8px;font-size:14.5px;">Nếu 1 trong 1.000 lần truy cập gây page fault (p = 0.001): EAT = 8.2μs — chậm hơn <b>40 lần</b> so với bình thường!</p>
+      <p style="margin:0;font-size:14.5px;">Muốn giảm hiệu năng không quá 10%: cần p &lt; 0.0000025, tức &lt; 1 page fault trong mỗi 400.000 lần truy cập bộ nhớ.</p>
+    </div>
+    <div class="note">Page fault cực kỳ đắt vì phải đợi đĩa (tính bằng ms) trong khi truy cập RAM chỉ tính bằng ns — chênh lệch hàng triệu lần khiến dù p rất nhỏ, EAT vẫn bị kéo lên đáng kể.</div>
+
+    <h3 class="subhead"><span class="shnum">7</span>Tối ưu Demand Paging trong thực tế</h3>
+    <p class="en"><b>Swap space I/O</b> is faster than file-system I/O even on the same device, because swap is allocated in larger chunks, needing less management than the file system.</p>
+    <span class="vi"><b>Swap space I/O</b> nhanh hơn file-system I/O dù cùng nằm trên 1 thiết bị, vì swap được cấp theo khối lớn hơn, cần quản lý ít hơn so với hệ thống file.</span>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Older BSD Unix</div><p>Copy toàn bộ process image vào swap space ngay lúc load, rồi page in/out trong swap space đó.</p></div>
+      <div class="compare-box"><div class="ck">Solaris / BSD hiện tại</div><p>Demand-page thẳng từ file nhị phân trên đĩa, nhưng discard (bỏ) thay vì page out khi giải phóng frame — vẫn cần ghi vào swap cho <b>anonymous memory</b> (stack, heap) và trang đã sửa chưa ghi lại file.</p></div>
+    </div>
+    <p class="en">Mobile systems <b>typically don't support swapping</b> — instead, they demand-page from the file system and reclaim read-only pages (such as code) when memory is needed.</p>
+    <span class="vi">Hệ thống di động <b>thường không hỗ trợ swapping</b> — thay vào đó, chúng demand-page thẳng từ hệ thống file và thu hồi các trang chỉ-đọc (như code) khi cần bộ nhớ.</span>
+    <div class="illus"><div class="emo">📱</div><div class="cap"><b>Ví dụ đời thường</b>Đây là 2 chuyện khác nhau: khi thiếu RAM, OS có thể <b>kill hẳn</b> tiến trình nền (app "mất", phải mở lại từ đầu) — còn <b>reclaim read-only pages</b> chỉ thu hồi các trang code (vốn có thể nạp lại y hệt từ file gốc) trong khi tiến trình <b>vẫn còn sống</b>, giống như mượn tạm vài trang sách thư viện (đọc-only, mượn lại lúc nào cũng được) chứ không phải đuổi cả người đọc ra khỏi phòng.</div></div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: COPY-ON-WRITE -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-cow" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🪞</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">03 · Tối ưu fork()</div>
+        <h2>Share first, copy only when someone actually writes</h2>
+        <span class="vi">Dùng chung trước, chỉ copy khi có ai đó thực sự ghi</span>
+      </div>
+    </div>
+    <p class="intro">fork() traditionally meant duplicating the entire parent's address space for the child — demand paging makes a much cheaper trick possible: share everything, and copy lazily.</p>
+    <span class="vi">fork() theo kiểu truyền thống nghĩa là sao chép toàn bộ address space của cha cho con — demand paging giúp 1 mẹo rẻ hơn nhiều trở nên khả thi: dùng chung mọi thứ, và chỉ copy khi cần.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Copy-on-Write (COW) hoạt động ra sao</h3>
+    <p class="en"><b>Copy-on-Write (COW)</b> allows both parent and child processes to initially <b>share the same pages</b> in memory. If either process modifies a shared page, only <b>then</b> is the page copied.</p>
+    <span class="vi"><b>Copy-on-Write (COW)</b> cho phép cả tiến trình cha và con ban đầu <b>dùng chung các trang</b> trong bộ nhớ. Nếu 1 trong 2 bên sửa đổi 1 trang dùng chung, <b>lúc đó</b> trang mới được copy.</span>
+    <div class="illus"><div class="emo">📝</div><div class="cap"><b>Ví dụ đời thường</b>Giống Google Docs "Make a copy": file vẫn trỏ chung 1 bản gốc cho tới khi bạn thực sự gõ phím sửa đổi — lúc đó hệ thống mới tách ra 1 bản độc lập riêng cho bạn.</div></div>
+    <p class="en">COW allows more efficient process creation, as <b>only modified pages are copied</b> — unmodified pages (which are often the majority: shared code, read-only data) never need duplicating at all.</p>
+    <span class="vi">COW giúp tạo tiến trình hiệu quả hơn nhiều, vì <b>chỉ những trang bị sửa mới được copy</b> — các trang không sửa (thường chiếm đa số: code dùng chung, dữ liệu chỉ-đọc) không bao giờ cần nhân bản.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Trước khi Process 1 sửa Page C</div><p>process<sub>1</sub> và process<sub>2</sub> đều trỏ chung tới <b>page A</b>, <b>page B</b>, <b>page C</b> trong physical memory — chỉ 1 bản vật lý duy nhất cho mỗi trang.</p></div>
+      <div class="compare-box"><div class="ck">Sau khi Process 1 sửa Page C</div><p>Chỉ riêng <b>page C</b> được nhân bản thành "Copy of page C" dành cho process<sub>1</sub>; page A và page B vẫn tiếp tục dùng chung bình thường.</p></div>
+    </div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Pool zero-fill-on-demand và vfork()</h3>
+    <p class="en">In general, free pages are allocated from a <b>pool of zero-fill-on-demand pages</b>. This pool should always have free frames ready for fast demand-page execution — you don't want to have to free a frame <b>as well as</b> do other processing on a page fault.</p>
+    <span class="vi">Nói chung, các trang trống được cấp từ 1 <b>pool trang zero-fill-on-demand</b>. Pool này nên luôn có sẵn frame trống để demand-page nhanh — bạn không muốn vừa phải giải phóng 1 frame <b>vừa</b> phải xử lý thêm việc khác ngay lúc page fault.</span>
+    <p class="en"><b>vfork()</b> is a variation on fork() where the parent is suspended, and the child uses the <b>copy-on-write address space of the parent</b> directly — no copying at all. vfork() is designed to have the child call <b>exec()</b> right away, and is very efficient.</p>
+    <span class="vi"><b>vfork()</b> là 1 biến thể của fork(): tiến trình cha bị tạm dừng, còn con dùng thẳng <b>copy-on-write address space của cha</b> — không copy gì cả. vfork() được thiết kế để con gọi <b>exec()</b> ngay sau đó, nên rất hiệu quả.</span>
+    <div class="note teal">vfork() hiệu quả nhất khi con chỉ "mượn tạm" address space của cha trong tích tắc để gọi exec() nạp 1 chương trình hoàn toàn khác — lúc đó address space cũ của cha không còn ý nghĩa gì với con nữa.</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: PAGE REPLACEMENT -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-replacement" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🔄</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">04 · Khi hết frame</div>
+        <h2>No free frame left — who gets evicted, and how do we decide?</h2>
+        <span class="vi">Hết frame trống — ai bị đuổi ra, và quyết định dựa trên điều gì?</span>
+      </div>
+    </div>
+    <p class="intro">Memory is also in demand from the kernel, I/O buffers, and other processes — so page-replacement algorithms exist to pick a victim page wisely, minimizing future page faults.</p>
+    <span class="vi">Bộ nhớ cũng đang được kernel, I/O buffer, và các tiến trình khác tranh nhau dùng — nên các thuật toán page-replacement tồn tại để chọn 1 trang nạn nhân 1 cách khôn ngoan, giảm thiểu page fault trong tương lai.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Vì sao cần Page Replacement</h3>
+    <p class="en">If there is no free frame — used up by process pages, also in demand from the kernel and I/O buffers — <b>page replacement</b> finds some page in memory that's not really in use, and pages it out. The algorithm matters: performance wants an algorithm resulting in the <b>minimum number of page faults</b>, and the same page may be brought into memory several times.</p>
+    <span class="vi">Nếu không còn frame trống — đã bị dùng hết bởi các trang tiến trình, cũng đang được kernel và I/O buffer tranh dùng — <b>page replacement</b> tìm 1 trang trong bộ nhớ hiện không thực sự đang dùng, rồi đẩy nó ra. Thuật toán quan trọng: hiệu năng cần 1 thuật toán cho <b>số page fault ít nhất</b>, và cùng 1 trang có thể bị nạp vào bộ nhớ nhiều lần.</span>
+    <p class="en">Use a <b>modify (dirty) bit</b> to reduce overhead of page transfers — <b>only modified pages</b> are written to disk; clean (unmodified) victim pages can simply be discarded. Page replacement completes the separation between logical and physical memory: a large virtual memory can be provided on a smaller physical memory.</p>
+    <span class="vi">Dùng <b>modify (dirty) bit</b> để giảm chi phí chuyển trang — <b>chỉ những trang đã sửa</b> mới cần ghi ra đĩa; trang nạn nhân sạch (chưa sửa) có thể đơn giản bỏ đi luôn. Page replacement hoàn thiện sự tách rời giữa bộ nhớ logic và vật lý: 1 virtual memory lớn có thể được cung cấp trên 1 bộ nhớ vật lý nhỏ hơn.</span>
+    <div class="illus"><div class="emo">🏨</div><div class="cap"><b>Ví dụ đời thường</b>Giống lễ tân khách sạn hết phòng: phải "đuổi khéo" 1 khách đang ở (page out) để nhường phòng cho khách mới — nhưng chỉ cần dọn lại đồ đạc (ghi disk) nếu khách cũ có để lại gì đó thay đổi trong phòng (dirty bit), còn phòng sạch sẽ thì dọn ngay không cần xử lý thêm.</div></div>
+
+    <h3 class="subhead"><span class="shnum">2</span>4 bước Basic Page Replacement</h3>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">1 · Tìm vị trí trên đĩa</div><p>Xác định vị trí của trang cần dùng đang nằm ở đâu trên đĩa.</p></div>
+      <div class="res-card"><div class="rk">2 · Tìm frame</div><p>Nếu còn frame trống, dùng luôn; nếu không, dùng 1 thuật toán page-replacement để chọn ra <b>victim frame</b>, ghi nó ra đĩa nếu dirty.</p></div>
+      <div class="res-card"><div class="rk">3 · Đưa trang vào</div><p>Đưa trang cần dùng vào frame vừa (mới) trống; cập nhật page table &amp; frame table.</p></div>
+      <div class="res-card"><div class="rk">4 · Restart</div><p>Tiếp tục tiến trình bằng cách khởi động lại chỉ lệnh gây ra trap.</p></div>
+    </div>
+    <div class="note">Lưu ý: giờ đây mỗi page fault tiềm năng tốn tới <b>2 lần chuyển trang</b> (ghi victim ra đĩa + đọc trang mới vào) thay vì 1, khiến EAT tăng lên đáng kể so với trường hợp còn frame trống sẵn.</div>
+
+    <h3 class="subhead"><span class="shnum">3</span>Đánh giá thuật toán: reference string</h3>
+    <p class="en">A <b>frame-allocation algorithm</b> determines how many frames to give each process and which frames to replace; a <b>page-replacement algorithm</b> wants the lowest page-fault rate on both first access and re-access.</p>
+    <span class="vi"><b>Frame-allocation algorithm</b> quyết định cấp bao nhiêu frame cho mỗi tiến trình và frame nào bị thay thế; <b>page-replacement algorithm</b> muốn tỉ lệ page fault thấp nhất ở cả lần truy cập đầu lẫn các lần truy cập lại.</span>
+    <p class="en">Evaluate an algorithm by running it on a particular <b>reference string</b> (string of page numbers, not full addresses) and computing the number of page faults. Repeated access to the same page does not cause a page fault, and results depend on the number of frames available.</p>
+    <span class="vi">Đánh giá 1 thuật toán bằng cách chạy nó trên 1 <b>reference string</b> (chuỗi số trang, không phải địa chỉ đầy đủ) rồi đếm số page fault. Truy cập lặp lại cùng 1 trang không gây page fault, và kết quả phụ thuộc vào số frame khả dụng.</span>
+    <div class="note teal">Reference string dùng xuyên suốt các ví dụ trong tab này (đúng 22 phần tử như slide gốc): <span class="mono">7,0,1,2,0,3,0,4,2,3,0,3,0,3,2,1,2,0,1,7,0,1</span> — càng nhiều frame, số page fault càng giảm (đường cong giảm dần, trừ trường hợp bất thường bên dưới).</div>
+
+    <h3 class="subhead"><span class="shnum">4</span>FIFO và Belady's Anomaly</h3>
+    <p class="en">The <b>First-In-First-Out (FIFO)</b> algorithm tracks ages of pages with just a FIFO queue — the page that entered memory earliest is replaced first, regardless of how often it's been used since. With 3 frames on the reference string above, FIFO produces <b>15 page faults</b>.</p>
+    <span class="vi">Thuật toán <b>FIFO</b> theo dõi tuổi của trang chỉ bằng 1 hàng đợi FIFO — trang nạp vào bộ nhớ sớm nhất bị thay thế trước, bất kể nó được dùng thường xuyên thế nào kể từ đó. Với 3 frame trên reference string ở trên, FIFO cho <b>15 page fault</b>.</span>
+    <div class="illus"><div class="emo">🚪</div><div class="cap"><b>Ví dụ đời thường</b>Giống hàng chờ thang máy đông: ai vào thang máy trước thì ra trước, dù người đó có đang rất cần ở lại tầng đó hay không — không quan tâm ai "đang dùng nhiều".</div></div>
+    <p class="en">Results can vary by reference string: consider <b>1,2,3,4,1,2,5,1,2,3,4,5</b> — adding more frames can <b>cause more</b> page faults! This counter-intuitive result is called <b>Belady's Anomaly</b>.</p>
+    <span class="vi">Kết quả có thể thay đổi tùy reference string: xét <b>1,2,3,4,1,2,5,1,2,3,4,5</b> — thêm frame lại có thể <b>gây ra nhiều</b> page fault hơn! Kết quả phản trực giác này gọi là <b>Belady's Anomaly</b>.</span>
+    <div class="note">Belady's Anomaly: với FIFO, đồ thị số page fault theo số frame không phải lúc nào cũng giảm đơn điệu — có đoạn tăng lên (12→12→9→10→5→5) trước khi hội tụ. Đây là lý do FIFO ít được dùng thực tế dù đơn giản.</div>
+
+    <h3 class="subhead"><span class="shnum">5</span>Optimal (OPT) Algorithm: chuẩn vàng không khả thi</h3>
+    <p class="en">The <b>Optimal (OPT)</b> algorithm replaces the page that will <b>not be used for the longest period of time</b>. On the reference string example, OPT gives <b>9</b> page faults — the fewest possible.</p>
+    <span class="vi">Thuật toán <b>Optimal (OPT)</b> thay thế trang <b>sẽ không được dùng tới trong khoảng thời gian dài nhất</b> sắp tới. Trên reference string ví dụ, OPT cho <b>9</b> page fault — ít nhất có thể.</span>
+    <p class="en">How do you know this ahead of time? You <b>can't read the future</b> — OPT is mainly used for measuring how well another, implementable algorithm performs, as a theoretical upper bound.</p>
+    <span class="vi">Vậy làm sao biết trước điều này? Bạn <b>không thể đọc được tương lai</b> — OPT chủ yếu được dùng để đo xem 1 thuật toán khác, khả thi thực tế, chạy tốt tới đâu, như 1 cận trên lý thuyết.</span>
+    <div class="illus"><div class="emo">🔮</div><div class="cap"><b>Ví dụ đời thường</b>Giống việc biết chính xác đề thi trước khi ôn bài — bạn sẽ chỉ ôn đúng những phần sẽ ra đề, cực kỳ hiệu quả, nhưng trong đời thực không ai có "quả cầu tiên tri" đó cả.</div></div>
+
+    <h3 class="subhead"><span class="shnum">6</span>Least Recently Used (LRU): dùng quá khứ thay vì tương lai</h3>
+    <p class="en">LRU uses <b>past knowledge rather than future</b>: replace the page that has <b>not been used in the most amount of time</b>, associating a time of last use with each page. On the example string, LRU gives <b>12</b> faults — better than FIFO but worse than OPT, and it's <b>generally a good algorithm, frequently used</b> in practice.</p>
+    <span class="vi">LRU dùng <b>tri thức quá khứ thay vì tương lai</b>: thay thế trang <b>chưa được dùng trong khoảng thời gian dài nhất</b> tính tới hiện tại, gắn thời gian dùng lần cuối cho mỗi trang. Trên ví dụ, LRU cho <b>12</b> fault — tốt hơn FIFO nhưng kém hơn OPT, và nó <b>thường là 1 thuật toán tốt, được dùng rộng rãi</b> trong thực tế.</span>
+    <div class="illus"><div class="emo">👕</div><div class="cap"><b>Ví dụ đời thường</b>Giống dọn tủ quần áo chật: bạn bỏ đi cái áo mà <b>lâu nhất</b> chưa mặc tới (LRU), chứ không phải cái mua sớm nhất (FIFO) — vì áo mua sớm nhưng vẫn mặc thường xuyên thì không nên bỏ.</div></div>
+    <p class="en">But how to implement LRU? <b>Counter implementation</b>: every page entry has a counter, every time a page is referenced copy the clock into the counter — replacing requires searching the whole table for the smallest value. <b>Stack implementation</b>: keep a stack of page numbers in a doubly-linked form; on each reference, move the page to the top — no search needed for replacement (it's the bottom of the stack), but each update is more expensive.</p>
+    <span class="vi">Nhưng cài đặt LRU ra sao? <b>Cài đặt bằng counter</b>: mỗi mục trang có 1 counter, mỗi lần trang được tham chiếu thì copy đồng hồ hệ thống vào counter đó — khi thay thế phải quét cả bảng tìm giá trị nhỏ nhất. <b>Cài đặt bằng stack</b>: giữ 1 stack các số trang dạng danh sách liên kết đôi; mỗi lần tham chiếu, đưa trang đó lên đỉnh — không cần tìm kiếm khi thay thế (luôn là đáy stack), nhưng mỗi lần cập nhật tốn kém hơn.</span>
+    <div class="note">Ví dụ số (slide 38) trên reference string <span class="mono">4,7,0,7,1,0,1,2,1,2,7,1,2</span>: để "nhấc" 1 trang đang nằm giữa stack lên đỉnh (dùng danh sách liên kết đôi), ta phải nối lại các con trỏ xung quanh nó rồi gắn nó lên đỉnh — với chuỗi ví dụ này, tổng cộng cần đổi tới <b>6 con trỏ</b>. Đây chính là cái giá "mỗi lần cập nhật tốn kém hơn" của stack implementation.</div>
+    <div class="note teal">LRU và OPT đều là <b>stack algorithms</b> — loại thuật toán không bị dính Belady's Anomaly, khác với FIFO.</div>
+
+    <h3 class="subhead"><span class="shnum">7</span>LRU Approximation: Reference Bit &amp; Second-Chance (Clock)</h3>
+    <p class="en">LRU needs special hardware and is still slow in practice. A <b>reference bit</b> approximates it cheaply: with each page associate a bit, initially 0; when the page is referenced, the bit is set to 1. Replace any page with reference bit = 0, if one exists — but we don't know the <b>order</b> among them.</p>
+    <span class="vi">LRU thực sự cần phần cứng đặc biệt và vẫn chậm trong thực tế. <b>Reference bit</b> xấp xỉ nó với chi phí rẻ hơn: mỗi trang gắn 1 bit, ban đầu = 0; khi trang được tham chiếu, bit được đặt thành 1. Thay thế bất kỳ trang nào có reference bit = 0, nếu tồn tại — nhưng ta không biết được <b>thứ tự</b> giữa các trang đó.</span>
+    <p class="en">The <b>Second-chance (clock)</b> algorithm is generally FIFO, plus a hardware-provided reference bit. If the page to be replaced has reference bit = 0 → replace it. If reference bit = 1: set the bit to 0, leave the page in memory, then move on and replace the <b>next</b> page, subject to the same rules.</p>
+    <span class="vi">Thuật toán <b>Second-chance (clock)</b> về cơ bản là FIFO, cộng thêm 1 reference bit do phần cứng cung cấp. Nếu trang định thay thế có reference bit = 0 → thay nó. Nếu reference bit = 1: đặt bit về 0, giữ trang lại trong bộ nhớ, rồi chuyển qua xét trang <b>tiếp theo</b>, theo đúng quy tắc tương tự.</span>
+    <div class="illus"><div class="emo">🕐</div><div class="cap"><b>Ví dụ đời thường</b>Giống kim đồng hồ quét quanh 1 vòng tròn các trang xếp theo vòng — trang nào vừa được "gãi ngứa" (dùng gần đây, bit=1) thì được tha 1 lần nữa (hạ bit về 0) và kim đi tiếp, trang nào "nguội" (bit=0) thì bị thay ngay.</div></div>
+    <p class="en">A performance comparison on a sample stream (page 2,3,2,1,5,2,4,5,3,2,5,2) shows LRU, FIFO, CLOCK, and OPT side-by-side — CLOCK tracks LRU closely in practice while being far cheaper to implement.</p>
+    <span class="vi">1 so sánh hiệu năng trên 1 chuỗi mẫu (trang 2,3,2,1,5,2,4,5,3,2,5,2) cho thấy LRU, FIFO, CLOCK, và OPT cạnh nhau — CLOCK bám khá sát LRU trong thực tế trong khi cài đặt rẻ hơn nhiều.</span>
+
+    <h3 class="subhead"><span class="shnum">8</span>Enhanced Second-Chance Algorithm</h3>
+    <p class="en">Improve the algorithm by using <b>reference bit</b> and <b>modify bit</b> (if available) together: take the ordered pair <b>(reference, modify)</b>.</p>
+    <span class="vi">Cải tiến thuật toán bằng cách dùng <b>reference bit</b> và <b>modify bit</b> (nếu có) cùng lúc: lấy cặp có thứ tự <b>(reference, modify)</b>.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">(0,0)</div><p>Chưa dùng gần đây, chưa sửa → trang <b>tốt nhất</b> để thay thế.</p></div>
+      <div class="res-card"><div class="rk">(0,1)</div><p>Chưa dùng gần đây nhưng đã sửa → không tốt bằng, phải ghi ra đĩa trước khi thay.</p></div>
+      <div class="res-card"><div class="rk">(1,0)</div><p>Đã dùng gần đây nhưng sạch → có thể sẽ được dùng lại sớm.</p></div>
+      <div class="res-card"><div class="rk">(1,1)</div><p>Đã dùng gần đây và đã sửa → có thể dùng lại sớm, và cần ghi ra đĩa trước khi thay.</p></div>
+    </div>
+    <p class="en">When page replacement is called for, use the <b>clock scheme</b> but use the four classes — replace a page in the lowest non-empty class. Might need to search the circular queue several times.</p>
+    <span class="vi">Khi cần page replacement, vẫn dùng <b>cơ chế clock</b> nhưng dựa trên 4 lớp trên — thay 1 trang trong lớp thấp nhất còn khác rỗng. Có thể phải quét hàng đợi tròn nhiều lần.</span>
+
+    <h3 class="subhead"><span class="shnum">9</span>Counting, Page-Buffering, và ứng dụng</h3>
+    <p class="en"><b>Counting algorithms</b> keep a counter of the number of references made to each page — not common in practice. <b>Least Frequently Used (LFU)</b> replaces the page with the smallest count; <b>Most Frequently Used (MFU)</b> is based on the argument that the page with the smallest count was probably just brought in and has yet to be used.</p>
+    <span class="vi"><b>Counting algorithms</b> giữ 1 bộ đếm số lần tham chiếu tới mỗi trang — không phổ biến trong thực tế. <b>Least Frequently Used (LFU)</b> thay trang có count nhỏ nhất; <b>Most Frequently Used (MFU)</b> dựa trên lập luận rằng trang có count nhỏ nhất có lẽ vừa mới được đưa vào và chưa kịp dùng tới.</span>
+
+    <p class="en"><b>Page-buffering algorithms</b> keep a pool of free frames, always — so a frame is available when needed, not searched for at fault time: read the page into a free frame and select a victim to evict and add to the free pool later, when convenient. Possibly keep a <b>list of modified pages</b>, and write them out when the backing store is otherwise idle.</p>
+    <span class="vi"><b>Page-buffering algorithms</b> luôn giữ sẵn 1 pool frame trống — để frame có sẵn khi cần, không phải tìm ngay lúc fault: đọc trang vào 1 frame trống rồi chọn nạn nhân để đuổi và thêm vào pool trống sau, khi thuận tiện. Có thể giữ 1 <b>danh sách trang đã sửa</b>, và ghi chúng ra khi backing store đang rảnh.</span>
+    <p class="en">A third option: possibly keep the <b>contents of a freed frame intact</b>, and note what was in it — if that same page is referenced again <b>before</b> the frame gets reused for something else, there's no need to load its contents again from disk. This is generally useful to <b>reduce the penalty</b> if the "wrong" victim frame was selected.</p>
+    <span class="vi">1 lựa chọn thứ 3: có thể giữ nguyên <b>nội dung của frame vừa giải phóng</b>, và ghi chú lại trước đó nó chứa trang nào — nếu đúng trang đó bị tham chiếu lại <b>trước khi</b> frame bị tái sử dụng cho việc khác, không cần đọc lại nội dung từ đĩa nữa. Cách này nhìn chung giúp <b>giảm thiệt hại</b> nếu lỡ chọn nhầm victim frame.</span>
+    <div class="illus"><div class="emo">🧹</div><div class="cap"><b>Ví dụ đời thường</b>Giống dọn phòng khách sạn: dọn trước 1 vài phòng dự phòng (pool trống) để sẵn sàng đón khách mới ngay lập tức, thay vì đợi khách cũ rời đi mới bắt đầu dọn — việc "thu dọn đồ khách cũ để lại" được làm sau, lúc rảnh.</div></div>
+
+    <p class="en">All these algorithms have the OS <b>guessing about future page access</b>. Memory-intensive applications can cause <b>double buffering</b>, where both the OS and the application keep a copy of a page in memory. An OS can instead give direct access to the disk, a <b>raw disk mode</b> that bypasses buffering and locking.</p>
+    <span class="vi">Tất cả các thuật toán trên đều để OS <b>đoán về việc truy cập trang trong tương lai</b>. Ứng dụng tốn nhiều bộ nhớ có thể gây ra <b>double buffering</b>, khi cả OS lẫn ứng dụng đều giữ 1 bản sao của cùng 1 trang trong bộ nhớ. OS có thể thay vào đó cho ứng dụng truy cập trực tiếp vào đĩa, gọi là <b>raw disk mode</b>, bỏ qua hẳn buffering và locking.</span>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: ALLOCATION & THRASHING -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-allocation" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">⚖️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">05 · Cấp phát &amp; sự cố</div>
+        <h2>How many frames per process — and what happens if you get it wrong</h2>
+        <span class="vi">Cấp bao nhiêu frame cho mỗi tiến trình — và điều gì xảy ra nếu cấp sai</span>
+      </div>
+    </div>
+    <p class="intro">Too few frames per process causes constant page faults; this section covers how the OS decides frame counts, and the nasty spiral — thrashing — that happens when it gets this wrong.</p>
+    <span class="vi">Quá ít frame cho mỗi tiến trình gây page fault liên tục; phần này nói về cách OS quyết định số frame, và vòng xoáy tệ hại — thrashing — xảy ra khi quyết định đó sai.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Allocation of Frames: tối thiểu và tối đa</h3>
+    <p class="en">Each process needs a <b>minimum</b> number of frames. Example: IBM 370 needs 6 pages to handle an SS MOVE instruction — the instruction itself is 6 bytes and might span 2 pages (2 pages to handle "from", 2 pages to handle "to"). The <b>maximum</b>, of course, is the total frames in the system.</p>
+    <span class="vi">Mỗi tiến trình cần 1 số frame <b>tối thiểu</b>. Ví dụ: IBM 370 cần 6 trang để xử lý 1 chỉ lệnh SS MOVE — bản thân chỉ lệnh dài 6 byte và có thể trải trên 2 trang (2 trang cho "from", 2 trang cho "to"). <b>Tối đa</b>, dĩ nhiên, là tổng số frame của cả hệ thống.</span>
+    <div class="illus"><div class="emo">🧰</div><div class="cap"><b>Ví dụ đời thường</b>Giống thợ sửa xe cần tối thiểu 1 bộ dụng cụ cơ bản mới sửa được xe — thiếu dưới mức đó thì không thể làm việc, dù muốn cấp thêm bao nhiêu dụng cụ cũng được, miễn còn trong kho.</div></div>
+    <p class="en">Two major allocation schemes: <b>fixed allocation</b> and <b>priority allocation</b> — plus any variations.</p>
+    <span class="vi">2 kiểu cấp phát chính: <b>fixed allocation</b> và <b>priority allocation</b> — cộng thêm các biến thể khác.</span>
+
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Equal Allocation</div><p>Vd: 100 frame (sau khi cấp cho OS) và 5 tiến trình → mỗi tiến trình nhận 20 frame. Giữ lại 1 phần làm pool frame trống.</p></div>
+      <div class="compare-box"><div class="ck">Proportional Allocation</div><p>Cấp theo kích thước tiến trình: a<sub>i</sub> = (s<sub>i</sub> / S) × m. Động, thay đổi theo mức đa chương và kích thước tiến trình.</p><span class="vi-mini">s<sub>1</sub>=10, s<sub>2</sub>=127, m=62 → a<sub>1</sub>≈4, a<sub>2</sub>≈57 frame.</span></div>
+    </div>
+    <p class="en"><b>Priority allocation</b> applies a proportional scheme using <b>priorities rather than size</b>: if process P<sub>i</sub> generates a page fault, select for replacement one of its own frames, <b>or</b> a frame from a process with a lower priority number.</p>
+    <span class="vi"><b>Priority allocation</b> áp dụng kiểu tỉ lệ nhưng dựa trên <b>priority thay vì kích thước</b>: nếu tiến trình P<sub>i</sub> gây page fault, chọn thay thế 1 frame của chính nó, <b>hoặc</b> 1 frame từ 1 tiến trình có priority number thấp hơn.</span>
+    <div class="illus"><div class="emo">🎫</div><div class="cap"><b>Ví dụ đời thường</b>Giống phòng chờ VIP ở sân bay: khách hạng thường (priority thấp) có thể bị "nhường chỗ" cho khách hạng thương gia khi phòng chờ chật, chứ không chỉ tự chịu thiệt một mình như equal/proportional allocation thuần túy.</div></div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Global vs. Local Replacement</h3>
+    <p class="en"><b>Global replacement</b> — a process selects a replacement frame from the set of <b>all</b> frames; one process can take a frame from another. Execution time can vary greatly, but throughput is generally higher, so it's more common.</p>
+    <span class="vi"><b>Global replacement</b> — 1 tiến trình chọn frame thay thế từ tập <b>tất cả</b> frame; 1 tiến trình có thể "cướp" frame của tiến trình khác. Thời gian chạy có thể thay đổi rất nhiều, nhưng throughput tổng thể thường cao hơn, nên phổ biến hơn.</span>
+    <p class="en"><b>Local replacement</b> — each process selects from only its own set of allocated frames: more consistent per-process performance, but possibly underutilized memory overall.</p>
+    <span class="vi"><b>Local replacement</b> — mỗi tiến trình chỉ chọn trong tập frame đã cấp cho riêng nó: hiệu năng mỗi tiến trình ổn định hơn, nhưng có thể khiến bộ nhớ tổng thể bị dùng không hiệu quả.</span>
+    <div class="illus"><div class="emo">🏙️</div><div class="cap"><b>Ví dụ đời thường</b>Global giống bãi đỗ xe chung của cả tòa nhà — ai tới trước đỗ trước, có thể lấn chỗ của căn hộ khác. Local giống mỗi căn hộ có đúng 1 chỗ đỗ riêng — công bằng hơn nhưng nếu căn hộ đó đi vắng thì chỗ đỗ vẫn bỏ trống.</div></div>
+
+    <h3 class="subhead"><span class="shnum">3</span>Reclaiming Pages &amp; NUMA</h3>
+    <p class="en"><b>Reclaiming pages</b> is a strategy to implement global page-replacement policy: rather than waiting for the free-frame list to drop to zero before selecting pages for replacement, page replacement is <b>triggered when the list falls below a certain (minimum) threshold</b>, and suspended once it rises back above a maximum threshold — ensuring there's always sufficient free memory for new requests.</p>
+    <span class="vi"><b>Reclaiming pages</b> là 1 chiến lược cài đặt chính sách global page-replacement: thay vì đợi free-frame list tụt về 0 mới bắt đầu chọn trang để thay, việc page-replacement được <b>kích hoạt khi danh sách tụt xuống dưới 1 ngưỡng (tối thiểu)</b> nhất định, và tạm dừng khi nó lên lại trên ngưỡng tối đa — đảm bảo luôn đủ bộ nhớ trống cho các yêu cầu mới.</span>
+    <p class="en">Many systems are <b>NUMA</b> (Non-Uniform Memory Access) — speed of access to memory varies, e.g., CPU boards with their own local memory interconnected over a system bus. Optimal performance comes from allocating memory "close to" the CPU on which the thread is scheduled — Solaris solves this with <b>lgroups</b>, structures tracking CPU/memory low-latency groups.</p>
+    <span class="vi">Nhiều hệ thống là <b>NUMA</b> (Non-Uniform Memory Access) — tốc độ truy cập bộ nhớ thay đổi tùy vị trí, vd các board CPU với bộ nhớ cục bộ riêng, nối với nhau qua system bus. Hiệu năng tối ưu đạt được khi cấp bộ nhớ "gần" CPU mà thread đang chạy — Solaris giải quyết bằng <b>lgroups</b>, cấu trúc theo dõi các nhóm CPU/bộ nhớ có độ trễ thấp.</span>
+    <div class="illus"><div class="emo">🏢</div><div class="cap"><b>Ví dụ đời thường</b>Giống nhân viên văn phòng nên lấy tài liệu ở tủ hồ sơ ngay cạnh bàn mình, thay vì chạy sang tủ hồ sơ ở tầng khác — dù cả 2 tủ đều "có" tài liệu đó, tủ gần luôn nhanh hơn.</div></div>
+
+    <h3 class="subhead"><span class="shnum">4</span>Thrashing: khi hệ thống "chạy mà không chạy"</h3>
+    <p class="en">If a process does not have "enough" frames, the page-fault rate is very high: page fault → get frame → replace existing frame → but quickly need the replaced frame back → more processes get page faults → this leads to low CPU utilization, and the OS mistakenly thinking it needs to increase the degree of multiprogramming, adding yet another process to the already-struggling system.</p>
+    <span class="vi">Nếu 1 tiến trình không có "đủ" frame, tỉ lệ page fault rất cao: page fault → lấy frame → thay thế frame hiện có → nhưng rồi nhanh chóng lại cần đúng frame vừa thay → nhiều tiến trình khác cũng page fault theo → dẫn tới CPU utilization thấp, và OS lại tưởng nhầm rằng cần tăng mức đa chương, thêm 1 tiến trình nữa vào hệ thống vốn đã quá tải.</span>
+    <p class="en"><b>Thrashing</b>: a process is busy swapping pages in and out — as the degree of multiprogramming increases, CPU utilization rises at first, then suddenly <b>collapses</b> once thrashing begins.</p>
+    <span class="vi"><b>Thrashing</b>: 1 tiến trình bận rộn swap trang vào ra liên tục — khi mức đa chương tăng lên, CPU utilization lúc đầu tăng theo, rồi bất ngờ <b>sụp đổ</b> khi thrashing bắt đầu.</span>
+    <div class="illus"><div class="emo">🚦</div><div class="cap"><b>Ví dụ đời thường</b>Giống kẹt xe giờ cao điểm: thêm 1 làn xe (thêm tiến trình) tưởng sẽ giúp thông thoáng hơn, nhưng quá đông xe cùng lúc khiến cả tuyến đường đứng hình — không ai di chuyển được, dù mọi xe đều đang "cố gắng chạy".</div></div>
+
+    <h3 class="subhead"><span class="shnum">5</span>Vì sao Demand Paging hoạt động — Locality Model</h3>
+    <p class="en">Why does demand paging work? The <b>locality model</b>: as a process executes, it moves from one locality to another, and localities may overlap. Why does thrashing occur? Σ size of locality &gt; total memory size. Limit the effects by using <b>local</b> or <b>priority</b> page replacement.</p>
+    <span class="vi">Vì sao demand paging hoạt động được? <b>Locality model</b>: khi 1 tiến trình chạy, nó di chuyển từ locality này sang locality khác, và các locality có thể chồng lấn nhau. Vì sao thrashing xảy ra? Σ kích thước locality &gt; tổng dung lượng bộ nhớ. Giới hạn ảnh hưởng bằng cách dùng page replacement kiểu <b>local</b> hoặc theo <b>priority</b>.</span>
+    <div class="illus"><div class="emo">🗺️</div><div class="cap"><b>Ví dụ đời thường</b>Giống bạn đi du lịch: trong vài ngày bạn chỉ loanh quanh 1 khu phố (1 locality) — gần như không cần "mang" cả thành phố theo, chỉ cần đủ thông tin cho khu vực đang ở là đủ.</div></div>
+
+    <h3 class="subhead"><span class="shnum">6</span>Working-Set Model</h3>
+    <p class="en">Let <b>Δ</b> ≡ working-set window ≡ a fixed number of page references, e.g., 10,000 instructions. <b>WSS<sub>i</sub></b> (working set of process P<sub>i</sub>) = total number of pages referenced in the most recent Δ (varies over time).</p>
+    <span class="vi">Gọi <b>Δ</b> ≡ working-set window ≡ 1 số lượng tham chiếu trang cố định, vd 10.000 chỉ lệnh. <b>WSS<sub>i</sub></b> (working set của tiến trình P<sub>i</sub>) = tổng số trang được tham chiếu trong Δ gần nhất (thay đổi theo thời gian).</span>
+    <p class="en">If Δ too small, it will not encompass the entire locality; if Δ too large, it will encompass several localities; if Δ = ∞, it will encompass the entire program.</p>
+    <span class="vi">Nếu Δ quá nhỏ, nó sẽ không bao trọn được 1 locality; nếu Δ quá lớn, nó sẽ bao luôn nhiều locality khác nhau; nếu Δ = ∞, nó sẽ bao trọn cả chương trình.</span>
+    <p class="en"><b>D = Σ WSS<sub>i</sub></b> ≡ total demand frames, an approximation of locality. <b>m</b> ≡ total number of available frames. If <b>D &gt; m</b> ⇒ Thrashing. One policy: if D &gt; m, then suspend or swap out one of the processes.</p>
+    <span class="vi"><b>D = Σ WSS<sub>i</sub></b> ≡ tổng demand frame, 1 phép xấp xỉ cho locality. <b>m</b> ≡ tổng số frame khả dụng. Nếu <b>D &gt; m</b> ⇒ Thrashing. 1 chính sách: nếu D &gt; m, tạm dừng hoặc swap ra 1 trong các tiến trình.</span>
+    <div class="note teal">Keeping Track of the Working Set: xấp xỉ bằng interval timer + 1 reference bit. Vd Δ=10.000: timer ngắt mỗi 5.000 đơn vị thời gian, giữ 2 bit/trang trong bộ nhớ, mỗi lần ngắt thì copy rồi reset các bit tham chiếu về 0 — nếu 1 trong 2 bit lưu = 1 ⇒ trang đó nằm trong working set.</div>
+
+    <h3 class="subhead"><span class="shnum">7</span>Page-Fault Frequency (PFF): cách tiếp cận trực tiếp hơn</h3>
+    <p class="en"><b>Page-Fault Frequency (PFF)</b> is a more direct approach than WSS: establish an "acceptable" page-fault-frequency rate and use <b>local replacement policy</b>. If the actual rate is too low, the process loses a frame; if too high, the process gains a frame.</p>
+    <span class="vi"><b>Page-Fault Frequency (PFF)</b> là 1 cách tiếp cận trực tiếp hơn WSS: thiết lập 1 tỉ lệ page-fault "chấp nhận được" và dùng <b>chính sách local replacement</b>. Nếu tỉ lệ thực tế quá thấp, tiến trình mất bớt 1 frame; nếu quá cao, tiến trình được cấp thêm 1 frame.</span>
+    <div class="flow-row">
+      <div class="flow-box">page-fault rate đo được</div><span class="flow-arrow">&gt; upper bound →</span>
+      <div class="flow-box hi">tăng số frame</div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-box">page-fault rate đo được</div><span class="flow-arrow">&lt; lower bound →</span>
+      <div class="flow-box mid">giảm số frame</div>
+    </div>
+    <p class="en">There is a direct relationship between a process's <b>working set</b> and its <b>page-fault rate</b>: the working set changes over time, with peaks and valleys that track locality shifts.</p>
+    <span class="vi">Có 1 mối quan hệ trực tiếp giữa <b>working set</b> của 1 tiến trình và <b>tỉ lệ page-fault</b> của nó: working set thay đổi theo thời gian, với các đỉnh và đáy bám theo sự thay đổi locality.</span>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: KERNEL MEMORY -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-kernel" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🧱</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">06 · Bộ nhớ kernel</div>
+        <h2>The kernel doesn't play by the same memory rules as user processes</h2>
+        <span class="vi">Kernel không tuân theo luật cấp phát bộ nhớ giống như tiến trình user</span>
+      </div>
+    </div>
+    <p class="intro">Kernel data structures come in many odd sizes and sometimes need physically contiguous memory for device I/O — two dedicated allocators exist to serve exactly this need.</p>
+    <span class="vi">Các cấu trúc dữ liệu của kernel có nhiều kích thước lẻ khác nhau và đôi khi cần bộ nhớ liên tục vật lý cho device I/O — 2 bộ cấp phát chuyên dụng tồn tại chính để phục vụ nhu cầu này.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Allocating Kernel Memory: khác user memory ở điểm nào</h3>
+    <p class="en">Kernel memory is <b>treated differently</b> from user memory. It's often allocated from a <b>free-memory pool</b>, since the kernel requests memory for structures of varying sizes — and some kernel memory needs to be <b>contiguous</b>, e.g., for device I/O.</p>
+    <span class="vi">Bộ nhớ kernel được <b>xử lý khác</b> với bộ nhớ user. Nó thường được cấp từ 1 <b>pool bộ nhớ trống</b>, vì kernel yêu cầu bộ nhớ cho các cấu trúc kích thước khác nhau — và 1 số bộ nhớ kernel cần <b>liên tục (contiguous)</b>, vd cho device I/O.</span>
+    <div class="illus"><div class="emo">🔧</div><div class="cap"><b>Ví dụ đời thường</b>User process giống khách thuê phòng trọ — ở đâu cũng được, miễn đủ diện tích (paging xử lý tốt). Kernel giống xưởng cơ khí cần 1 dải mặt bằng liền kề để đặt dây chuyền máy móc — không thể cắt rời ra nhiều mảnh nhỏ nằm rải rác.</div></div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Buddy System (power-of-2 allocator)</h3>
+    <p class="en">Allocates memory from a <b>fixed-size segment</b> consisting of physically-contiguous pages, using a <b>power-of-2 allocator</b>: satisfies requests in units sized as a power of 2, rounding each request up to the next highest power of 2. When a smaller allocation is needed than is available, the current chunk splits into <b>two buddies</b> of the next-lower power of 2, continuing until an appropriately sized chunk is available.</p>
+    <span class="vi">Cấp bộ nhớ từ 1 <b>đoạn kích thước cố định</b> gồm các trang liên tục vật lý, dùng <b>power-of-2 allocator</b>: thỏa mãn yêu cầu theo đơn vị là lũy thừa của 2, làm tròn mỗi yêu cầu lên lũy thừa 2 gần nhất lớn hơn. Khi cần cấp 1 khối nhỏ hơn khối hiện có, khối hiện tại được tách thành <b>2 "buddy"</b> ở mức lũy thừa 2 thấp hơn liền kề, tiếp tục cho tới khi có khối đúng kích thước cần.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Ví dụ — slide 67–68</span>
+      <p style="margin:0 0 8px;font-size:14.5px;">Giả sử có sẵn 1 khối 256KB, kernel yêu cầu 21KB.</p>
+      <div class="flow-row" style="margin:4px 0;">
+        <div class="flow-box hi">256 KB</div><span class="flow-arrow">→</span>
+        <div class="flow-box">128 KB A<sub>L</sub></div><span class="flow-arrow">→</span>
+        <div class="flow-box">64 KB B<sub>L</sub></div><span class="flow-arrow">→</span>
+        <div class="flow-box mid">32 KB C<sub>L</sub> / C<sub>R</sub></div>
+      </div>
+      <p style="margin:0;font-size:14.5px;">Tách thành A<sub>L</sub>/A<sub>R</sub> 128KB → tách tiếp B<sub>L</sub>/B<sub>R</sub> 64KB → tách tiếp C<sub>L</sub>/C<sub>R</sub> 32KB — 1 trong 2 khối 32KB dùng để thỏa yêu cầu 21KB (làm tròn lên 32 = 2⁵).</p>
+    </div>
+    <div class="compare-row">
+      <div class="compare-box"><div class="ck">Advantage</div><p>Các chunk không dùng có thể <b>gộp lại nhanh</b> thành khối lớn hơn (coalescing) — vì mỗi khối luôn có đúng 1 "buddy" khớp để ghép lại.</p></div>
+      <div class="compare-box"><div class="ck">Disadvantage</div><p>Gây <b>fragmentation</b> — làm tròn lên lũy thừa 2 luôn lãng phí ít nhiều không gian thừa.</p></div>
+    </div>
+    <div class="illus"><div class="emo">🍕</div><div class="cap"><b>Ví dụ đời thường</b>Giống cắt 1 bánh pizza tròn thành 2, rồi 1 nửa lại cắt tiếp thành 2, cứ thế — mỗi miếng luôn có đúng 1 "miếng song sinh" (buddy) để ghép lại thành miếng lớn hơn nếu không ai ăn tới.</div></div>
+
+    <h3 class="subhead"><span class="shnum">3</span>Slab Allocator</h3>
+    <p class="en">An alternate strategy: a <b>slab</b> is one or more physically contiguous pages; a <b>cache</b> consists of one or more slabs. There is a <b>single cache for each unique kernel data structure</b> — e.g., for process descriptors, file objects, semaphores — each cache filled with <b>objects</b>, instantiations of that data structure.</p>
+    <span class="vi">1 chiến lược thay thế: 1 <b>slab</b> là 1 hoặc nhiều trang liên tục vật lý; 1 <b>cache</b> gồm 1 hoặc nhiều slab. Có <b>1 cache riêng cho mỗi cấu trúc dữ liệu kernel duy nhất</b> — vd cho process descriptor, file object, semaphore — mỗi cache được lấp đầy bằng <b>object</b>, các bản thể hóa của cấu trúc dữ liệu đó.</span>
+    <p class="en">When the cache is created, it's filled with objects marked as <b>free</b>; when structures are stored, objects are marked <b>used</b>. If a slab is full of used objects, the next object is allocated from an empty slab — if no empty slabs, a new slab is allocated.</p>
+    <span class="vi">Khi cache được tạo, nó được lấp đầy bằng các object đánh dấu <b>free</b>; khi cấu trúc được lưu, object được đánh dấu <b>used</b>. Nếu 1 slab đã đầy toàn object used, object tiếp theo được cấp từ 1 slab rỗng khác — nếu không còn slab rỗng, 1 slab mới được cấp phát thêm.</span>
+    <div class="illus"><div class="emo">🧊</div><div class="cap"><b>Ví dụ đời thường</b>Giống khay đá viên trong tủ lạnh: mỗi khay (slab) chỉ đựng đúng 1 loại kích thước viên đá (1 loại object), đã có sẵn các "ô khuôn" đúng hình dạng — không cần cắt gọt lại mỗi lần lấy ra dùng.</div></div>
+    <p class="en">Benefits include <b>no fragmentation</b> and <b>fast memory request satisfaction</b>. Example in Linux: the process descriptor is of type <b>struct task_struct</b>, approx. 1.7KB — a new task allocates a new struct from cache, reusing an existing free struct if available.</p>
+    <span class="vi">Lợi ích gồm <b>không fragmentation</b> và <b>đáp ứng yêu cầu bộ nhớ nhanh</b>. Ví dụ trong Linux: process descriptor có kiểu <b>struct task_struct</b>, khoảng 1.7KB — 1 task mới cấp 1 struct mới từ cache, tái dùng struct trống sẵn có nếu còn.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Full</div><p>Slab toàn bộ object đã dùng (used).</p></div>
+      <div class="res-card"><div class="rk">Empty</div><p>Slab toàn bộ object còn trống (free).</p></div>
+      <div class="res-card"><div class="rk">Partial</div><p>Slab có cả object free lẫn used trộn lẫn.</p></div>
+    </div>
+    <p class="en">Upon request, the slab allocator uses a free struct in a partial slab first; if none, takes one from an empty slab; if no empty slab, creates a new one. Slab started in Solaris, now wide-spread for both kernel and user memory in various OSes. Linux 2.2 had <b>SLAB</b>, now has both <b>SLOB</b> (Simple List of Blocks, for limited-memory systems) and <b>SLUB</b> (performance-optimized SLAB).</p>
+    <span class="vi">Khi có yêu cầu, slab allocator ưu tiên dùng struct trống trong 1 slab partial trước; nếu không có, lấy từ 1 slab empty; nếu không còn slab empty, tạo mới 1 slab. Slab khởi nguồn từ Solaris, nay phổ biến rộng rãi cho cả bộ nhớ kernel lẫn user trên nhiều OS. Linux 2.2 có <b>SLAB</b>, nay có cả <b>SLOB</b> (Simple List of Blocks, cho hệ thống ít bộ nhớ) và <b>SLUB</b> (SLAB tối ưu hiệu năng).</span>
+
+    <h3 class="subhead"><span class="shnum">4</span>Other Considerations: Pre-paging, Page Size, TLB Reach</h3>
+    <p class="en"><b>Pre-paging</b> reduces the large number of page faults that occur at process startup, by pre-paging some or all pages a process will need before they're referenced. But if pre-paged pages go unused, I/O and memory are wasted — if <b>α</b> near zero, pre-paging loses.</p>
+    <span class="vi"><b>Pre-paging</b> giảm số lượng page fault lớn xảy ra lúc khởi động tiến trình, bằng cách nạp trước 1 phần hoặc toàn bộ trang mà tiến trình sẽ cần, trước khi chúng thực sự được tham chiếu. Nhưng nếu trang nạp trước không được dùng tới, I/O và bộ nhớ bị lãng phí — nếu <b>α</b> gần 0, pre-paging phản tác dụng.</span>
+    <div class="note teal">Phép so sánh chi phí (slide 74): giả sử <b>s</b> trang được pre-page, và <b>α</b> là tỉ lệ trong số đó thực sự được dùng tới. So sánh: chi phí của <b>s·α</b> page fault <b>tiết kiệm được</b> (nhờ pre-page đúng) so với chi phí của <b>s·(1−α)</b> trang nạp <b>thừa</b> (pre-page sai, lãng phí I/O + bộ nhớ). Nếu α gần 1 → pre-paging đáng giá; nếu α gần 0 → gần như toàn bộ công sức pre-page bị phí phạm, nên tránh dùng.</div>
+    <p class="en"><b>Page size</b> selection must consider: fragmentation, page table size, resolution, I/O overhead, number of page faults, locality, TLB size and effectiveness — always a power of 2, usually in the range 2¹² (4,096 bytes) to 2²² (4,194,304 bytes), and growing on average over time.</p>
+    <span class="vi">Chọn <b>page size</b> phải cân nhắc: fragmentation, kích thước page table, độ phân giải, chi phí I/O, số page fault, locality, kích thước &amp; hiệu quả TLB — luôn là lũy thừa 2, thường trong khoảng 2¹² (4.096 byte) tới 2²² (4.194.304 byte), và trung bình tăng dần theo thời gian.</span>
+    <p class="en"><b>TLB Reach</b> — the amount of memory accessible from the TLB — equals TLB size × page size. Ideally, the working set of each process is stored in the TLB; otherwise there is a high degree of page faults. Options: increase the page size (may increase fragmentation), or provide multiple page sizes.</p>
+    <span class="vi"><b>TLB Reach</b> — lượng bộ nhớ truy cập được từ TLB — bằng kích thước TLB × kích thước page. Lý tưởng nhất, working set của mỗi tiến trình được chứa trọn trong TLB; nếu không sẽ có tỉ lệ page fault cao. Lựa chọn: tăng page size (có thể tăng fragmentation), hoặc cung cấp nhiều kích thước page khác nhau.</span>
+    <div class="illus"><div class="emo">🔍</div><div class="cap"><b>Ví dụ đời thường</b>TLB reach giống tầm quan sát của 1 camera an ninh — camera độ phân giải cao (nhiều entry × page lớn) bao quát được nhiều khu vực hơn, giảm số lần phải cử người đi kiểm tra tận nơi (page-table walk).</div></div>
+
+    <h3 class="subhead"><span class="shnum">5</span>Program Structure &amp; I/O Interlock</h3>
+    <p class="en"><b>Program structure</b> affects the number of page faults — consider <b>int[128,128] data</b>, each row stored in one page. Program 1 (loops j outer, i inner) causes <b>16,384</b> page faults (128×128); Program 2 (loops i outer, j inner) causes just <b>128</b> — accessing memory in row-major order matches how the data is actually laid out in pages.</p>
+    <span class="vi"><b>Cấu trúc chương trình</b> ảnh hưởng tới số page fault — xét <b>int[128,128] data</b>, mỗi hàng nằm trong 1 trang. Chương trình 1 (vòng j ngoài, i trong) gây <b>16.384</b> page fault (128×128); Chương trình 2 (vòng i ngoài, j trong) chỉ gây <b>128</b> — truy cập bộ nhớ theo đúng thứ tự hàng khớp với cách dữ liệu thực sự được xếp trang.</span>
+    <div class="illus"><div class="emo">📖</div><div class="cap"><b>Ví dụ đời thường</b>Giống đọc sách: đọc tuần tự từng trang theo thứ tự (Program 2) mượt mà hơn nhiều so với nhảy lung tung lật qua lật lại cả 128 trang cho mỗi dòng (Program 1) — dù tổng lượng chữ đọc được là như nhau.</div></div>
+    <p class="en"><b>I/O Interlock</b> — pages must sometimes be locked into memory. Consider I/O: pages used for copying a file from a device must be locked from being selected for eviction by a page-replacement algorithm. <b>Pinning</b> of pages locks them into memory.</p>
+    <span class="vi"><b>I/O Interlock</b> — các trang đôi khi phải bị khóa trong bộ nhớ. Xét trường hợp I/O: các trang dùng để copy 1 file từ thiết bị phải bị khóa, không cho thuật toán page-replacement chọn để đuổi ra. <b>Pinning</b> trang là cách khóa chúng lại trong bộ nhớ.</span>
+
+    <h3 class="subhead"><span class="shnum">6</span>Memory Compression: thay thế cho swapping</h3>
+    <p class="en">An alternative to paging is <b>memory compression</b>: rather than paging out modified frames to swap space, the system <b>compresses several frames into a single frame</b>, enabling it to reduce memory usage without resorting to swapping pages at all.</p>
+    <span class="vi">1 giải pháp thay thế cho paging là <b>memory compression</b>: thay vì page out các frame đã sửa ra swap space, hệ thống <b>nén nhiều frame thành 1 frame duy nhất</b>, giúp giảm lượng bộ nhớ dùng mà hoàn toàn không cần swap trang ra ngoài.</span>
+    <div class="labeled-box">
+      <span class="lb-tag">Ví dụ — slide 84–85</span>
+      <p style="margin:0 0 8px;font-size:14.5px;">Free-frame-list gồm 6 frame; LRU-approximation chọn ra 4 frame (15, 3, 35, 26) để đưa vào modified-frame list — thường sẽ được ghi ra swap space.</p>
+      <p style="margin:0;font-size:14.5px;">Thay vào đó: <b>nén 3 trong số đó</b> (vd 15, 3, 35) và lưu bản nén trong <b>1 page frame duy nhất</b> ở compressed-frame list — trang 26 vẫn ở modified-frame list, chờ xử lý riêng.</p>
+    </div>
+    <div class="note teal">Memory compression là kỹ thuật thay thế cho paging, đặc biệt hữu ích trên mobile systems vốn không hỗ trợ swapping đầy đủ (do hạn chế của flash memory).</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: WINDOWS -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-examples" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">🪟</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">07 · Thực tế</div>
+        <h2>How Windows puts all these ideas together</h2>
+        <span class="vi">Windows kết hợp tất cả các ý tưởng trên ra sao trong thực tế</span>
+      </div>
+    </div>
+    <p class="intro">Windows is the operating-system example this chapter's slide deck focuses on — and it uses demand paging, working-set bounds, and automatic trimming, echoing nearly every concept covered so far.</p>
+    <span class="vi">Windows là ví dụ hệ điều hành mà bộ slide chương này tập trung vào — và nó dùng demand paging, giới hạn working set, và tự động trimming, gần như lặp lại mọi khái niệm đã học ở các tab trước.</span>
+
+    <h3 class="subhead"><span class="shnum">1</span>Demand Paging with Clustering</h3>
+    <p class="en">Windows uses demand paging with <b>clustering</b>. Clustering brings in <b>pages surrounding</b> the faulting page — not just the single page that caused the fault.</p>
+    <span class="vi">Windows dùng demand paging kèm <b>clustering</b>. Clustering nạp vào luôn <b>các trang lân cận</b> trang gây fault — không chỉ đúng 1 trang gây ra fault đó.</span>
+    <div class="illus"><div class="emo">🎒</div><div class="cap"><b>Ví dụ đời thường</b>Giống đi siêu thị: khi cần 1 lon nước ngọt, bạn tiện tay lấy luôn cả lốc 6 lon cùng loại trên kệ — vì nhiều khả năng bạn sẽ cần tới những lon còn lại trong lúc gần đây, giống hệt nguyên lý locality.</div></div>
+
+    <h3 class="subhead"><span class="shnum">2</span>Working Set Minimum / Maximum &amp; Trimming</h3>
+    <p class="en">Processes are assigned a <b>working set minimum</b> and <b>working set maximum</b>. Working set minimum is the minimum number of pages the process is <b>guaranteed</b> to have in memory; a process may be assigned as many pages as it needs up to its working set maximum.</p>
+    <span class="vi">Mỗi tiến trình được gán 1 <b>working set minimum</b> và <b>working set maximum</b>. Working set minimum là số trang tối thiểu mà tiến trình được <b>đảm bảo</b> có trong bộ nhớ; 1 tiến trình có thể được cấp tối đa tới working set maximum của nó.</span>
+    <p class="en">When the amount of free memory in the system falls below a threshold, <b>automatic working set trimming</b> is performed to restore the amount of free memory. Working set trimming removes pages from processes that have pages <b>in excess of</b> their working set minimum.</p>
+    <span class="vi">Khi lượng bộ nhớ trống trong hệ thống tụt xuống dưới 1 ngưỡng, <b>automatic working set trimming</b> được thực hiện để khôi phục lượng bộ nhớ trống. Working set trimming gỡ bớt trang khỏi những tiến trình đang có <b>nhiều hơn</b> working set minimum của chúng.</span>
+    <div class="res-grid">
+      <div class="res-card"><div class="rk">Working Set Minimum</div><p>Số trang tối thiểu được đảm bảo — không bao giờ bị trim xuống dưới mức này.</p></div>
+      <div class="res-card"><div class="rk">Working Set Maximum</div><p>Trần tối đa — tiến trình có thể được cấp thêm trang tới mức này nếu bộ nhớ hệ thống còn dư dả.</p></div>
+      <div class="res-card"><div class="rk">Automatic Trimming</div><p>Kích hoạt khi free memory toàn hệ thống xuống thấp — gỡ trang dư ra khỏi các tiến trình "giàu" trang nhất trước.</p></div>
+    </div>
+    <div class="illus"><div class="emo">💼</div><div class="cap"><b>Ví dụ đời thường</b>Giống công ty cắt giảm ngân sách phòng ban: mỗi phòng có 1 mức ngân sách "sàn" được bảo đảm (minimum), có thể xin thêm tới 1 mức "trần" (maximum) khi công ty dư dả — nhưng khi công ty khó khăn, phòng nào đang tiêu vượt mức sàn sẽ bị cắt bớt trước (trimming).</div></div>
+    <div class="note">Cơ chế working-set min/max + automatic trimming của Windows chính là 1 cài đặt thực tế của <b>Working-Set Model</b> đã học ở tab Allocation &amp; Thrashing — lý thuyết D=ΣWSS<sub>i</sub> so với m được áp dụng gần như nguyên vẹn.</div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- TAB: EXERCISES -->
+  <!-- ============================================================ -->
+  <section class="tab-panel" id="panel-exercises" hidden>
+    <div class="panel-head">
+      <span class="panel-icon">✏️</span>
+      <div class="panel-head-text">
+        <div class="panel-eyebrow">08 · Luyện tập</div>
+        <h2>1 exercise straight from the original slides</h2>
+        <span class="vi">1 bài tập nguyên bản từ slide gốc</span>
+      </div>
+    </div>
+    <p class="intro">Click "Xem lời giải" to open the detailed, step-by-step answer — try running each algorithm by hand first before peeking.</p>
+    <span class="vi">Bấm vào "Xem lời giải" để mở đáp án chi tiết từng bước — nên tự chạy tay từng thuật toán trước khi xem.</span>
+
+    <div class="exercise">
+      <h4>Exercise — So sánh LRU, FIFO, Optimal, Clock (Second-chance)</h4>
+      <p class="en">Consider the following page reference string: <b>0 1 7 2 3 2 7 1 0 3</b>. How many page faults would occur for the LRU, FIFO, Optimal, and Clock (Second-chance) replacement algorithms, assuming <b>three empty frames</b>? Remember all frames are initially empty, so your first unique pages will all cost one fault each.</p>
+      <span class="vi">Cho reference string: <b>0 1 7 2 3 2 7 1 0 3</b>. Mỗi thuật toán LRU, FIFO, Optimal, và Clock (Second-chance) sẽ gây ra bao nhiêu page fault, giả sử có <b>3 frame trống</b> ban đầu? Lưu ý mọi frame đều trống lúc đầu, nên các trang xuất hiện lần đầu luôn tốn 1 fault.</span>
+      <details>
+        <summary>Xem lời giải</summary>
+        <div class="table-scroll ans-table">
+          <table class="cmp-table">
+            <tr><th>Thuật toán</th><th>Số page fault</th><th>Ghi chú</th></tr>
+            <tr><td>FIFO</td><td><b>7</b></td><td>3 fault đầu (0,1,7) nạp frame trống; sau đó 2,3 thay 0,1 theo đúng thứ tự vào; 1,0 lại thay tiếp 7,2 — chỉ 3 lần hit (2,7,3 ở cuối).</td></tr>
+            <tr><td>LRU</td><td><b>8</b></td><td>Tệ nhất trong 4 thuật toán ở ví dụ này — vì 2 và 7 được dùng lại giữa chừng khiến 0,1,3 lần lượt bị đẩy ra đúng lúc sắp cần lại.</td></tr>
+            <tr><td>Optimal</td><td><b>7</b></td><td>Luôn ít nhất hoặc bằng các thuật toán khác — ở ví dụ này trùng với FIFO, vì FIFO "tình cờ" đưa ra lựa chọn tối ưu tại mọi bước.</td></tr>
+            <tr><td>Clock (Second-chance)</td><td><b>7</b></td><td>Xấp xỉ khá sát LRU/Optimal nhờ reference bit cho "cơ hội thứ 2" — bám sát Optimal hơn hẳn LRU thuần trong ví dụ này.</td></tr>
+          </table>
+        </div>
+        <p class="ans-note"><b>FIFO</b> (hàng đợi, 3 slot): 0,1,7 nạp vào (3 fault) → 2 thay 0 (fault) → 3 thay 1 (fault) → 2,7 hit → 1 thay 7 (fault) → 0 thay 2 (fault) → 3 hit. Tổng 7 fault.</p>
+        <p class="ans-note"><b>LRU</b> (đuổi trang lâu chưa dùng nhất): 0,1,7 nạp vào (3 fault) → 2 thay 0 — least recent (fault) → 3 thay 1 (fault) → 2,7 hit, cập nhật recency → 1 thay 3 — giờ 3 là least recent (fault) → 0 thay 2 (fault) → 3 thay 7 (fault). Tổng 8 fault.</p>
+        <p class="ans-note"><b>Optimal</b> (đuổi trang xa nhất trong tương lai): 0,1,7 nạp vào (3 fault) → 2 thay 0 (0 dùng lại xa nhất, ở vị trí cuối) (fault) → 3 thay 1 (1 dùng lại xa hơn 7) (fault) → 2,7 hit → 1 thay 1 trong 2 trang không còn dùng lại nữa (fault) → 0 thay tiếp (fault) → 3 hit (3 vẫn còn trong frame). Tổng 7 fault.</p>
+        <p class="ans-note"><b>Clock</b> (FIFO + reference bit, "cho thêm 1 cơ hội"): hoạt động giống FIFO nhưng tha các trang vừa được dùng lại (set bit về 0 thay vì đuổi ngay) — trong ví dụ này, nhờ 2 và 7 được "tha" đúng lúc, Clock bám sát Optimal và cho cùng 7 fault, tốt hơn LRU thuần.</p>
+        <p class="ans-note" style="margin-top:14px;"><b>Bảng trace từng bước của Clock</b> (quy ước: bit = 1 ngay khi trang được nạp/tham chiếu lại; kim chỉ di chuyển khi tìm victim, không di chuyển khi hit):</p>
+        <div class="table-scroll ans-table">
+          <table class="cmp-table">
+            <tr><th>Bước</th><th>Ref</th><th>Frame 0</th><th>Frame 1</th><th>Frame 2</th><th>Kim →</th><th>Kết quả</th></tr>
+            <tr><td>1</td><td>0</td><td>0 (bit1)</td><td>—</td><td>—</td><td>F1</td><td>Fault (nạp vào chỗ trống)</td></tr>
+            <tr><td>2</td><td>1</td><td>0 (bit1)</td><td>1 (bit1)</td><td>—</td><td>F2</td><td>Fault (nạp vào chỗ trống)</td></tr>
+            <tr><td>3</td><td>7</td><td>0 (bit1)</td><td>1 (bit1)</td><td>7 (bit1)</td><td>F0</td><td>Fault (nạp vào chỗ trống — đầy)</td></tr>
+            <tr><td>4</td><td>2</td><td><b>2</b> (bit1)</td><td>1 (bit0)</td><td>7 (bit0)</td><td>F1</td><td>Fault — kim quét 0(1→0)→1(1→0)→7(1→0)→vòng lại 0(bit0) → đuổi 0, nạp 2</td></tr>
+            <tr><td>5</td><td>3</td><td>2 (bit1)</td><td><b>3</b> (bit1)</td><td>7 (bit0)</td><td>F2</td><td>Fault — kim tại F1: page1 bit0 → đuổi 1, nạp 3</td></tr>
+            <tr><td>6</td><td>2</td><td>2 (bit1)</td><td>3 (bit1)</td><td>7 (bit0)</td><td>F2</td><td>Hit — set bit(2)=1, kim <b>không</b> di chuyển</td></tr>
+            <tr><td>7</td><td>7</td><td>2 (bit1)</td><td>3 (bit1)</td><td>7 (bit1)</td><td>F2</td><td>Hit — set bit(7)=1, kim không di chuyển</td></tr>
+            <tr><td>8</td><td>1</td><td>2 (bit0)</td><td>3 (bit0)</td><td><b>1</b> (bit1)</td><td>F0</td><td>Fault — kim quét 7(1→0)→2(1→0)→3(1→0)→vòng lại 7(bit0) → đuổi 7, nạp 1</td></tr>
+            <tr><td>9</td><td>0</td><td><b>0</b> (bit1)</td><td>3 (bit0)</td><td>1 (bit1)</td><td>F1</td><td>Fault — kim tại F0: page2 bit0 → đuổi 2, nạp 0</td></tr>
+            <tr><td>10</td><td>3</td><td>0 (bit1)</td><td>3 (bit1)</td><td>1 (bit1)</td><td>F1</td><td>Hit — set bit(3)=1, kim không di chuyển</td></tr>
+          </table>
+        </div>
+        <p class="ans-note">Tổng 7 fault (bước 1,2,3,4,5,8,9) — khớp với kết quả trong bảng tổng hợp phía trên.</p>
+      </details>
+    </div>
+  </section>
+
+  <section class="tab-panel" id="panel-quiz" hidden>
+    <div class="panel-eyebrow">Self-check</div>
+    <h2>MCQ Quiz — Chapter 9</h2>
+    <p class="intro">33 câu (28 khái niệm + 5 tính toán), đủ chủ đề trong chương — từ virtual address space tới working-set model và Windows. Thứ tự đáp án được xáo mỗi lần làm. Bấm vào đáp án để xem đúng/sai và giải thích ngay.</p>
+    <div class="quiz-score" id="quizScore">0 / 33 đã trả lời đúng</div>
+    <div id="quizRoot"></div>
+    <div class="quiz-result" id="quizResult" hidden>
+      <div class="qr-score" id="qrScoreText"></div>
+      <div class="qr-breakdown" id="qrBreakdown"></div>
+      <button type="button" class="qr-retry" id="quizRetryBtn">🔄 Làm lại (xáo câu hỏi mới)</button>
+    </div>
+  </section>
+
+  <footer>CO2018 · Operating System Concepts, 10th ed. (Silberschatz, Galvin, Gagne) — Chapter 9 lecture notes</footer>
+</div>
+
+<script>
+  const panelIds = ['overview','background','demand','cow','replacement','allocation','kernel','examples','exercises','quiz'];
+  const panels = {};
+  panelIds.forEach(id => panels[id] = document.getElementById('panel-' + id));
+  const tabBtns = Array.from(document.querySelectorAll('.tab-btn'));
+
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  const PROGRESS_KEY = 'os-ch9-visited';
+  let visitedSet = new Set();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '[]');
+    if (Array.isArray(saved)) visitedSet = new Set(saved.filter(t => panelIds.includes(t)));
+  } catch(e) {}
+
+  function updateProgress(){
+    const total = panelIds.length;
+    const done = visitedSet.size;
+    const pct = Math.round((done / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = done + '/' + total + ' tab · ' + pct + '%';
+  }
+
+  function markVisited(name){
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+    if (!visitedSet.has(name)){
+      visitedSet.add(name);
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(visitedSet))); } catch(e) {}
+    }
+    updateProgress();
+  }
+
+  function showTab(name){
+    panelIds.forEach(key => { panels[key].hidden = key !== name; });
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+    markVisited(name);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    const gt = document.getElementById('glossaryTip');
+    if (gt) gt.classList.remove('show');
+  }
+  tabBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  document.querySelectorAll('[data-goto]').forEach(card => {
+    card.addEventListener('click', () => showTab(card.dataset.goto));
+  });
+  visitedSet.forEach(name => {
+    const btn = tabBtns.find(b => b.dataset.tab === name);
+    if (btn) btn.classList.add('visited');
+  });
+  updateProgress();
+  markVisited('overview');
+
+  /* ============================================================
+     VI TOGGLE — hide/show Vietnamese translations
+     ============================================================ */
+  (function setupViToggle(){
+    const btn = document.getElementById('viToggle');
+    const label = btn.querySelector('.vt-label');
+    const STORE_KEY = 'os-ch9-vi-hidden';
+
+    document.querySelectorAll('.illus .cap').forEach(cap => {
+      const b = cap.querySelector('b');
+      if (!b || cap.querySelector('.vi-inline')) return;
+      const rest = [];
+      let node = b.nextSibling;
+      while (node){ rest.push(node); node = node.nextSibling; }
+      if (!rest.length) return;
+      const wrap = document.createElement('span');
+      wrap.className = 'vi-inline';
+      rest.forEach(n => wrap.appendChild(n));
+      cap.appendChild(wrap);
+    });
+
+    function apply(hidden){
+      document.body.classList.toggle('vi-hidden', hidden);
+      btn.setAttribute('aria-pressed', String(!hidden));
+      label.textContent = 'Tiếng Việt: ' + (hidden ? 'Tắt' : 'Bật');
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(STORE_KEY); } catch(e) {}
+    apply(saved === '1');
+
+    btn.addEventListener('click', () => {
+      const nowHidden = !document.body.classList.contains('vi-hidden');
+      apply(nowHidden);
+      try { localStorage.setItem(STORE_KEY, nowHidden ? '1' : '0'); } catch(e) {}
+    });
+  })();
+
+  /* ============================================================
+     GLOSSARY — highlight key terms already bolded inside English
+     paragraphs, show a bilingual definition on hover / focus / tap
+     ============================================================ */
+  (function setupGlossary(){
+    const G = {
+      "virtual memory": ["Separation of user logical memory from physical memory, allowing a much larger logical address space.", "Tách rời bộ nhớ logic của user khỏi bộ nhớ vật lý, cho phép không gian địa chỉ logic lớn hơn nhiều."],
+      "virtual address space": ["The logical view of how a process is stored in memory — pages 0..v, with holes left for growth.", "Góc nhìn logic của cách 1 tiến trình được lưu trong bộ nhớ — trang 0..v, chừa sẵn hole để lớn lên."],
+      "hole": ["Unused address space between the heap and stack of a virtual address space.", "Khoảng địa chỉ chưa dùng giữa heap và stack trong virtual address space."],
+      "lazy swapper": ["A swapper that never swaps a page into memory unless that page will be needed.", "Swapper không bao giờ swap 1 trang vào bộ nhớ trừ khi trang đó sẽ được cần tới."],
+      "pager": ["A swapper that deals with individual pages instead of whole processes.", "Swapper xử lý từng trang riêng lẻ, thay vì xử lý cả tiến trình."],
+      "valid-invalid bit": ["Per page-table-entry bit marking whether a page is in-memory (v) or not (i).", "Bit gắn mỗi mục page table, đánh dấu trang đó đang trong bộ nhớ (v) hay không (i)."],
+      "page fault": ["A trap to the OS caused by referencing a page that is not currently in memory.", "1 trap về OS gây ra bởi việc tham chiếu 1 trang hiện không có trong bộ nhớ."],
+      "free-frame list": ["A pool of free frames maintained by the OS for satisfying page-fault requests.", "1 nhóm frame trống do OS duy trì để phục vụ các yêu cầu page fault."],
+      "zero-fill-on-demand": ["Technique of zeroing out the content of a frame before it is allocated.", "Kỹ thuật xóa nội dung 1 frame về 0 trước khi cấp phát nó."],
+      "effective access time": ["Weighted-average memory access time accounting for the page-fault rate.", "Thời gian truy cập bộ nhớ trung bình có trọng số, tính cả tỉ lệ page fault."],
+      "copy-on-write": ["COW — parent and child initially share pages; a page is copied only when either writes to it.", "COW — cha và con ban đầu dùng chung trang; chỉ copy khi 1 trong 2 bên ghi vào trang đó."],
+      "vfork": ["A fork() variant where the child uses the parent's copy-on-write address space directly, designed to call exec() right away.", "1 biến thể fork() mà con dùng thẳng address space copy-on-write của cha, thiết kế để gọi exec() ngay sau đó."],
+      "page replacement": ["Finding a page in memory not really in use and paging it out to make room for a new page.", "Tìm 1 trang trong bộ nhớ hiện không thực sự dùng và đẩy nó ra để nhường chỗ cho trang mới."],
+      "dirty bit": ["Modify bit marking whether a page has been written to since being loaded; only modified pages need writing to disk.", "Modify bit đánh dấu trang đã bị ghi kể từ lúc nạp hay chưa; chỉ trang đã sửa mới cần ghi ra đĩa."],
+      "reference string": ["A string of page numbers used to evaluate a page-replacement algorithm's fault count.", "1 chuỗi số trang dùng để đánh giá số page fault của 1 thuật toán page-replacement."],
+      "fifo": ["First-In-First-Out — replaces the page that has been in memory the longest, regardless of use.", "First-In-First-Out — thay thế trang đã nằm trong bộ nhớ lâu nhất, bất kể mức độ sử dụng."],
+      "belady's anomaly": ["The counter-intuitive result where adding more frames causes more page faults (can happen with FIFO).", "Kết quả phản trực giác khi thêm frame lại gây ra nhiều page fault hơn (có thể xảy ra với FIFO)."],
+      "optimal algorithm": ["OPT — replaces the page that will not be used for the longest period of time; not implementable, used as a benchmark.", "OPT — thay thế trang sẽ không dùng tới lâu nhất trong tương lai; không khả thi cài đặt thực tế, dùng làm chuẩn so sánh."],
+      "lru": ["Least Recently Used — replaces the page that has not been used in the most amount of time.", "Least Recently Used — thay thế trang chưa được dùng trong khoảng thời gian dài nhất."],
+      "second-chance": ["Clock algorithm — FIFO plus a reference bit giving a page a second chance before eviction.", "Thuật toán Clock — FIFO cộng thêm reference bit, cho trang 1 cơ hội thứ 2 trước khi bị đuổi."],
+      "enhanced second-chance": ["Uses the ordered pair (reference, modify) to classify pages into four replacement-priority classes.", "Dùng cặp (reference, modify) để phân loại trang thành 4 lớp ưu tiên thay thế."],
+      "lfu": ["Least Frequently Used — replaces the page with the smallest reference count.", "Least Frequently Used — thay thế trang có số lần tham chiếu nhỏ nhất."],
+      "mfu": ["Most Frequently Used — replaces the page with the largest reference count, assuming it was just brought in.", "Most Frequently Used — thay thế trang có số lần tham chiếu lớn nhất, với giả định nó vừa mới được đưa vào."],
+      "frame-allocation algorithm": ["Determines how many frames to give each process and which frames to replace.", "Quyết định cấp bao nhiêu frame cho mỗi tiến trình và frame nào bị thay thế."],
+      "global replacement": ["A process can select a replacement frame from the set of all frames in the system.", "1 tiến trình có thể chọn frame thay thế từ tập tất cả frame trong hệ thống."],
+      "local replacement": ["A process selects a replacement frame only from its own set of allocated frames.", "1 tiến trình chỉ chọn frame thay thế trong tập frame đã cấp cho riêng nó."],
+      "numa": ["Non-Uniform Memory Access — speed of access to memory varies depending on location.", "Non-Uniform Memory Access — tốc độ truy cập bộ nhớ thay đổi tùy vị trí."],
+      "thrashing": ["A process is busy swapping pages in and out, spending more time paging than executing.", "1 tiến trình bận swap trang vào ra liên tục, tốn thời gian paging nhiều hơn thời gian chạy thật."],
+      "locality model": ["As a process executes it moves from one locality to another; localities may overlap.", "Khi 1 tiến trình chạy, nó di chuyển từ locality này sang locality khác; các locality có thể chồng lấn."],
+      "working set": ["WSS — the total number of distinct pages referenced in the most recent working-set window Δ.", "WSS — tổng số trang khác nhau được tham chiếu trong working-set window Δ gần nhất."],
+      "page-fault frequency": ["PFF — a direct approach using an acceptable page-fault rate to add or remove frames from a process.", "PFF — cách tiếp cận trực tiếp, dùng 1 tỉ lệ page-fault chấp nhận được để thêm/bớt frame của tiến trình."],
+      "buddy system": ["Power-of-2 allocator that splits chunks into two equal buddies to satisfy smaller requests.", "Power-of-2 allocator, tách khối thành 2 'buddy' bằng nhau để thỏa yêu cầu nhỏ hơn."],
+      "slab allocator": ["Allocates kernel memory from caches of pre-sized objects, one cache per kernel data structure.", "Cấp bộ nhớ kernel từ các cache object kích thước định sẵn, 1 cache cho mỗi cấu trúc dữ liệu kernel."],
+      "pre-paging": ["Loading some or all pages a process will need before they are referenced, to reduce startup faults.", "Nạp trước 1 phần hoặc toàn bộ trang tiến trình sẽ cần, trước khi chúng được tham chiếu, để giảm fault lúc khởi động."],
+      "tlb reach": ["The amount of memory accessible from the TLB, equal to TLB size times page size.", "Lượng bộ nhớ truy cập được từ TLB, bằng kích thước TLB nhân kích thước trang."],
+      "memory compression": ["Compressing several modified frames into a single frame instead of paging them out to disk.", "Nén nhiều frame đã sửa thành 1 frame duy nhất, thay vì page chúng ra đĩa."],
+      "working set minimum": ["In Windows, the minimum number of pages a process is guaranteed to have in memory.", "Trong Windows, số trang tối thiểu mà 1 tiến trình được đảm bảo có trong bộ nhớ."],
+      "working set maximum": ["In Windows, the maximum number of pages a process may be assigned.", "Trong Windows, số trang tối đa mà 1 tiến trình có thể được cấp."],
+      "working set trimming": ["Removing pages from processes that have pages in excess of their working set minimum, when free memory is low.", "Gỡ bớt trang khỏi các tiến trình đang có nhiều hơn working set minimum, khi bộ nhớ trống thấp."],
+    };
+
+    const tip = document.createElement('div');
+    tip.className = 'glossary-tip';
+    tip.id = 'glossaryTip';
+    tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+
+    let openEl = null;
+
+    function positionAndShow(el){
+      const def = G[el.dataset.term];
+      if (!def) return;
+      tip.innerHTML = '<span class="gt-term">' + el.dataset.term + '</span>' +
+        '<span class="gt-en">' + def[0] + '</span>' +
+        '<span class="gt-vi">' + def[1] + '</span>';
+      tip.style.left = '-9999px'; tip.style.top = '-9999px';
+      tip.classList.add('show');
+      requestAnimationFrame(() => {
+        const r = el.getBoundingClientRect();
+        const tw = tip.offsetWidth, th = tip.offsetHeight;
+        let left = r.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
+        let top = r.top - th - 10;
+        if (top < 8) top = r.bottom + 10;
+        tip.style.left = left + 'px';
+        tip.style.top = top + 'px';
+      });
+      openEl = el;
+    }
+    function hide(){
+      tip.classList.remove('show');
+      openEl = null;
+    }
+
+    const Glookup = {};
+    Object.keys(G).forEach(k => { Glookup[k.toLowerCase()] = k; });
+    function resolveKey(text){
+      if (G[text]) return text;
+      const lk = Glookup[text.toLowerCase()];
+      return lk || null;
+    }
+
+    document.querySelectorAll('p.en b, .note b, .illus b, .hook b, .mono').forEach(el => {
+      const text = el.textContent.trim();
+      const key = resolveKey(text);
+      if (!key) return;
+      el.classList.add('term');
+      el.tabIndex = 0;
+      el.dataset.term = key;
+      el.addEventListener('mouseenter', () => positionAndShow(el));
+      el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => positionAndShow(el));
+      el.addEventListener('blur', hide);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (openEl === el) hide(); else positionAndShow(el);
+      });
+    });
+    document.addEventListener('click', hide);
+    window.addEventListener('scroll', hide, true);
+  })();
+
+  /* ============================================================
+     QUIZ
+     ============================================================ */
+  const QUIZ = [
+
+  {q:"Vì sao virtual memory tách rời bộ nhớ logic của user khỏi bộ nhớ vật lý lại hữu ích?",
+   opts:["Vì chỉ 1 phần chương trình cần nằm trong bộ nhớ để chạy, logical address space có thể lớn hơn physical address space nhiều", "Vì nó làm cho CPU chạy nhanh hơn gấp đôi so với không dùng virtual memory trong mọi trường hợp", "Vì nó loại bỏ hoàn toàn nhu cầu dùng page table trong toàn bộ hệ điều hành", "Vì nó chỉ có tác dụng duy nhất là tiết kiệm điện năng tiêu thụ của CPU khi chạy nhàn rỗi"], correct:0,
+   exp:"Virtual memory cho phép chỉ nạp 1 phần chương trình, không gian địa chỉ logic lớn hơn vật lý, chia sẻ address space giữa tiến trình, và tạo tiến trình hiệu quả hơn — không liên quan gì tới tốc độ CPU hay điện năng."},
+  {q:"Trong virtual address space, vì sao stack và heap thường được thiết kế mọc ngược chiều nhau (stack lớn xuống, heap lớn lên)?",
+   opts:["Để tối đa hóa việc dùng không gian địa chỉ, chừa 1 'hole' ở giữa không tốn bộ nhớ vật lý cho tới khi thực sự cần", "Để ngăn chặn hoàn toàn mọi khả năng xảy ra page fault trong suốt vòng đời tiến trình", "Vì CPU bắt buộc phải đọc stack trước heap theo đúng thứ tự vật lý trong RAM", "Để heap và stack luôn có kích thước bằng nhau tại mọi thời điểm trong lúc tiến trình chạy"], correct:0,
+   exp:"Thiết kế này tối đa hóa address-space use: hole ở giữa không cần bộ nhớ vật lý nào cho tới khi heap hoặc stack thực sự lớn tới đó, tạo ra sparse address space linh hoạt."},
+  {q:"Lazy swapper và pager khác nhau ở điểm nào?",
+   opts:["Lazy swapper không bao giờ swap 1 trang vào bộ nhớ trừ khi nó sẽ được cần; pager là tên gọi riêng cho swapper xử lý từng trang thay vì cả tiến trình", "Lazy swapper chỉ hoạt động được trên hệ thống không có ổ đĩa backing store nào cả", "Pager luôn nhanh hơn lazy swapper gấp đôi vì không cần đoán trước trang nào sẽ dùng", "Không có khác biệt nào, đây chỉ là 2 tên gọi khác nhau cho cùng 1 khái niệm swapping thông thường"], correct:0,
+   exp:"Lazy swapper: nguyên tắc chỉ nạp trang khi thực sự cần. Pager: tên gọi cho loại swapper áp dụng nguyên tắc đó ở mức từng trang (page) thay vì cả tiến trình."},
+  {q:"Bit valid-invalid trong page table (chương Virtual Memory) đóng vai trò gì khi MMU dịch địa chỉ?",
+   opts:["Nếu bit = i, kết quả là 1 page fault; OS sau đó kiểm tra tham chiếu có hợp lệ hay không để quyết định abort hay nạp trang từ đĩa", "Bit luôn = v trong suốt vòng đời tiến trình, không bao giờ thay đổi giá trị", "Bit này chỉ dùng để debug, hoàn toàn không ảnh hưởng gì tới việc dịch địa chỉ thực tế", "Bit = v nghĩa là trang đó thuộc sở hữu của OS, bit = i nghĩa là thuộc sở hữu của user process"], correct:0,
+   exp:"Trong demand paging, bit valid-invalid = i khi MMU dịch địa chỉ sẽ gây page fault; OS sau đó quyết định abort (nếu tham chiếu không hợp lệ) hoặc nạp trang vào bộ nhớ (nếu hợp lệ nhưng chưa resident)."},
+  {q:"Theo đúng thứ tự 6 bước xử lý page fault, bước nào xảy ra NGAY SAU khi tìm được 1 free frame?",
+   opts:["Swap trang cần dùng vào frame đó qua 1 thao tác đĩa đã lên lịch (scheduled disk operation)", "Restart ngay lập tức chỉ lệnh gây ra page fault mà không cần làm gì thêm", "Abort tiến trình vì đã xác nhận đây là invalid reference", "Reset ngay page table về trạng thái ban đầu trước khi đọc đĩa"], correct:0,
+   exp:"Thứ tự đúng: trap → OS kiểm tra → tìm free frame → swap trang cần vào frame đó (đọc đĩa) → reset page table (đặt bit=v) → restart instruction."},
+  {q:"Công thức Effective Access Time (EAT) trong demand paging là gì, và vì sao page fault lại 'đắt' đến vậy?",
+   opts:["EAT = (1−p)×memory_access + p×(page_fault_overhead+swap_out+swap_in); đắt vì thời gian đĩa tính bằng ms trong khi RAM tính bằng ns, chênh lệch hàng triệu lần", "EAT = p×memory_access, không liên quan gì tới chi phí page fault overhead", "EAT luôn bằng đúng memory access time, không bị ảnh hưởng bởi tỉ lệ page fault p", "EAT = memory_access − page_fault_overhead, tức là page fault làm giảm thời gian truy cập"], correct:0,
+   exp:"EAT = (1−p)×thời gian truy cập bộ nhớ + p×(chi phí page fault). Vì 1 page fault cần truy cập đĩa (ms) trong khi truy cập RAM chỉ (ns), dù p rất nhỏ EAT vẫn bị kéo lên đáng kể."},
+  {q:"Copy-on-Write (COW) tiết kiệm được gì so với fork() sao chép toàn bộ address space ngay lập tức?",
+   opts:["Chỉ những trang bị sửa đổi thực sự mới được copy; các trang không sửa (thường là đa số) tiếp tục dùng chung 1 bản vật lý duy nhất", "COW sao chép toàn bộ address space ngay khi fork() được gọi, giống hệt cách làm truyền thống", "COW chỉ hoạt động được với các tiến trình không bao giờ gọi tới hàm exec() sau đó", "COW làm tăng gấp đôi dung lượng bộ nhớ cần dùng ngay tại thời điểm gọi fork()"], correct:0,
+   exp:"COW cho cha và con dùng chung trang ban đầu; chỉ copy khi 1 trong 2 bên thực sự ghi (sửa) 1 trang — tiết kiệm đáng kể vì phần lớn trang (code dùng chung, dữ liệu chỉ đọc) không bao giờ cần copy."},
+  {q:"vfork() khác fork() thông thường (có COW) ở điểm cốt lõi nào?",
+   opts:["vfork() cho con dùng thẳng copy-on-write address space của cha, không copy gì cả, và được thiết kế để con gọi exec() ngay sau đó", "vfork() luôn chạy chậm hơn fork() thông thường vì phải copy toàn bộ address space trước", "vfork() chỉ hoạt động trên hệ thống không hỗ trợ copy-on-write ở bất kỳ mức độ nào", "vfork() và fork() hoàn toàn giống nhau về mặt cơ chế, chỉ khác tên gọi lịch sử để lại"], correct:0,
+   exp:"vfork(): cha bị tạm dừng (suspended), con dùng thẳng address space COW của cha, thiết kế để gọi exec() ngay — không cần copy gì vì address space cũ sẽ bị thay thế hoàn toàn ngay sau đó."},
+  {q:"Vì sao page replacement cần dùng tới dirty (modify) bit?",
+   opts:["Để chỉ những trang đã bị sửa mới cần ghi ra đĩa khi bị thay thế; trang sạch (chưa sửa) có thể bỏ đi ngay không cần ghi lại", "Để đánh dấu trang đó thuộc về kernel hay user process, không liên quan gì tới việc ghi đĩa", "Dirty bit chỉ dùng để debug cho lập trình viên OS, không có tác dụng thực tế lúc hệ thống chạy", "Để ngăn hoàn toàn việc trang đó bị chọn làm victim trong mọi thuật toán replacement"], correct:0,
+   exp:"Dirty bit giảm overhead chuyển trang: chỉ modified page mới cần ghi ra disk khi bị evict, page sạch có thể discard ngay lập tức, tiết kiệm đáng kể thời gian I/O."},
+  {q:"FIFO page-replacement có nhược điểm đặc trưng nào mà LRU và Optimal không có?",
+   opts:["Belady's Anomaly — thêm frame đôi khi lại làm TĂNG số page fault, vì FIFO không phải là stack algorithm", "FIFO luôn cho số page fault nhiều hơn LRU trong MỌI trường hợp, không có ngoại lệ", "FIFO không thể cài đặt được bằng hàng đợi (queue) trên bất kỳ hệ điều hành nào", "FIFO chỉ hoạt động được khi số frame bằng đúng số trang của reference string"], correct:0,
+   exp:"Belady's Anomaly: với FIFO, thêm frame có thể khiến page fault tăng thay vì giảm — xảy ra vì FIFO không phải 'stack algorithm' (khác với LRU, OPT luôn không bị hiện tượng này)."},
+  {q:"Thuật toán Optimal (OPT) thay thế trang nào, và vì sao nó không thể cài đặt thực tế?",
+   opts:["Thay trang sẽ không được dùng tới trong khoảng thời gian dài nhất sắp tới; không khả thi vì không thể đọc được tương lai", "Thay trang mới được nạp vào gần đây nhất; không khả thi vì tốn quá nhiều bộ nhớ để lưu trữ", "Thay trang có địa chỉ logic nhỏ nhất; không khả thi vì cần phần cứng đặc biệt đắt tiền", "Thay trang theo thứ tự ngẫu nhiên; không khả thi vì kết quả không thể tái lặp lại được"], correct:0,
+   exp:"OPT thay trang sẽ không dùng tới lâu nhất trong tương lai — cho số fault ít nhất về lý thuyết, nhưng không khả thi vì cần biết trước tương lai; chủ yếu dùng làm chuẩn so sánh (benchmark)."},
+  {q:"Để cài đặt LRU hoàn chỉnh, 2 cách tiếp cận phần cứng chính là gì, và đánh đổi (trade-off) của mỗi cách?",
+   opts:["Counter: copy đồng hồ mỗi lần tham chiếu, nhưng phải quét cả bảng khi thay thế; Stack: đưa trang lên đỉnh mỗi lần dùng, không cần tìm kiếm khi thay nhưng cập nhật tốn kém hơn", "Chỉ có đúng 1 cách duy nhất để cài LRU là dùng reference bit, không có cách nào khác", "Counter và Stack đều yêu cầu đọc lại toàn bộ page table từ đĩa mỗi lần có truy cập mới", "LRU luôn được cài đặt bằng phần mềm thuần túy, không bao giờ cần hỗ trợ phần cứng"], correct:0,
+   exp:"Counter implementation: cần quét tìm giá trị counter nhỏ nhất khi thay thế (chậm). Stack implementation: luôn biết ngay victim là đáy stack (nhanh khi thay) nhưng mỗi tham chiếu đều phải cập nhật lại stack (tốn kém hơn)."},
+  {q:"Thuật toán Second-chance (Clock) hoạt động dựa trên nguyên tắc gì?",
+   opts:["Về cơ bản là FIFO cộng thêm reference bit: nếu bit=1, tha trang đó (đặt bit về 0) và chuyển qua xét trang tiếp theo thay vì đuổi ngay", "Luôn đuổi trang có địa chỉ logic lớn nhất trong toàn bộ page table hiện có", "Yêu cầu quét lại toàn bộ reference string gốc mỗi lần cần tìm victim frame mới", "Hoạt động giống hệt LRU thuần túy, không có bất kỳ khác biệt nào về cách cài đặt"], correct:0,
+   exp:"Second-chance (clock) = FIFO + reference bit: nếu trang ở vị trí đang xét có bit=1, cho nó 'cơ hội thứ 2' bằng cách đặt bit về 0 rồi xét tiếp, chỉ đuổi trang có bit=0."},
+  {q:"Enhanced Second-Chance dùng cặp (reference, modify) để phân loại trang — lớp nào là ứng viên TỐT NHẤT để thay thế?",
+   opts:["(0,0) — chưa dùng gần đây và chưa sửa, nên thay thế rẻ nhất, không cần ghi đĩa và ít khả năng cần dùng lại sớm", "(1,1) — đã dùng gần đây và đã sửa, vì đây là trang đang hoạt động tích cực nhất", "(0,1) — chưa dùng gần đây nhưng đã sửa, vì cần ưu tiên ghi dữ liệu ra đĩa ngay", "(1,0) — đã dùng gần đây nhưng sạch, vì ít tốn chi phí ghi đĩa hơn (0,0)"], correct:0,
+   exp:"(0,0): không dùng gần đây + không sửa → ứng viên tốt nhất, không cần ghi disk và không có khả năng sắp dùng lại. (1,1) tệ nhất vì cả đang dùng lẫn cần ghi disk."},
+  {q:"LFU và MFU (counting algorithms) khác nhau ở điểm nào?",
+   opts:["LFU thay trang có count nhỏ nhất (ít dùng nhất); MFU thay trang có count lớn nhất, với giả định trang đó vừa mới đưa vào và chưa kịp dùng tới", "LFU và MFU hoàn toàn giống nhau, chỉ khác tên gọi quy ước giữa các OS khác nhau", "LFU chỉ áp dụng cho trang code, MFU chỉ áp dụng cho trang dữ liệu trong bộ nhớ", "MFU luôn cho kết quả tốt hơn LFU trong mọi trường hợp sử dụng thực tế"], correct:0,
+   exp:"LFU: thay trang ít được tham chiếu nhất (count nhỏ). MFU: thay trang được tham chiếu nhiều nhất, dựa trên lập luận ngược — trang count nhỏ có lẽ vừa mới vào, nên chưa cần đụng tới."},
+  {q:"Page-buffering algorithms cải thiện hiệu năng page replacement bằng cách nào?",
+   opts:["Luôn giữ sẵn 1 pool frame trống để dùng ngay khi cần, thay vì phải tìm/tạo frame trống ngay lúc xảy ra page fault", "Loại bỏ hoàn toàn nhu cầu dùng page-replacement algorithm trong toàn bộ hệ thống", "Luôn buộc OS phải ghi mọi trang ra đĩa ngay lập tức sau mỗi lần tham chiếu", "Chỉ hoạt động được khi hệ thống không có bất kỳ page-replacement algorithm nào khác đang chạy"], correct:0,
+   exp:"Page-buffering giữ sẵn pool frame trống luôn sẵn sàng — đọc trang mới vào ngay, chọn victim để thêm vào pool sau khi thuận tiện, tránh phải tìm/giải phóng frame ngay lúc page fault (tốn thời gian nhất)."},
+  {q:"Khác biệt cốt lõi giữa global replacement và local replacement là gì?",
+   opts:["Global: 1 tiến trình có thể lấy frame từ bất kỳ tiến trình nào khác; Local: tiến trình chỉ được chọn trong tập frame đã cấp riêng cho nó", "Global chỉ dùng được cho kernel, Local chỉ dùng được cho user process, không có ngoại lệ", "Global luôn cho hiệu năng tệ hơn Local trong mọi tình huống hệ thống thực tế", "Không có khác biệt thực sự nào, đây chỉ là 2 tên gọi khác nhau cho cùng 1 cơ chế"], correct:0,
+   exp:"Global replacement: tiến trình có thể 'cướp' frame của tiến trình khác — throughput cao hơn nhưng execution time biến động nhiều. Local replacement: mỗi tiến trình tự giới hạn trong tập frame của mình — ổn định hơn nhưng có thể lãng phí bộ nhớ."},
+  {q:"NUMA (Non-Uniform Memory Access) ảnh hưởng thế nào tới việc cấp phát frame, và Solaris giải quyết bằng cơ chế gì?",
+   opts:["Tốc độ truy cập bộ nhớ thay đổi theo vị trí; Solaris dùng 'lgroups' để theo dõi các nhóm CPU/bộ nhớ có độ trễ thấp và ưu tiên cấp bộ nhớ gần CPU đang chạy thread đó", "NUMA khiến mọi vùng bộ nhớ có tốc độ truy cập hoàn toàn bằng nhau trên mọi hệ thống đa CPU", "Solaris giải quyết NUMA bằng cách tắt hẳn tính năng page replacement trên các hệ thống đa CPU", "NUMA chỉ ảnh hưởng tới ổ đĩa backing store, hoàn toàn không liên quan gì tới RAM"], correct:0,
+   exp:"NUMA: tốc độ truy cập bộ nhớ không đồng đều tùy vị trí CPU-memory board. Solaris dùng lgroups để lập lịch thread và cấp bộ nhớ 'gần' nhau, tối ưu hiệu năng truy cập."},
+  {q:"Thrashing là gì, và vì sao việc OS tăng mức đa chương (multiprogramming) khi thấy CPU utilization thấp lại càng làm trầm trọng thêm vấn đề?",
+   opts:["Thrashing là khi tiến trình bận swap trang liên tục thay vì thực thi; thêm tiến trình mới vào hệ thống đã thiếu frame chỉ càng làm tăng page fault, giảm CPU utilization hơn nữa — tạo vòng xoáy tệ hại", "Thrashing chỉ xảy ra khi hệ thống có quá nhiều bộ nhớ vật lý dư thừa không dùng tới", "Thêm tiến trình mới luôn giúp tăng CPU utilization ngay lập tức trong mọi trường hợp xảy ra thrashing", "Thrashing là thuật ngữ chỉ việc ổ cứng vật lý bị hỏng do ghi/đọc quá nhiều lần liên tục"], correct:0,
+   exp:"Thrashing: hệ thống tốn thời gian paging nhiều hơn thực thi thật. Vì CPU utilization thấp thường là dấu hiệu 'cần thêm tiến trình', OS tăng đa chương nhưng mỗi tiến trình đã thiếu frame, càng làm tăng page fault — vòng xoáy tự củng cố."},
+  {q:"Locality model giải thích vì sao demand paging hoạt động hiệu quả như thế nào?",
+   opts:["Khi chạy, tiến trình di chuyển từ locality này sang locality khác (các trang đang dùng cùng nhau); chỉ cần nạp đúng locality hiện tại là đủ, không cần cả chương trình", "Locality model khẳng định mọi trang của chương trình đều được truy cập với tần suất hoàn toàn bằng nhau", "Locality model chỉ áp dụng được cho chương trình viết bằng ngôn ngữ bậc thấp như Assembly", "Locality model loại bỏ hoàn toàn khả năng xảy ra page fault trong suốt quá trình chạy chương trình"], correct:0,
+   exp:"Locality model: tiến trình di chuyển qua các locality (tập trang dùng cùng nhau), các locality có thể chồng lấn — đây chính là lý do chỉ cần nạp 1 phần nhỏ chương trình (đúng locality hiện tại) mà vẫn chạy hiệu quả."},
+  {q:"Trong Working-Set Model, điều gì xảy ra nếu working-set window Δ được chọn QUÁ NHỎ hoặc QUÁ LỚN?",
+   opts:["Quá nhỏ: không bao trọn được 1 locality; Quá lớn: bao luôn nhiều locality khác nhau cùng lúc, làm WSS kém chính xác hơn", "Δ quá nhỏ hay quá lớn đều cho kết quả WSS giống hệt nhau, không ảnh hưởng gì cả", "Δ quá nhỏ sẽ luôn gây ra lỗi crash hệ thống ngay lập tức khi tiến trình khởi động", "Δ quá lớn sẽ khiến page-fault rate giảm xuống chính xác bằng 0 trong mọi trường hợp"], correct:0,
+   exp:"Δ quá nhỏ: không đủ để nắm bắt trọn 1 locality, WSS bị đánh giá thấp. Δ quá lớn: gộp luôn nhiều locality khác nhau, WSS bị đánh giá cao, nếu Δ=∞ thì bao trọn cả chương trình."},
+  {q:"Theo Working-Set Model, điều kiện nào báo hiệu hệ thống đang/sắp xảy ra Thrashing?",
+   opts:["D = Σ WSSi > m (tổng demand frame của mọi tiến trình vượt quá tổng số frame khả dụng của hệ thống)", "D = Σ WSSi < m (tổng demand frame nhỏ hơn hẳn số frame khả dụng của hệ thống)", "D luôn bằng đúng m trong mọi trường hợp, không có công thức nào liên quan tới thrashing cả", "Thrashing chỉ xảy ra khi working-set window Δ được đặt bằng đúng vô cực (∞)"], correct:0,
+   exp:"D = Σ WSSi ≡ tổng demand frame; nếu D > m (m = tổng frame khả dụng) ⇒ Thrashing. 1 chính sách xử lý: suspend hoặc swap out 1 trong các tiến trình để giảm D."},
+  {q:"Page-Fault Frequency (PFF) tiếp cận vấn đề cấp phát frame khác Working-Set Model ở điểm nào?",
+   opts:["PFF trực tiếp theo dõi tỉ lệ page-fault thực tế của từng tiến trình, tăng/giảm frame dựa trên tỉ lệ đó so với ngưỡng chấp nhận được, thay vì tính WSS gián tiếp qua Δ", "PFF hoàn toàn không liên quan gì tới việc cấp phát frame cho tiến trình", "PFF chỉ hoạt động được khi dùng chung với global replacement, không dùng được với local", "PFF luôn cho kết quả giống hệt Working-Set Model trong mọi trường hợp, chỉ khác tên gọi"], correct:0,
+   exp:"PFF: thiết lập ngưỡng page-fault rate chấp nhận được, đo trực tiếp tỉ lệ thực tế — rate quá cao thì cấp thêm frame, quá thấp thì bớt frame — trực tiếp hơn việc tính WSS qua cửa sổ Δ."},
+  {q:"Buddy System (power-of-2 allocator) cấp phát bộ nhớ kernel theo nguyên tắc nào?",
+   opts:["Làm tròn yêu cầu lên lũy thừa 2 gần nhất; nếu cần khối nhỏ hơn khối hiện có, tách khối hiện tại thành 2 'buddy' bằng nhau ở mức lũy thừa 2 thấp hơn, lặp lại tới khi vừa", "Luôn cấp đúng chính xác kích thước được yêu cầu, không bao giờ làm tròn lên mức nào cả", "Chỉ hoạt động được với bộ nhớ không liên tục (non-contiguous) về mặt vật lý", "Mỗi lần cấp phát đều yêu cầu khởi động lại toàn bộ hệ thống để tính toán lại kích thước"], correct:0,
+   exp:"Buddy system: làm tròn yêu cầu lên lũy thừa 2, tách khối lớn thành 2 buddy bằng nhau khi cần khối nhỏ hơn — ưu điểm là coalesce (gộp lại) nhanh, nhược điểm là lãng phí do làm tròn (fragmentation)."},
+  {q:"Slab Allocator khác Buddy System ở điểm cốt lõi nào, và lợi ích chính của nó là gì?",
+   opts:["Slab dùng 1 cache riêng cho MỖI loại cấu trúc dữ liệu kernel, lấp sẵn các object đúng kích thước — mang lại lợi ích không fragmentation và cấp phát nhanh", "Slab Allocator và Buddy System hoàn toàn giống nhau về cơ chế, chỉ khác tên gọi lịch sử", "Slab chỉ hoạt động được trên Windows, hoàn toàn không tồn tại trên Linux hay Solaris", "Slab luôn chậm hơn Buddy System vì phải tính toán lũy thừa 2 phức tạp hơn nhiều"], correct:0,
+   exp:"Slab: 1 cache riêng cho từng loại cấu trúc dữ liệu kernel (vd task_struct), object sẵn kích thước đúng chuẩn — không cần làm tròn như Buddy nên không fragmentation, và cấp phát/thu hồi object rất nhanh."},
+  {q:"TLB Reach là gì, và tăng page size ảnh hưởng tới nó như thế nào?",
+   opts:["TLB Reach = TLB size × page size — lượng bộ nhớ truy cập được từ TLB; tăng page size giúp tăng TLB Reach nhưng có thể làm tăng internal fragmentation", "TLB Reach chỉ phụ thuộc vào số lõi CPU, hoàn toàn không liên quan gì tới page size", "Tăng page size luôn làm giảm TLB Reach trong mọi trường hợp cấu hình hệ thống", "TLB Reach là tên gọi khác của EAT (Effective Access Time), không phải 1 khái niệm riêng biệt"], correct:0,
+   exp:"TLB Reach = TLB size × page size — lý tưởng working set của tiến trình nằm trọn trong TLB Reach. Tăng page size tăng TLB Reach (giảm page fault/TLB miss), nhưng có thể làm tăng internal fragmentation cho trang không dùng hết."},
+  {q:"Memory Compression khác gì so với paging/swapping truyền thống khi bộ nhớ cạn?",
+   opts:["Thay vì ghi các frame đã sửa ra swap space, hệ thống NÉN nhiều frame lại thành 1 frame duy nhất, giảm dùng bộ nhớ mà không cần swap ra đĩa", "Memory Compression chỉ đơn giản là xóa hẳn dữ liệu của các frame ít dùng mà không lưu lại gì cả", "Memory Compression yêu cầu phải có ổ đĩa backing store tốc độ cực nhanh mới hoạt động được", "Memory Compression và swapping hoàn toàn giống nhau về bản chất, chỉ khác tên gọi marketing"], correct:0,
+   exp:"Memory compression nén nhiều frame đã sửa thành 1 frame duy nhất thay vì ghi ra swap space — đặc biệt hữu ích trên mobile systems không hỗ trợ swapping đầy đủ do hạn chế của flash memory."},
+  {q:"Working Set Minimum và Working Set Maximum trong Windows hoạt động ra sao?",
+   opts:["Minimum là số trang tối thiểu tiến trình được đảm bảo có trong bộ nhớ; tiến trình có thể được cấp thêm tới Maximum; khi bộ nhớ trống thấp, automatic trimming gỡ bớt trang vượt mức Minimum", "Minimum và Maximum luôn bằng nhau cho mọi tiến trình chạy trên Windows, không thể thay đổi", "Working Set Maximum là số trang BẮT BUỘC tiến trình phải chiếm dụng, không được ít hơn", "Automatic trimming chỉ hoạt động khi tiến trình chủ động yêu cầu Windows gỡ bớt trang của chính nó"], correct:0,
+   exp:"Windows: Minimum = số trang đảm bảo; Maximum = trần có thể cấp thêm; khi free memory toàn hệ thống thấp, automatic working set trimming gỡ trang của tiến trình đang vượt Minimum để khôi phục bộ nhớ trống."},
+
+  {q:"Tính toán: Memory access = 100 ns, average page-fault service time = 10 ms, tỉ lệ page fault p = 0.001 (1/1000 lần truy cập gây page fault). Tính Effective Access Time (EAT)?",
+   opts:["≈ 10.1 μs (= 0.999×100ns + 0.001×10.000.000ns ≈ 100 + 10.000 = 10.100ns)", "≈ 100 ns, bằng đúng thời gian truy cập bộ nhớ cơ bản không đổi", "≈ 10 ms, bằng đúng page-fault service time trung bình", "≈ 1 μs, vì p rất nhỏ nên gần như không ảnh hưởng gì tới EAT"], correct:0,
+   exp:"EAT = (1−p)×100 + p×10.000.000 (10ms=10.000.000ns) = 0.999×100 + 0.001×10.000.000 ≈ 100 + 10.000 = 10.100ns ≈ 10.1μs — chậm hơn gấp 101 lần so với không có page fault."},
+  {q:"Tính toán: reference string 0 1 7 2 3 2 7 1 0 3, 3 frame trống ban đầu. FIFO cho bao nhiêu page fault?",
+   opts:["7 fault (0,1,7,2,3 nạp lần đầu + 1,0 thay thế cuối; chỉ 2,7,3 hit)", "10 fault, vì mọi lần tham chiếu trong chuỗi đều gây fault", "3 fault, vì chỉ có 3 frame nên tối đa chỉ fault đúng 3 lần", "5 fault, bằng đúng số trang KHÁC NHAU xuất hiện trong chuỗi"], correct:0,
+   exp:"FIFO: 0,1,7 nạp (3 fault) → 2 thay 0 (fault) → 3 thay 1 (fault) → 2,7 hit → 1 thay 7 (fault) → 0 thay 2 (fault) → 3 hit. Tổng = 7 fault (xem thêm lời giải chi tiết ở tab Exercises)."},
+  {q:"Tính toán: cùng reference string 0 1 7 2 3 2 7 1 0 3, 3 frame. LRU cho bao nhiêu page fault, so với FIFO?",
+   opts:["8 fault — NHIỀU hơn FIFO (7 fault) ở ví dụ cụ thể này, dù LRU thường được xem là 'tốt' hơn FIFO về mặt lý thuyết tổng quát", "8 fault — ÍT hơn FIFO trong mọi trường hợp vì LRU luôn tốt hơn FIFO", "Giống hệt FIFO, đều cho đúng 7 fault vì 2 thuật toán thực chất tương đương nhau", "LRU luôn cho đúng 3 fault bất kể reference string là gì, vì chỉ có 3 frame"], correct:0,
+   exp:"LRU cho 8 fault ở reference string cụ thể này (nhiều hơn FIFO = 7) — chứng minh rằng LRU không phải lúc nào cũng thắng FIFO trên MỌI chuỗi cụ thể, dù về tổng thể LRU được xem là thuật toán tốt và phổ biến hơn."},
+  {q:"Tính toán: hệ thống có D = ΣWSSi = 85 (tổng demand frame của các tiến trình đang chạy), tổng frame khả dụng m = 80. Hệ thống đang ở trạng thái nào, và 1 giải pháp hợp lý là gì?",
+   opts:["D > m (85 > 80) ⇒ đang Thrashing; giải pháp: suspend hoặc swap out bớt 1 trong các tiến trình để giảm D xuống dưới m", "D < m nên hệ thống hoàn toàn an toàn, không cần làm gì thêm cả", "D = m đúng bằng nhau nên hệ thống đang ở trạng thái tối ưu nhất có thể", "Không đủ thông tin để kết luận gì, cần biết thêm page size mới tính được"], correct:0,
+   exp:"D=85 > m=80 ⇒ theo Working-Set Model, hệ thống đang hoặc sắp Thrashing. Giải pháp theo slide: suspend hoặc swap out 1 trong các tiến trình để giảm tổng D xuống dưới hoặc bằng m."},
+  {q:"Tính toán: Buddy System có sẵn 1 khối 128KB, kernel yêu cầu cấp phát đúng 20KB. Khối cuối cùng được cấp sẽ có kích thước bao nhiêu, và cần tách bao nhiêu lần từ khối 128KB ban đầu?",
+   opts:["32KB (làm tròn 20KB lên lũy thừa 2 gần nhất lớn hơn); cần tách 2 lần: 128→64→32", "20KB chính xác, vì Buddy System luôn cấp đúng kích thước yêu cầu không làm tròn", "16KB, vì làm tròn XUỐNG lũy thừa 2 gần nhất thay vì làm tròn lên", "128KB nguyên khối, vì Buddy System không bao giờ tách nhỏ khối ra"], correct:0,
+   exp:"20KB được làm tròn lên lũy thừa 2 gần nhất lớn hơn = 32KB (2⁵). Từ 128KB (2⁷): tách lần 1 → 2 khối 64KB (2⁶); tách lần 2 trên 1 trong 2 khối đó → 2 khối 32KB (2⁵) — dùng 1 trong 2 khối 32KB này để cấp phát."}
+  ];
+
+  const quizRoot = document.getElementById('quizRoot');
+  const quizScoreEl = document.getElementById('quizScore');
+  const quizResultEl = document.getElementById('quizResult');
+  const qrScoreText = document.getElementById('qrScoreText');
+  const qrBreakdown = document.getElementById('qrBreakdown');
+  const quizRetryBtn = document.getElementById('quizRetryBtn');
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  let correctCount = 0;
+  let answeredCount = 0;
+  const wrongLog = [];
+
+  function renderQuiz(){
+    quizRoot.innerHTML = '';
+    quizResultEl.hidden = true;
+    correctCount = 0;
+    answeredCount = 0;
+    wrongLog.length = 0;
+    quizScoreEl.textContent = '0 / ' + QUIZ.length + ' đã trả lời đúng';
+    quizScoreEl.hidden = false;
+
+    QUIZ.forEach((item, i) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'q';
+      qDiv.innerHTML = '<div class="qnum">Câu ' + (i+1) + ' / ' + QUIZ.length + '</div><h4>' + item.q + '</h4>';
+
+      const order = shuffle(item.opts.map((_, oi) => oi));
+      const shuffledCorrectPos = order.indexOf(item.correct);
+
+      const optsWrap = document.createElement('div');
+      order.forEach((originalIndex, displayPos) => {
+        const b = document.createElement('button');
+        b.className = 'opt';
+        b.type = 'button';
+        b.textContent = item.opts[originalIndex];
+        b.addEventListener('click', () => {
+          if (b.disabled) return;
+          const allOpts = optsWrap.querySelectorAll('.opt');
+          allOpts.forEach(o => o.disabled = true);
+          if (displayPos === shuffledCorrectPos){
+            b.classList.add('correct');
+            correctCount++;
+          } else {
+            b.classList.add('wrong');
+            allOpts[shuffledCorrectPos].classList.add('correct');
+            wrongLog.push(i + 1);
+          }
+          answeredCount++;
+          quizScoreEl.textContent = correctCount + ' / ' + QUIZ.length + ' đã trả lời đúng';
+          const ex = qDiv.querySelector('.explain');
+          ex.classList.add('show');
+
+          if (answeredCount === QUIZ.length){
+            showResults();
+          }
+        });
+        optsWrap.appendChild(b);
+      });
+      qDiv.appendChild(optsWrap);
+      const explain = document.createElement('div');
+      explain.className = 'explain';
+      explain.textContent = item.exp;
+      qDiv.appendChild(explain);
+      quizRoot.appendChild(qDiv);
+    });
+  }
+
+  function showResults(){
+    const pct = Math.round((correctCount / QUIZ.length) * 100);
+    let verdict = 'Cần ôn lại thêm 💪';
+    if (pct >= 90) verdict = 'Xuất sắc! 🎉';
+    else if (pct >= 70) verdict = 'Khá tốt 👍';
+    else if (pct >= 50) verdict = 'Tạm ổn, nên xem lại vài phần 🙂';
+    qrScoreText.textContent = 'Kết quả: ' + correctCount + ' / ' + QUIZ.length + ' (' + pct + '%) — ' + verdict;
+    if (wrongLog.length){
+      qrBreakdown.innerHTML = 'Các câu đã trả lời sai: <span class="qr-wrong-item">Câu ' + wrongLog.join(', Câu ') + '</span> — kéo lên xem lại phần giải thích của từng câu.';
+    } else {
+      qrBreakdown.textContent = 'Không sai câu nào — làm lại nếu muốn thử bộ thứ tự đáp án khác!';
+    }
+    quizResultEl.hidden = false;
+    quizResultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  quizRetryBtn.addEventListener('click', renderQuiz);
+
+  renderQuiz();
+</script>
+</body>
+</html>
