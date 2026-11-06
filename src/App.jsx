@@ -220,8 +220,10 @@ const subjects = [
       {
         id: "btl252",
         title: "Bài tập lớn HK252",
-        questionsCount: 4,
-        comingSoon: true,
+        type: "pdf",
+        documents: [
+          { title: "Đề bài", file: "/pdfs/lecture/CO2018_ossim_caitoa.pdf" },
+        ],
       },
 
       {
@@ -573,7 +575,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 6/11/2026 • 07:39:25 (Lecture Note Chapter 10A added)
+            Last Updated: 6/11/2026 • 22:47:14 (OS Project 252 added)
           </p>
         </div>
 
