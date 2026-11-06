@@ -176,7 +176,7 @@ const subjects = [
   { id: "ch7", title: "Chapter 7 - Synchronization 2", file: "/lectures/os-ch7-lecture.html" },
   { id: "ch8", title: "Chapter 8 - Main Memory", file: "/lectures/os-ch8-lecture.html" },
   { id: "ch9", title: "Chapter 9 - Virtual Memory", file: "/lectures/os-ch9-lecture.html" },
-  { id: "ch10A", title: "Chapter 10A - File System Interface", file: null },
+  { id: "ch10A", title: "Chapter 10A - File System Interface", file: "/lectures/os-ch10-lecture.html" },
   { id: "ch10B", title: "Chapter 10B - File System Implementation", file: null },
   { id: "ch11", title: "Chapter 11 - Mass Storage & Disk Scheduling", file: null },
 ],
@@ -573,7 +573,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 3/11/2026 • 18:08:44 (Lab 3 - Synchronization added)
+            Last Updated: 6/11/2026 • 07:39:25 (Lecture Note Chapter 10A added)
           </p>
         </div>
 
