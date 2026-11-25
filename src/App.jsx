@@ -284,6 +284,15 @@ const subjects = [
       },
 
       {
+        id: "storage2",
+        title: "Bản PDF của Storage (ôn thi Chapter 8 - Chapter 10B)",
+        type: "pdf",
+        documents: [
+          { title: "Võ Tiến HK252 (legit nhe hihi, cho cậu còn xem cách giải chứ =))))) )", file: "/pdfs/lecture/Storage.pdf" },
+        ],
+      },
+
+      {
         id: "hk251",
         title: "Một số câu trong đề thi HK251",
         questionsCount: 36,
@@ -577,7 +586,7 @@ export default function App() {
         {/* LAST UPDATED */}
         <div className="text-center mb-5">
           <p className="text-plum-soft text-sm font-medium tracking-wide">
-            Last Updated: 14/11/2026 • 21:23:33 (Lecture Note Chapter 10B added)
+            Last Updated: 25/11/2026 • 13:13:26 (Storage (chapter 8-10B final exam) added)
           </p>
         </div>
 
