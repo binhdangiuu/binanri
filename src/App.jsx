@@ -13,6 +13,7 @@ import hk251DSA from "./data/hk251dsa"
 import osReviewCh1To2 from "./data/os-review-ch1-2"
 import BubbleNote from "./BubbleNote"
 import cpu from "./data/cpu"
+import storage from "./data/storage"
 const subjects = [
 
   {
@@ -277,8 +278,9 @@ const subjects = [
       {
         id: "storage",
         title: "Storage (ôn thi Chapter 8 - Chapter 10B)",
-        questionsCount: 158,
-        comingSoon: true,
+        questionsCount: storage.length,
+        comingSoon: false,
+        questions: storage
       },
 
       {
